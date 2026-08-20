@@ -1,0 +1,107 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Don hang <span class="mono"><%= order.code %></span></h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="sidebar-layout">
+    <div>
+      <div class="card">
+        <div class="card-title">
+          <h2>Cac dong don hang</h2>
+          <%- include('../partials/order-status', { status: order.status }) %>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Ten mien</th><th>Dich vu</th><th>Nam</th><th>Trang thai</th><th>Ma tham chieu</th><th class="right">Tien</th></tr></thead>
+            <tbody>
+              <% items.forEach(function (i) { %>
+                <tr>
+                  <td class="mono"><strong><%= i.domain %></strong></td>
+                  <td class="small"><%= i.action %></td>
+                  <td class="small"><%= i.years %></td>
+                  <td>
+                    <span class="badge <%= i.status === 'active' ? 'badge-ok' : i.status === 'failed' ? 'badge-danger' : 'badge-muted' %>"><%= i.status %></span>
+                    <% if (i.error) { %><div class="tiny" style="color:var(--danger)"><%= i.error %></div><% } %>
+                    <% if (i.attempts) { %><div class="tiny muted">Da thu <%= i.attempts %> lan</div><% } %>
+                  </td>
+                  <td class="tiny mono muted"><%= i.provider_ref || '-' %></td>
+                  <td class="right"><%= formatVnd(i.amount) %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h2>Giao dich thanh toan</h2></div>
+        <% if (!payments.length) { %>
+          <p class="muted small">Chua co giao dich nao.</p>
+        <% } else { %>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Thoi gian</th><th>Cong</th><th>Ma tham chieu</th><th>Ma GD</th><th>Trang thai</th><th class="right">Tien</th></tr></thead>
+              <tbody>
+                <% payments.forEach(function (p) { %>
+                  <tr>
+                    <td class="small"><%= p.created_at.replace('T', ' ').slice(0, 16) %></td>
+                    <td><span class="badge badge-muted"><%= p.provider %></span></td>
+                    <td class="mono tiny"><%= p.ref_code %></td>
+                    <td class="mono tiny"><%= p.provider_txn || '-' %></td>
+                    <td><span class="badge <%= p.status === 'paid' ? 'badge-ok' : p.status === 'pending' ? 'badge-warn' : 'badge-muted' %>"><%= p.status %></span></td>
+                    <td class="right"><%= formatVnd(p.amount) %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+    <aside>
+      <div class="card">
+        <div class="card-title"><h3>Khach hang</h3></div>
+        <% if (customer) { %>
+          <div class="copy-row"><span class="label">Ho ten</span><span class="value small"><%= customer.full_name %></span></div>
+          <div class="copy-row"><span class="label">Email</span><span class="value small"><%= customer.email %></span></div>
+          <div class="copy-row"><span class="label">Dien thoai</span><span class="value small"><%= customer.phone %></span></div>
+        <% } %>
+        <div class="copy-row"><span class="label">IP dat hang</span><span class="value small"><%= order.ip || '-' %></span></div>
+        <% if (order.note) { %><div class="copy-row"><span class="label">Ghi chu</span><span class="value small"><%= order.note %></span></div><% } %>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h3>Thao tac</h3></div>
+
+        <% if (order.status === 'pending_payment') { %>
+          <form method="post" action="/admin/don-hang/<%= order.id %>/xac-nhan-thanh-toan"
+                data-confirm="Xac nhan da nhan du <%= formatVnd(order.total) %> cho don nay? He thong se dang ky ten mien ngay.">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field"><label>Ghi chu doi soat</label><input type="text" name="note" placeholder="VD: CK Techcombank luc 10:23"></div>
+            <button class="btn btn-block" type="submit">Xac nhan da thanh toan</button>
+          </form>
+          <p class="tiny muted" style="margin-top:8px">Dung khi khach da chuyen khoan nhung webhook khong doi soat duoc.</p>
+        <% } %>
+
+        <% if (['paid','processing','failed','partially_completed'].indexOf(order.status) >= 0) { %>
+          <form method="post" action="/admin/don-hang/<%= order.id %>/cap-phat-lai"
+                data-confirm="Chay lai cap phat cho cac dong that bai?" style="margin-top:12px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-outline btn-block" type="submit">Chay lai cap phat</button>
+          </form>
+        <% } %>
+
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line)">
+          <div class="copy-row"><span class="label">Tam tinh</span><span class="value"><%= formatVnd(order.subtotal) %></span></div>
+          <% if (order.discount) { %><div class="copy-row"><span class="label">Giam gia</span><span class="value">-<%= formatVnd(order.discount) %></span></div><% } %>
+          <% if (order.vat) { %><div class="copy-row"><span class="label">VAT</span><span class="value"><%= formatVnd(order.vat) %></span></div><% } %>
+          <div class="copy-row"><span class="label"><strong>Tong</strong></span><span class="value"><%= formatVnd(order.total) %></span></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+<%- include('../partials/footer') %>

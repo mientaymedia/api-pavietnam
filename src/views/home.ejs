@@ -1,0 +1,66 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<section class="hero">
+  <div class="container center">
+    <h1>Dang ky ten mien Viet Nam &amp; Quoc te</h1>
+    <p><%= site.tagline %></p>
+
+    <form class="search-box" action="/tim-kiem" method="get">
+      <input type="search" name="q" placeholder="Nhap ten mien ban muon, vi du: congtyabc" required autofocus>
+      <button class="btn btn-lg" type="submit">Kiem tra</button>
+    </form>
+
+    <% if (featured.length) { %>
+      <div class="tld-chips">
+        <% featured.forEach(function (t) { %>
+          <span class="tld-chip">.<%= t.tld %> &middot; <%= formatVnd(priceFor(t, 'register', 1).total) %></span>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<div class="container" style="margin-top:28px">
+  <%- include('partials/flash') %>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>Kich hoat tuc thi</h3>
+      <p class="muted small">Thanh toan xong la ten mien duoc dang ky tu dong qua API nha dang ky, khong cho duyet thu cong.</p>
+    </div>
+    <div class="card">
+      <h3>Quan ly DNS day du</h3>
+      <p class="muted small">Them, sua, xoa ban ghi A / AAAA / CNAME / MX / TXT / NS / SRV / CAA va doi nameserver ngay trong Control Panel.</p>
+    </div>
+    <div class="card">
+      <h3>Thanh toan tu dong</h3>
+      <p class="muted small">Quet QR chuyen khoan ngan hang, he thong doi soat tu dong. Ho tro them vi MoMo va ZaloPay.</p>
+    </div>
+  </div>
+
+  <h2 class="section-heading">Bang gia noi bat</h2>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Duoi</th><th>Loai</th><th class="right">Dang ky nam dau</th><th class="right">Gia han / nam</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% tlds.slice(0, 12).forEach(function (t) { %>
+            <tr>
+              <td><strong>.<%= t.tld %></strong><% if (t.label) { %><div class="tiny muted"><%= t.label %></div><% } %></td>
+              <td><span class="badge badge-muted"><%= t.kind === 'vn' ? 'Viet Nam' : 'Quoc te' %></span></td>
+              <td class="right"><strong><%= formatVnd(priceFor(t, 'register', 1).total) %></strong></td>
+              <td class="right"><%= formatVnd(priceFor(t, 'renew', 1).total) %></td>
+              <td class="right"><a class="btn btn-sm btn-outline" href="/tim-kiem?q=<%= encodeURIComponent('ten-mien-cua-ban.' + t.tld) %>">Kiem tra</a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <p class="tiny muted" style="margin:14px 0 0">Gia da bao gom VAT neu duoc cau hinh. Xem day du tai <a href="/bang-gia">bang gia</a>.</p>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

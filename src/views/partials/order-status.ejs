@@ -1,0 +1,14 @@
+<%
+  var map = {
+    pending_payment: ['badge-warn', 'Cho thanh toan'],
+    paid: ['badge-info', 'Da thanh toan'],
+    processing: ['badge-info', 'Dang xu ly'],
+    completed: ['badge-ok', 'Hoan tat'],
+    partially_completed: ['badge-warn', 'Hoan tat mot phan'],
+    failed: ['badge-danger', 'That bai'],
+    cancelled: ['badge-muted', 'Da huy'],
+    refunded: ['badge-muted', 'Da hoan tien']
+  };
+  var s = map[status] || ['badge-muted', status];
+%>
+<span class="badge <%= s[0] %>"><%= s[1] %></span>

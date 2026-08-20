@@ -1,0 +1,18 @@
+</main>
+<footer class="site-footer">
+  <div class="container row-between">
+    <div>
+      <strong><%= site.name %></strong>
+      <% if (site.address) { %><span class="muted"> &middot; <%= site.address %></span><% } %>
+      <% if (site.hotline) { %><span class="muted"> &middot; Hotline: <%= site.hotline %></span><% } %>
+    </div>
+    <div class="muted small">
+      <a href="/bang-gia">Bang gia</a> &middot;
+      <a href="/whois">WHOIS</a>
+      <% if (currentUser) { %> &middot; <a href="/tai-khoan">Tai khoan</a><% } %>
+    </div>
+  </div>
+</footer>
+<script src="/js/app.js" defer></script>
+</body>
+</html>

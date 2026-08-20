@@ -1,0 +1,37 @@
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="/">
+      <% if (site.logoUrl) { %>
+        <img src="<%= site.logoUrl %>" alt="<%= site.name %>" style="height:30px">
+      <% } else { %>
+        <span class="brand-mark"><%= site.name.trim().charAt(0).toUpperCase() %></span>
+      <% } %>
+      <span><%= site.name %></span>
+    </a>
+
+    <nav class="nav">
+      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Tim ten mien</a>
+      <a href="/bang-gia" class="<%= currentPath === '/bang-gia' ? 'active' : '' %>">Bang gia</a>
+      <a href="/whois" class="<%= currentPath === '/whois' ? 'active' : '' %>">WHOIS</a>
+
+      <% if (currentUser) { %>
+        <a href="/control-panel" class="<%= currentPath.startsWith('/control-panel') ? 'active' : '' %>">Control Panel</a>
+        <a href="/don-hang" class="<%= currentPath.startsWith('/don-hang') ? 'active' : '' %>">Don hang</a>
+        <a href="/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <% if (currentUser.role === 'admin' || currentUser.role === 'staff') { %>
+          <a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Quan tri</a>
+        <% } %>
+        <a href="/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
+        <form method="post" action="/dang-xuat" style="display:inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit">Thoat</button>
+        </form>
+      <% } else { %>
+        <a href="/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <a href="/dang-nhap">Dang nhap</a>
+        <a href="/dang-ky" class="btn btn-sm">Dang ky</a>
+      <% } %>
+    </nav>
+  </div>
+</header>
+<main>

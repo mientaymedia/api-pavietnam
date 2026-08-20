@@ -1,0 +1,103 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Thanh toan</h1>
+
+  <form method="post" action="/thanh-toan">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="coupon" value="<%= coupon %>">
+
+    <div class="sidebar-layout">
+      <div>
+        <div class="card">
+          <div class="card-title"><h2>Ho so chu the ten mien</h2></div>
+
+          <% if (cart.requiresVnContact) { %>
+            <div class="alert alert-info">
+              Gio hang co ten mien <strong>.vn</strong>. Theo quy dinh cua VNNIC, ban phai khai bao day du thong tin
+              chu the (CMND/CCCD voi ca nhan, ma so thue voi to chuc). Thong tin sai co the khien ten mien bi thu hoi.
+            </div>
+          <% } %>
+
+          <% if (contacts.length) { %>
+            <div class="field">
+              <label>Chon ho so co san</label>
+              <% contacts.forEach(function (c) { %>
+                <label class="check" style="padding:9px 0; border-bottom:1px solid var(--line)">
+                  <input type="radio" name="contact_id" value="<%= c.id %>" <%= c.is_default ? 'checked' : '' %>>
+                  <span>
+                    <strong><%= c.full_name %></strong>
+                    <span class="badge badge-muted"><%= c.kind === 'organization' ? 'To chuc' : 'Ca nhan' %></span>
+                    <div class="tiny muted"><%= c.email %> &middot; <%= c.phone %></div>
+                  </span>
+                </label>
+              <% }); %>
+              <label class="check" style="padding:9px 0">
+                <input type="radio" name="contact_id" value="">
+                <span><strong>Tao ho so moi</strong></span>
+              </label>
+            </div>
+            <details <%= Object.keys(contactErrors).length ? 'open' : '' %>>
+              <summary class="small muted" style="cursor:pointer; margin-bottom:12px">Nhap thong tin ho so moi</summary>
+              <input type="hidden" name="contact_mode" value="">
+              <%- include('../partials/contact-form', { values: values, errors: contactErrors }) %>
+            </details>
+          <% } else { %>
+            <input type="hidden" name="contact_mode" value="new">
+            <%- include('../partials/contact-form', { values: values, errors: contactErrors }) %>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><h2>Ghi chu don hang</h2></div>
+          <textarea name="note" placeholder="Yeu cau them (khong bat buoc)"><%= values.note || '' %></textarea>
+        </div>
+      </div>
+
+      <aside>
+        <div class="card">
+          <div class="card-title"><h2>Don hang</h2></div>
+          <% cart.lines.forEach(function (line) { %>
+            <div class="copy-row">
+              <span class="label">
+                <span class="mono"><%= line.domain %></span>
+                <div class="tiny muted"><%= line.action === 'renew' ? 'Gia han' : 'Dang ky' %> &middot; <%= line.years %> nam</div>
+              </span>
+              <span class="value"><%= formatVnd(line.total) %></span>
+            </div>
+          <% }); %>
+
+          <div class="copy-row"><span class="label">Tam tinh</span><span class="value"><%= formatVnd(cart.subtotal) %></span></div>
+          <% if (discount) { %>
+            <div class="copy-row"><span class="label">Giam gia (<%= coupon %>)</span><span class="value" style="color:var(--ok)">-<%= formatVnd(discount) %></span></div>
+          <% } %>
+          <% if (cart.vat) { %>
+            <div class="copy-row"><span class="label">VAT</span><span class="value"><%= formatVnd(cart.vat) %></span></div>
+          <% } %>
+          <div class="copy-row" style="border-top:2px solid var(--line); margin-top:6px; padding-top:12px">
+            <span class="label"><strong>Tong cong</strong></span>
+            <span class="value" style="font-size:1.2rem"><%= formatVnd(Math.max(0, cart.subtotal - discount + cart.vat)) %></span>
+          </div>
+
+          <button class="btn btn-block btn-lg" type="submit" style="margin-top:16px">Dat hang</button>
+          <p class="tiny muted center" style="margin:10px 0 0">Buoc tiep theo ban se chon phuong thuc thanh toan.</p>
+        </div>
+      </aside>
+    </div>
+  </form>
+
+  <form class="card" method="post" action="/thanh-toan/ma-giam-gia" style="max-width:420px">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Ma giam gia</label>
+    <div class="row">
+      <div style="flex:1"><input type="text" name="coupon" value="<%= coupon %>" placeholder="Nhap ma"></div>
+      <button class="btn btn-outline" type="submit">Ap dung</button>
+    </div>
+    <% if (couponError) { %><div class="error-text"><%= couponError %></div><% } %>
+    <% if (discount) { %><div class="small" style="color:var(--ok); margin-top:6px">Da ap dung, giam <%= formatVnd(discount) %></div><% } %>
+  </form>
+</div>
+
+<%- include('../partials/footer') %>

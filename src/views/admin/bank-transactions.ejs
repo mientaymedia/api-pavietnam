@@ -1,0 +1,46 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Doi soat ngan hang (SePay)</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="card">
+    <p class="muted small">
+      Moi giao dich SePay bao ve deu duoc ghi lai o day, ke ca giao dich khong khop don hang -
+      giup ban tra soat khi khach bao "da chuyen tien roi".
+    </p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Thoi gian</th><th>Ma GD</th><th class="right">So tien</th><th>Noi dung</th><th>Ma don do duoc</th><th>Ket qua</th></tr></thead>
+        <tbody>
+          <% if (!transactions.length) { %>
+            <tr><td colspan="6" class="muted center">Chua nhan giao dich nao. Kiem tra webhook da tro dung URL chua.</td></tr>
+          <% } %>
+          <% transactions.forEach(function (t) { %>
+            <tr>
+              <td class="small"><%= t.created_at.replace('T', ' ').slice(0, 16) %></td>
+              <td class="mono tiny"><%= t.external_id %></td>
+              <td class="right"><%= formatVnd(t.amount) %></td>
+              <td class="tiny" style="max-width:280px; word-break:break-all"><%= t.content %></td>
+              <td class="mono small"><%= t.matched_code || '-' %></td>
+              <td>
+                <%
+                  var m = {
+                    matched: ['badge-ok', 'Da khop don'],
+                    duplicate: ['badge-muted', 'Trung / da xu ly'],
+                    unmatched: ['badge-warn', 'Khong khop'],
+                    amount_mismatch: ['badge-danger', 'Sai so tien'],
+                    received: ['badge-muted', 'Da nhan']
+                  }[t.status] || ['badge-muted', t.status];
+                %>
+                <span class="badge <%= m[0] %>"><%= m[1] %></span>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

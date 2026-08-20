@@ -1,0 +1,58 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-mid">
+  <%- include('../partials/flash') %>
+  <h1>Ho so chu the ten mien</h1>
+  <p class="muted small">Thong tin nay duoc gui len nha dang ky khi dang ky ten mien. Voi ten mien .vn, thong tin phai chinh xac theo giay to phap ly.</p>
+
+  <div class="card">
+    <div class="card-title"><h2>Ho so da luu</h2></div>
+    <% if (!contacts.length) { %>
+      <p class="muted small">Chua co ho so nao.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Chu the</th><th>Loai</th><th>Lien he</th><th></th></tr></thead>
+          <tbody>
+            <% contacts.forEach(function (c) { %>
+              <tr>
+                <td>
+                  <strong><%= c.full_name %></strong>
+                  <% if (c.is_default) { %><span class="badge badge-ok" style="margin-left:6px">Mac dinh</span><% } %>
+                  <% if (c.org_name) { %><div class="tiny muted"><%= c.org_name %></div><% } %>
+                </td>
+                <td>
+                  <span class="badge badge-muted"><%= c.kind === 'organization' ? 'To chuc' : 'Ca nhan' %></span>
+                  <div class="tiny muted"><%= c.kind === 'organization' ? (c.tax_code ? 'MST: ' + c.tax_code : '') : (c.id_number ? 'CCCD: ' + c.id_number : '') %></div>
+                </td>
+                <td class="small"><%= c.email %><div class="tiny muted"><%= c.phone %></div></td>
+                <td class="right nowrap">
+                  <% if (!c.is_default) { %>
+                    <form method="post" action="/tai-khoan/ho-so/<%= c.id %>/mac-dinh" style="display:inline">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button class="btn-link tiny" type="submit">Dat mac dinh</button>
+                    </form>
+                  <% } %>
+                  <form method="post" action="/tai-khoan/ho-so/<%= c.id %>/xoa" data-confirm="Xoa ho so nay?" style="display:inline">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn-link tiny" type="submit" style="color:var(--danger)">Xoa</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Them ho so moi</h2></div>
+    <form method="post" action="/tai-khoan/ho-so">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <%- include('../partials/contact-form', { values: values, errors: errors }) %>
+      <button class="btn" type="submit">Luu ho so</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

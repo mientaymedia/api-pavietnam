@@ -1,0 +1,72 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container container-mid">
+  <%- include('partials/flash') %>
+  <h1>Gio hang</h1>
+
+  <% if (!cart.lines.length) { %>
+    <div class="card center">
+      <p class="muted">Gio hang dang trong.</p>
+      <a class="btn" href="/">Tim ten mien</a>
+    </div>
+  <% } else { %>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Ten mien</th><th>Dich vu</th><th style="width:120px">Thoi han</th><th class="right">Thanh tien</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% cart.lines.forEach(function (line) { %>
+              <tr>
+                <td>
+                  <strong class="mono"><%= line.domain %></strong>
+                  <% if (line.requiresVnContact) { %><div class="tiny muted">Can ho so chu the (.vn)</div><% } %>
+                </td>
+                <td><span class="badge badge-muted"><%= line.action === 'register' ? 'Dang ky moi' : line.action === 'renew' ? 'Gia han' : 'Chuyen ve' %></span></td>
+                <td>
+                  <form method="post" action="/gio-hang/cap-nhat/<%= line.id %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <select name="years" onchange="this.form.submit()">
+                      <% for (var y = 1; y <= 10; y++) { %>
+                        <option value="<%= y %>" <%= line.years === y ? 'selected' : '' %>><%= y %> nam</option>
+                      <% } %>
+                    </select>
+                  </form>
+                </td>
+                <td class="right">
+                  <strong><%= formatVnd(line.total) %></strong>
+                  <% if (line.vat) { %><div class="tiny muted">gom VAT <%= formatVnd(line.vat) %></div><% } %>
+                </td>
+                <td class="right">
+                  <form method="post" action="/gio-hang/xoa/<%= line.id %>">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn-link tiny" type="submit">Xoa</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="row-between" style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line)">
+        <form method="post" action="/gio-hang/xoa-het">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn-link small" type="submit">Xoa toan bo gio hang</button>
+        </form>
+        <div class="right">
+          <div class="muted small">Tam tinh: <%= formatVnd(cart.subtotal) %><% if (cart.vat) { %> + VAT <%= formatVnd(cart.vat) %><% } %></div>
+          <div style="font-size:1.3rem; font-weight:700"><%= formatVnd(cart.total) %></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="right" style="margin-top:18px">
+      <a class="btn btn-lg" href="/thanh-toan">Tien hanh thanh toan</a>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

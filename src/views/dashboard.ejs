@@ -1,0 +1,73 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container">
+  <%- include('partials/flash') %>
+  <div class="row-between">
+    <h1>Xin chao, <%= currentUser.full_name || currentUser.email %></h1>
+    <a class="btn" href="/">Dang ky ten mien moi</a>
+  </div>
+
+  <div class="grid grid-4" style="margin:18px 0">
+    <div class="stat"><div class="stat-value"><%= stats.domains %></div><div class="stat-label">Ten mien</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.active %></div><div class="stat-label">Dang hoat dong</div></div>
+    <div class="stat"><div class="stat-value" style="color:var(--warn)"><%= stats.expiringSoon %></div><div class="stat-label">Sap het han (30 ngay)</div></div>
+    <div class="stat"><div class="stat-value"><%= formatVnd(currentUser.balance) %></div><div class="stat-label">So du tai khoan</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Ten mien cua ban</h2><a class="small" href="/control-panel">Xem tat ca</a></div>
+    <% if (!domains.length) { %>
+      <p class="muted">Ban chua co ten mien nao. <a href="/">Tim va dang ky ngay</a>.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ten mien</th><th>Trang thai</th><th>Het han</th><th></th></tr></thead>
+          <tbody>
+            <% domains.slice(0, 8).forEach(function (d) { %>
+              <tr>
+                <td class="mono"><strong><%= d.domain %></strong></td>
+                <td>
+                  <span class="badge <%= d.status === 'active' ? 'badge-ok' : d.status === 'expired' ? 'badge-danger' : 'badge-muted' %>"><%= d.status %></span>
+                </td>
+                <td>
+                  <%= d.expires_at ? d.expires_at.slice(0, 10) : '-' %>
+                  <% if (d.daysLeft !== null && d.daysLeft <= 30) { %>
+                    <div class="tiny" style="color:var(--warn)"><%= d.daysLeft >= 0 ? 'Con ' + d.daysLeft + ' ngay' : 'Da het han' %></div>
+                  <% } %>
+                </td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="/control-panel/<%= d.domain %>">Quan ly</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Don hang gan day</h2><a class="small" href="/don-hang">Xem tat ca</a></div>
+    <% if (!orders.length) { %>
+      <p class="muted">Chua co don hang nao.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ma don</th><th>Ngay</th><th>Trang thai</th><th class="right">Tong tien</th><th></th></tr></thead>
+          <tbody>
+            <% orders.forEach(function (o) { %>
+              <tr>
+                <td class="mono"><strong><%= o.code %></strong></td>
+                <td class="small"><%= o.created_at.slice(0, 10) %></td>
+                <td><%- include('partials/order-status', { status: o.status }) %></td>
+                <td class="right"><%= formatVnd(o.total) %></td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="/don-hang/<%= o.code %>">Chi tiet</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

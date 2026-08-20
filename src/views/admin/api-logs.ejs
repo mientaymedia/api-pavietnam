@@ -1,0 +1,34 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Nhat ky goi API</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:14px">
+      <a class="btn btn-sm <%= onlyErrors ? 'btn-outline' : '' %>" href="/admin/nhat-ky-api">Tat ca</a>
+      <a class="btn btn-sm <%= onlyErrors ? '' : 'btn-outline' %>" href="/admin/nhat-ky-api?loi=1">Chi loi</a>
+    </div>
+    <p class="muted small">API Key luon duoc che truoc khi ghi log. Ban co the tat ghi log bang <code>PAVIETNAM_LOG=0</code>.</p>
+
+    <% logs.forEach(function (l) { %>
+      <details style="border-bottom:1px solid var(--line); padding:10px 0">
+        <summary style="cursor:pointer">
+          <span class="badge <%= l.ok ? 'badge-ok' : 'badge-danger' %>"><%= l.ok ? 'OK' : 'LOI' %></span>
+          <strong><%= l.action %></strong>
+          <span class="muted mono small"><%= l.domain %></span>
+          <span class="tiny muted"> - <%= l.duration_ms %>ms - <%= l.created_at.replace('T', ' ').slice(0, 19) %></span>
+        </summary>
+        <div style="margin-top:10px">
+          <div class="tiny muted">Request</div>
+          <pre class="raw"><%= l.request %></pre>
+          <div class="tiny muted" style="margin-top:8px">Response</div>
+          <pre class="raw"><%= l.response %></pre>
+        </div>
+      </details>
+    <% }); %>
+    <% if (!logs.length) { %><p class="muted center">Chua co ban ghi nao.</p><% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,54 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Quan tri he thong</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="grid grid-3">
+    <div class="stat"><div class="stat-value"><%= stats.users %></div><div class="stat-label">Khach hang</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.activeDomains %>/<%= stats.domains %></div><div class="stat-label">Ten mien dang hoat dong</div></div>
+    <div class="stat"><div class="stat-value"><%= formatVnd(stats.revenue) %></div><div class="stat-label">Doanh thu da thanh toan</div></div>
+    <div class="stat"><div class="stat-value" style="color:var(--warn)"><%= stats.pendingOrders %></div><div class="stat-label">Don cho thanh toan</div></div>
+    <div class="stat"><div class="stat-value" style="color:<%= stats.failedItems ? 'var(--danger)' : 'inherit' %>"><%= stats.failedItems %></div><div class="stat-label">Dong don that bai</div></div>
+    <div class="stat">
+      <div class="stat-value"><%= jobs.queued %></div>
+      <div class="stat-label">Job dang cho<% if (jobs.failed) { %> &middot; <span style="color:var(--danger)"><%= jobs.failed %> loi</span><% } %></div>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:18px">
+    <div class="card">
+      <div class="card-title"><h2>Don hang moi</h2><a class="small" href="/admin/don-hang">Tat ca</a></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ma don</th><th>Trang thai</th><th class="right">Tien</th></tr></thead>
+          <tbody>
+            <% recentOrders.forEach(function (o) { %>
+              <tr>
+                <td><a class="mono" href="/admin/don-hang/<%= o.id %>"><%= o.code %></a></td>
+                <td><%- include('../partials/order-status', { status: o.status }) %></td>
+                <td class="right"><%= formatVnd(o.total) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><h2>Loi API gan day</h2><a class="small" href="/admin/nhat-ky-api?loi=1">Tat ca</a></div>
+      <% if (!recentErrors.length) { %>
+        <p class="muted small">Khong co loi nao. He thong dang ket noi tot.</p>
+      <% } else { %>
+        <% recentErrors.forEach(function (l) { %>
+          <div style="padding:8px 0; border-bottom:1px solid var(--line)">
+            <div class="small"><strong><%= l.action %></strong> <span class="muted"><%= l.domain %></span></div>
+            <div class="tiny muted" style="word-break:break-all"><%= l.response.slice(0, 160) %></div>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

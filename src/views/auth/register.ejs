@@ -1,0 +1,49 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-narrow">
+  <%- include('../partials/flash') %>
+  <div class="card">
+    <h1>Dang ky tai khoan</h1>
+    <p class="muted small">Tao tai khoan de dang ky va quan ly ten mien.</p>
+
+    <form method="post" action="/dang-ky">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="field <%= errors.full_name ? 'field-error' : '' %>">
+        <label for="full_name">Ho va ten</label>
+        <input id="full_name" type="text" name="full_name" value="<%= values.full_name || '' %>" required autofocus>
+        <% if (errors.full_name) { %><div class="error-text"><%= errors.full_name %></div><% } %>
+      </div>
+
+      <div class="field <%= errors.email ? 'field-error' : '' %>">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autocomplete="email">
+        <% if (errors.email) { %><div class="error-text"><%= errors.email %></div><% } %>
+      </div>
+
+      <div class="field <%= errors.phone ? 'field-error' : '' %>">
+        <label for="phone">So dien thoai</label>
+        <input id="phone" type="text" name="phone" value="<%= values.phone || '' %>" required>
+        <% if (errors.phone) { %><div class="error-text"><%= errors.phone %></div><% } %>
+      </div>
+
+      <div class="field <%= errors.password ? 'field-error' : '' %>">
+        <label for="password">Mat khau</label>
+        <input id="password" type="password" name="password" required autocomplete="new-password">
+        <div class="hint">Toi thieu 8 ky tu.</div>
+        <% if (errors.password) { %><div class="error-text"><%= errors.password %></div><% } %>
+      </div>
+
+      <div class="field <%= errors.password_confirm ? 'field-error' : '' %>">
+        <label for="password_confirm">Nhap lai mat khau</label>
+        <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password">
+        <% if (errors.password_confirm) { %><div class="error-text"><%= errors.password_confirm %></div><% } %>
+      </div>
+
+      <button class="btn btn-block btn-lg" type="submit">Tao tai khoan</button>
+    </form>
+
+    <p class="small muted center" style="margin:16px 0 0">Da co tai khoan? <a href="/dang-nhap">Dang nhap</a></p>
+  </div>
+</div>
+<%- include('../partials/footer') %>

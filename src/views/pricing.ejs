@@ -1,0 +1,54 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container">
+  <%- include('partials/flash') %>
+  <h1>Bang gia ten mien</h1>
+  <p class="muted">Gia hien thi la gia ban le da ap dung chinh sach gia cua he thong.</p>
+
+  <% function priceTable(rows) { %>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Duoi</th><th class="right">Dang ky (nam dau)</th><th class="right">Gia han</th>
+              <th class="right">Chuyen ve</th><th class="right">Thoi han</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% rows.forEach(function (t) { %>
+              <tr>
+                <td>
+                  <strong>.<%= t.tld %></strong>
+                  <% if (t.requires_vn_contact) { %><span class="badge badge-info" style="margin-left:6px">Can ho so chu the</span><% } %>
+                  <% if (t.label) { %><div class="tiny muted"><%= t.label %></div><% } %>
+                </td>
+                <td class="right"><strong><%= formatVnd(priceFor(t, 'register', 1).total) %></strong>
+                  <% if (t.setup_fee) { %><div class="tiny muted">gom phi khoi tao</div><% } %>
+                </td>
+                <td class="right"><%= formatVnd(priceFor(t, 'renew', 1).total) %></td>
+                <td class="right"><%= t.price_transfer ? formatVnd(priceFor(t, 'transfer', 1).total) : '-' %></td>
+                <td class="right nowrap"><%= t.min_years %>-<%= t.max_years %> nam</td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="/tim-kiem?q=<%= encodeURIComponent('ten-mien.' + t.tld) %>">Kiem tra</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } %>
+
+  <% if (vn.length) { %>
+    <h2 class="section-heading">Ten mien Viet Nam</h2>
+    <% priceTable(vn); %>
+    <p class="tiny muted">Ten mien .vn bat buoc khai bao ho so chu the theo quy dinh cua VNNIC (CMND/CCCD voi ca nhan, ma so thue voi to chuc).</p>
+  <% } %>
+
+  <% if (intl.length) { %>
+    <h2 class="section-heading">Ten mien quoc te</h2>
+    <% priceTable(intl); %>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,104 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Cau hinh Control Panel</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="alert alert-info">
+    Cac gia tri o day <strong>ghi de</strong> cau hinh trong file <code>.env</code> va co hieu luc ngay khi luu,
+    khong can khoi dong lai server. O nhap bi mat hien thi dang che (<code>abcd****wxyz</code>) - de trong neu khong doi.
+  </div>
+
+  <form method="post" action="/admin/cau-hinh">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <%
+      var groups = [
+        { key: 'site.',    title: 'Thuong hieu website', note: 'Ten, mau sac va thong tin lien he hien tren toan bo site va email.' },
+        { key: 'pa.',      title: 'API dai ly P.A Viet Nam', note: 'API chi chap nhan request tu IP da dang ky whitelist voi P.A. API Key doi khi ban doi mat khau tai khoan dai ly.' },
+        { key: 'dns.',     title: 'DNS mac dinh', note: 'Nameserver gan cho ten mien ngay khi dang ky thanh cong.' },
+        { key: 'pricing.', title: 'Chinh sach gia', note: 'Ap dung cho toan bo bang gia: gia ban = gia goc + markup, lam tron len boi so, cong VAT.' },
+        { key: 'order.',   title: 'Quy trinh don hang', note: 'Tu dong dang ky sau thanh toan, thoi gian giu don, moc nhac gia han.' },
+        { key: 'sepay.',   title: 'Thanh toan chuyen khoan (SePay)', note: '' },
+        { key: 'momo.',    title: 'Vi MoMo', note: '' },
+        { key: 'zalopay.', title: 'ZaloPay', note: '' },
+        { key: 'smtp.',    title: 'Email (SMTP)', note: 'Dung de gui thong tin quan tri ten mien, nhac gia han va canh bao noi bo.' }
+      ];
+    %>
+
+    <% groups.forEach(function (g) { %>
+      <div class="card">
+        <div class="card-title"><h2><%= g.title %></h2></div>
+        <% if (g.note) { %><p class="muted small" style="margin-top:-6px"><%= g.note %></p><% } %>
+
+        <% if (g.key === 'sepay.') { %>
+          <div class="alert alert-info small">
+            <strong>Cach thiet lap:</strong> dang nhap <a href="https://my.sepay.vn" target="_blank" rel="noopener">my.sepay.vn</a>,
+            lien ket tai khoan ngan hang, roi tao Webhook voi:
+            <div class="copy-row" style="margin-top:8px">
+              <span class="label">URL</span>
+              <span class="value"><%= webhookUrl %> <button type="button" class="btn-link tiny" data-copy="<%= webhookUrl %>">chep</button></span>
+            </div>
+            <div class="copy-row">
+              <span class="label">Header</span>
+              <span class="value">Authorization: Apikey &lt;token ben duoi&gt;</span>
+            </div>
+          </div>
+        <% } %>
+
+        <div class="grid grid-2" style="gap:0 16px">
+          <% fields.filter(function (f) { return f.key.indexOf(g.key) === 0; }).forEach(function (f) { %>
+            <% if (f.type === 'checkbox') { %>
+              <div class="field">
+                <label class="check">
+                  <input type="checkbox" name="<%= f.key %>" value="1" <%= values[f.key] === '1' ? 'checked' : '' %>>
+                  <span><%= f.label %></span>
+                </label>
+                <% if (f.hint) { %><div class="hint"><%= f.hint %></div><% } %>
+              </div>
+            <% } else { %>
+              <div class="field">
+                <label for="<%= f.key %>"><%= f.label %></label>
+                <input id="<%= f.key %>" type="<%= f.type === 'number' ? 'number' : 'text' %>"
+                       name="<%= f.key %>"
+                       value="<%= values[f.key] || '' %>"
+                       <%= secretKeys.indexOf(f.key) >= 0 ? 'autocomplete="off"' : '' %>>
+                <% if (f.hint) { %><div class="hint"><%= f.hint %></div><% } %>
+                <% if (secretKeys.indexOf(f.key) >= 0) { %><div class="hint">Gia tri bi mat - de nguyen neu khong doi.</div><% } %>
+              </div>
+            <% } %>
+          <% }); %>
+        </div>
+
+        <% if (g.key === 'sepay.' && qrPreview) { %>
+          <h3 class="section-heading">Xem thu ma QR (10.000d - noi dung DHTEST01)</h3>
+          <div class="qr-box" style="max-width:280px"><img src="<%= qrPreview %>" alt="QR thu"></div>
+        <% } %>
+      </div>
+    <% }); %>
+
+    <div class="card">
+      <div class="row-between">
+        <span class="muted small">Luu de ap dung toan bo thay doi phia tren.</span>
+        <button class="btn btn-lg" type="submit">Luu cau hinh</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="card">
+    <div class="card-title"><h2>Kiem tra ket noi API P.A</h2></div>
+    <p class="muted small">Goi thu mot lenh chi doc (check ten mien) de xac nhan username, API Key va IP whitelist da dung.</p>
+    <form method="post" action="/admin/cau-hinh/kiem-tra-api">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="flex:1; margin:0">
+          <label>Ten mien de thu</label>
+          <input type="text" name="test_domain" value="pavietnam.vn">
+        </div>
+        <button class="btn btn-outline" type="submit">Kiem tra ngay</button>
+      </div>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,58 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Hang doi xu ly</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="grid grid-4">
+    <div class="stat"><div class="stat-value"><%= stats.queued %></div><div class="stat-label">Dang cho</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.running %></div><div class="stat-label">Dang chay</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.done %></div><div class="stat-label">Hoan tat</div></div>
+    <div class="stat"><div class="stat-value" style="color:<%= stats.failed ? 'var(--danger)' : 'inherit' %>"><%= stats.failed %></div><div class="stat-label">That bai</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="card-title"><h2>Chay tac vu dinh ky ngay</h2></div>
+    <div class="row">
+      <% ['send_renewal_reminders', 'expire_stale_orders', 'reconcile_sepay'].forEach(function (t) { %>
+        <form method="post" action="/admin/hang-doi/chay-ngay">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="type" value="<%= t %>">
+          <button class="btn btn-sm btn-outline" type="submit"><%= t %></button>
+        </form>
+      <% }); %>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Loai</th><th>Du lieu</th><th>Trang thai</th><th>Lan thu</th><th>Loi gan nhat</th><th></th></tr></thead>
+        <tbody>
+          <% jobs.forEach(function (j) { %>
+            <tr>
+              <td class="tiny muted"><%= j.id %></td>
+              <td class="small"><strong><%= j.type %></strong></td>
+              <td class="tiny mono muted"><%= JSON.stringify(j.payloadObj) %></td>
+              <td>
+                <span class="badge <%= j.status === 'done' ? 'badge-ok' : j.status === 'failed' ? 'badge-danger' : j.status === 'running' ? 'badge-info' : 'badge-warn' %>"><%= j.status %></span>
+              </td>
+              <td class="small"><%= j.attempts %></td>
+              <td class="tiny" style="max-width:280px; word-break:break-all; color:var(--danger)"><%= j.last_error %></td>
+              <td class="right">
+                <% if (j.status === 'failed') { %>
+                  <form method="post" action="/admin/hang-doi/<%= j.id %>/chay-lai">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn btn-sm btn-outline" type="submit">Chay lai</button>
+                  </form>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,45 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <div class="row-between">
+    <h1>Control Panel</h1>
+    <a class="btn" href="/">Dang ky ten mien moi</a>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <% if (!domains.length) { %>
+      <p class="muted">Ban chua co ten mien nao trong tai khoan.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Ten mien</th><th>Trang thai</th><th>Nameserver</th><th>Het han</th><th>Tu gia han</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% domains.forEach(function (d) { %>
+              <tr>
+                <td class="mono"><strong><%= d.domain %></strong></td>
+                <td>
+                  <span class="badge <%= d.status === 'active' ? 'badge-ok' : d.status === 'expired' ? 'badge-danger' : 'badge-muted' %>"><%= d.status %></span>
+                </td>
+                <td class="tiny mono muted"><%= d.ns.length ? d.ns.join('<br>') : '-' %></td>
+                <td class="small">
+                  <%= d.expires_at ? d.expires_at.slice(0, 10) : '-' %>
+                  <% if (d.daysLeft !== null && d.daysLeft <= 30) { %>
+                    <div class="tiny" style="color:<%= d.daysLeft < 0 ? 'var(--danger)' : 'var(--warn)' %>">
+                      <%= d.daysLeft >= 0 ? 'Con ' + d.daysLeft + ' ngay' : 'Da het han' %>
+                    </div>
+                  <% } %>
+                </td>
+                <td><span class="badge <%= d.auto_renew ? 'badge-ok' : 'badge-muted' %>"><%= d.auto_renew ? 'Bat' : 'Tat' %></span></td>
+                <td class="right"><a class="btn btn-sm" href="/control-panel/<%= d.domain %>">Quan ly</a></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,35 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Quan ly don hang</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:14px">
+      <% ['', 'pending_payment', 'paid', 'processing', 'completed', 'failed', 'cancelled'].forEach(function (s) { %>
+        <a class="btn btn-sm <%= status === s ? '' : 'btn-outline' %>" href="/admin/don-hang<%= s ? '?status=' + s : '' %>">
+          <%= s === '' ? 'Tat ca' : s %>
+        </a>
+      <% }); %>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ma don</th><th>Ngay</th><th>Trang thai</th><th class="right">Tong tien</th><th></th></tr></thead>
+        <tbody>
+          <% orders.forEach(function (o) { %>
+            <tr>
+              <td class="mono"><strong><%= o.code %></strong></td>
+              <td class="small"><%= o.created_at.replace('T', ' ').slice(0, 16) %></td>
+              <td><%- include('../partials/order-status', { status: o.status }) %></td>
+              <td class="right"><%= formatVnd(o.total) %></td>
+              <td class="right"><a class="btn btn-sm btn-outline" href="/admin/don-hang/<%= o.id %>">Xem</a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

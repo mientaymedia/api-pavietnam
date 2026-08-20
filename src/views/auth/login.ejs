@@ -1,0 +1,30 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-narrow">
+  <%- include('../partials/flash') %>
+  <div class="card">
+    <h1>Dang nhap</h1>
+    <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
+
+    <form method="post" action="/dang-nhap">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="next" value="<%= next %>">
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autofocus autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Mat khau</label>
+        <input id="password" type="password" name="password" required autocomplete="current-password">
+      </div>
+
+      <button class="btn btn-block btn-lg" type="submit">Dang nhap</button>
+    </form>
+
+    <p class="small muted center" style="margin:16px 0 0">
+      <a href="/quen-mat-khau">Quen mat khau?</a> &middot; Chua co tai khoan? <a href="/dang-ky">Dang ky</a>
+    </p>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,3 @@
+<% (flashes || []).forEach(function (f) { %>
+  <div class="alert alert-<%= f.type === 'success' ? 'success' : f.type === 'error' ? 'error' : 'info' %>"><%= f.message %></div>
+<% }); %>

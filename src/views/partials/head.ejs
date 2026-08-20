@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= typeof title !== 'undefined' ? title + ' - ' + site.name : site.name %></title>
+<meta name="description" content="<%= site.tagline %>">
+<link rel="stylesheet" href="/css/app.css">
+<% if (site.primaryColor && site.primaryColor !== '#0f766e') { %>
+<style>:root { --brand: <%= site.primaryColor %>; }</style>
+<% } %>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127760;</text></svg>">
+</head>
+<body>

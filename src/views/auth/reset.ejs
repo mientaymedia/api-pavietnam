@@ -1,0 +1,24 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-narrow">
+  <div class="card">
+    <h1>Dat lai mat khau</h1>
+    <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
+
+    <form method="post" action="/dat-lai-mat-khau">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="token" value="<%= token %>">
+      <div class="field">
+        <label for="password">Mat khau moi</label>
+        <input id="password" type="password" name="password" required autofocus autocomplete="new-password">
+        <div class="hint">Toi thieu 8 ky tu.</div>
+      </div>
+      <div class="field">
+        <label for="password_confirm">Nhap lai mat khau moi</label>
+        <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password">
+      </div>
+      <button class="btn btn-block" type="submit">Doi mat khau</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

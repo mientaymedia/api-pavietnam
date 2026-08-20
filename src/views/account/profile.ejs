@@ -1,0 +1,117 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-mid">
+  <%- include('../partials/flash') %>
+  <h1>Tai khoan cua toi</h1>
+
+  <div class="tabs">
+    <a href="/tai-khoan" class="active">Thong tin</a>
+    <a href="/tai-khoan/ho-so">Ho so chu the</a>
+    <a href="/control-panel">Ten mien</a>
+    <a href="/don-hang">Don hang</a>
+  </div>
+
+  <% if (newToken) { %>
+    <div class="alert alert-success">
+      <strong>API token moi da duoc tao.</strong> Hay sao chep ngay - token chi hien thi <u>mot lan duy nhat</u>.
+      <div class="mono" style="margin-top:8px; word-break:break-all; background:#fff; padding:10px; border-radius:6px">
+        <%= newToken %>
+        <button class="btn-link tiny" data-copy="<%= newToken %>">chep</button>
+      </div>
+    </div>
+  <% } %>
+
+  <div class="card">
+    <div class="card-title"><h2>Thong tin ca nhan</h2></div>
+    <form method="post" action="/tai-khoan/thong-tin">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="grid grid-2" style="gap:0 14px">
+        <div class="field"><label>Ho va ten</label><input type="text" name="full_name" value="<%= user.full_name %>"></div>
+        <div class="field"><label>So dien thoai</label><input type="text" name="phone" value="<%= user.phone %>"></div>
+      </div>
+      <div class="field"><label>Email</label><input type="email" value="<%= user.email %>" disabled></div>
+      <button class="btn" type="submit">Luu thay doi</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Doi mat khau</h2></div>
+    <form method="post" action="/tai-khoan/doi-mat-khau">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label>Mat khau hien tai</label><input type="password" name="current_password" required autocomplete="current-password"></div>
+      <div class="grid grid-2" style="gap:0 14px">
+        <div class="field"><label>Mat khau moi</label><input type="password" name="password" required autocomplete="new-password"></div>
+        <div class="field"><label>Nhap lai mat khau moi</label><input type="password" name="password_confirm" required autocomplete="new-password"></div>
+      </div>
+      <button class="btn" type="submit">Doi mat khau</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>API token</h2></div>
+    <p class="muted small">
+      Dung de tu xay giao dien rieng. Goi API voi header <code>Authorization: Bearer &lt;token&gt;</code>.
+      Tai lieu: <code><%= appUrl %>/api/v1</code>
+    </p>
+
+    <% if (tokens.length) { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Ten</th><th>Tien to</th><th>Quyen</th><th>Dung lan cuoi</th><th></th></tr></thead>
+          <tbody>
+            <% tokens.forEach(function (t) { %>
+              <tr>
+                <td><%= t.name %></td>
+                <td class="mono small"><%= t.token_prefix %>...</td>
+                <td><span class="badge badge-muted"><%= t.scopes %></span></td>
+                <td class="small muted"><%= t.last_used_at ? t.last_used_at.replace('T', ' ').slice(0, 16) : 'Chua dung' %></td>
+                <td class="right">
+                  <form method="post" action="/tai-khoan/api-token/<%= t.id %>/thu-hoi" data-confirm="Thu hoi token nay?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn-link tiny" type="submit" style="color:var(--danger)">Thu hoi</button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+    <form method="post" action="/tai-khoan/api-token" style="margin-top:14px">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="flex:1; margin:0"><label>Ten token</label><input type="text" name="name" placeholder="Website ban hang" required></div>
+        <div class="field" style="width:160px; margin:0">
+          <label>Quyen</label>
+          <select name="scopes"><option value="read">Chi doc</option><option value="write">Doc va ghi</option></select>
+        </div>
+        <button class="btn" type="submit">Tao token</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>So du: <%= formatVnd(user.balance) %></h2></div>
+    <% if (!wallet.length) { %>
+      <p class="muted small">Chua co bien dong so du.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Thoi gian</th><th>Noi dung</th><th class="right">So tien</th><th class="right">So du sau</th></tr></thead>
+          <tbody>
+            <% wallet.forEach(function (w) { %>
+              <tr>
+                <td class="small"><%= w.created_at.replace('T', ' ').slice(0, 16) %></td>
+                <td class="small"><%= w.kind %><% if (w.note) { %> <span class="muted">- <%= w.note %></span><% } %></td>
+                <td class="right" style="color:<%= w.amount >= 0 ? 'var(--ok)' : 'var(--danger)' %>"><%= w.amount >= 0 ? '+' : '' %><%= formatVnd(w.amount) %></td>
+                <td class="right small"><%= formatVnd(w.balance_after) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

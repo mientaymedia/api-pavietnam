@@ -1,0 +1,83 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container">
+  <%- include('partials/flash') %>
+
+  <form class="card" action="/tim-kiem" method="get" style="margin-bottom:18px">
+    <div class="row">
+      <div style="flex:1; min-width:240px">
+        <input type="search" name="q" value="<%= q %>" placeholder="Nhap ten mien" required>
+      </div>
+      <div style="width:110px">
+        <select name="years">
+          <% for (var y = 1; y <= 10; y++) { %>
+            <option value="<%= y %>" <%= years === y ? 'selected' : '' %>><%= y %> nam</option>
+          <% } %>
+        </select>
+      </div>
+      <button class="btn" type="submit">Kiem tra</button>
+    </div>
+  </form>
+
+  <% if (!search.results.length) { %>
+    <div class="card center">
+      <p class="muted">Khong co ket qua cho "<%= q %>". Vui long thu tu khoa khac.</p>
+    </div>
+  <% } %>
+
+  <% var unknownCount = search.results.filter(function (r) { return r.unknown; }).length; %>
+  <% if (unknownCount) { %>
+    <div class="alert alert-warn">
+      Khong kiem tra duoc <%= unknownCount %> ten mien do chua ket noi duoc API nha dang ky.
+      <% if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) { %>
+        Kiem tra <a href="/admin/cau-hinh">cau hinh API</a> va IP whitelist.
+      <% } %>
+    </div>
+  <% } %>
+
+  <% search.results.forEach(function (r) { %>
+    <div class="result <%= r.available ? '' : 'taken' %>">
+      <div style="min-width:0">
+        <div class="result-name"><%= r.sld %><span class="tld">.<%= r.tld %></span></div>
+        <div class="tiny muted">
+          <% if (r.unknown) { %>
+            <span class="badge badge-warn">Chua kiem tra duoc</span> <%= r.message %>
+          <% } else if (r.available) { %>
+            <span class="badge badge-ok">Con trong</span>
+            <% if (r.requiresVnContact) { %> Can ho so chu the (.vn)<% } %>
+          <% } else { %>
+            <span class="badge badge-muted">Da co nguoi dang ky</span>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="result-meta">
+        <% if (r.available && r.price) { %>
+          <div class="result-price"><%= formatVnd(r.price.total) %></div>
+          <div class="tiny muted"><%= years %> nam<%= r.price.vat ? ' (da gom VAT)' : '' %></div>
+          <form method="post" action="/gio-hang/them" style="margin-top:6px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="domain" value="<%= r.domain %>">
+            <input type="hidden" name="years" value="<%= years %>">
+            <input type="hidden" name="action" value="register">
+            <button class="btn btn-sm" type="submit">Them vao gio</button>
+          </form>
+        <% } else if (!r.unknown) { %>
+          <a class="btn btn-sm btn-outline" href="/whois?domain=<%= encodeURIComponent(r.domain) %>">Xem WHOIS</a>
+        <% } %>
+      </div>
+    </div>
+  <% }); %>
+
+  <div class="card" style="margin-top:18px">
+    <h3>Kiem tra them duoi khac</h3>
+    <div class="row">
+      <% allTlds.forEach(function (t) { %>
+        <a class="btn btn-sm btn-outline" href="/tim-kiem?q=<%= encodeURIComponent(search.sld + '.' + t.tld) %>&years=<%= years %>">.<%= t.tld %></a>
+      <% }); %>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

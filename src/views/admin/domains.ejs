@@ -1,0 +1,40 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Quan ly ten mien</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="card">
+    <form method="get" action="/admin/ten-mien" style="margin-bottom:14px">
+      <div class="row">
+        <div style="flex:1"><input type="search" name="q" value="<%= q %>" placeholder="Tim theo ten mien"></div>
+        <button class="btn btn-outline" type="submit">Tim</button>
+      </div>
+    </form>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ten mien</th><th>Khach hang</th><th>Trang thai</th><th>Het han</th><th>Tu gia han</th><th></th></tr></thead>
+        <tbody>
+          <% domains.forEach(function (d) { %>
+            <tr>
+              <td class="mono"><strong><%= d.domain %></strong></td>
+              <td class="small"><%= d.email %></td>
+              <td><span class="badge <%= d.status === 'active' ? 'badge-ok' : d.status === 'expired' ? 'badge-danger' : 'badge-muted' %>"><%= d.status %></span></td>
+              <td class="small"><%= d.expires_at ? d.expires_at.slice(0, 10) : '-' %></td>
+              <td><span class="badge <%= d.auto_renew ? 'badge-ok' : 'badge-muted' %>"><%= d.auto_renew ? 'Bat' : 'Tat' %></span></td>
+              <td class="right">
+                <form method="post" action="/admin/ten-mien/<%= d.id %>/dong-bo">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button class="btn btn-sm btn-outline" type="submit">Dong bo</button>
+                </form>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

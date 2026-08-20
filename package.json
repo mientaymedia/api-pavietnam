@@ -1,0 +1,38 @@
+{
+  "name": "api-pavietnam",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nen tang ban ten mien tu dong (dang ky / gia han / DNS / whois) tren API dai ly P.A Viet Nam",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json && node scripts/postbuild.mjs",
+    "start": "node dist/server.js",
+    "migrate": "tsx src/db/migrate.ts",
+    "seed": "tsx src/db/seed.ts",
+    "pa:probe": "tsx src/pavietnam/probe.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "DATABASE_FILE=./data/test.sqlite node --test --import tsx test/*.test.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.7.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "nodemailer": "^6.9.16",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.2",
+    "@types/nodemailer": "^6.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

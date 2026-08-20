@@ -1,0 +1,58 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container container-mid">
+  <%- include('partials/flash') %>
+  <h1>Tra cuu WHOIS</h1>
+
+  <form class="card" action="/whois" method="get">
+    <div class="row">
+      <div style="flex:1; min-width:240px">
+        <input type="search" name="domain" value="<%= domain %>" placeholder="vidu.com hoac vidu.vn" required>
+      </div>
+      <button class="btn" type="submit">Tra cuu</button>
+    </div>
+  </form>
+
+  <% if (result) { %>
+    <div class="card">
+      <% if (result.error) { %>
+        <div class="alert alert-error"><%= result.error %></div>
+      <% } else { %>
+        <div class="card-title">
+          <h2 class="mono"><%= result.domain %></h2>
+          <span class="badge <%= result.registered ? 'badge-muted' : 'badge-ok' %>">
+            <%= result.registered ? 'Da dang ky' : 'Con trong' %>
+          </span>
+        </div>
+
+        <table>
+          <tbody>
+            <% if (result.registrar) { %><tr><th>Nha dang ky</th><td><%= result.registrar %></td></tr><% } %>
+            <% if (result.createdAt) { %><tr><th>Ngay dang ky</th><td><%= result.createdAt.slice(0, 10) %></td></tr><% } %>
+            <% if (result.expiresAt) { %><tr><th>Ngay het han</th><td><%= result.expiresAt.slice(0, 10) %></td></tr><% } %>
+            <% if (result.nameservers && result.nameservers.length) { %>
+              <tr><th>Nameserver</th><td class="mono"><%= result.nameservers.join(', ') %></td></tr>
+            <% } %>
+          </tbody>
+        </table>
+
+        <% if (!result.registered) { %>
+          <form method="post" action="/gio-hang/them" style="margin-top:16px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="domain" value="<%= result.domain %>">
+            <input type="hidden" name="years" value="1">
+            <button class="btn" type="submit">Dang ky ten mien nay</button>
+          </form>
+        <% } %>
+
+        <% if (result.text) { %>
+          <h3 class="section-heading">Du lieu WHOIS goc</h3>
+          <pre class="raw"><%= result.text %></pre>
+        <% } %>
+      <% } %>
+    </div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

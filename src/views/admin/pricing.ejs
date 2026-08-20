@@ -1,0 +1,74 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Quan ly bang gia</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="card">
+    <div class="card-title"><h2>Them / cap nhat duoi ten mien</h2></div>
+    <p class="muted small">Nhap lai mot duoi da co se cap nhat gia cua duoi do. Gia nhap la <strong>gia goc</strong>; he thong tu cong markup va VAT theo cau hinh.</p>
+    <form method="post" action="/admin/bang-gia">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="grid grid-4" style="gap:0 14px">
+        <div class="field"><label>Duoi (khong dau cham)</label><input type="text" name="tld" placeholder="com.vn" required></div>
+        <div class="field"><label>Loai</label><select name="kind"><option value="intl">Quoc te</option><option value="vn">Viet Nam</option></select></div>
+        <div class="field"><label>Ten hien thi</label><input type="text" name="label" placeholder="Doanh nghiep Viet Nam"></div>
+        <div class="field"><label>Thu tu sap xep</label><input type="number" name="sort_order" value="100"></div>
+
+        <div class="field"><label>Gia von dang ky</label><input type="number" name="cost_register" value="0"></div>
+        <div class="field"><label>Gia von gia han</label><input type="number" name="cost_renew" value="0"></div>
+        <div class="field"><label>Gia ban dang ky</label><input type="number" name="price_register" value="0" required></div>
+        <div class="field"><label>Gia ban gia han</label><input type="number" name="price_renew" value="0" required></div>
+
+        <div class="field"><label>Gia chuyen ve</label><input type="number" name="price_transfer" value="0"></div>
+        <div class="field"><label>Phi khoi tao</label><input type="number" name="setup_fee" value="0"></div>
+        <div class="field"><label>VAT (%)</label><input type="number" name="vat_percent" value="0"></div>
+        <div class="field"><label>Nam toi thieu / toi da</label>
+          <div class="row" style="gap:6px">
+            <input type="number" name="min_years" value="1" style="width:70px">
+            <input type="number" name="max_years" value="10" style="width:70px">
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:14px">
+        <label class="check"><input type="checkbox" name="is_active" value="1" checked><span>Dang ban</span></label>
+        <label class="check"><input type="checkbox" name="is_featured" value="1"><span>Noi bat trang chu</span></label>
+        <label class="check"><input type="checkbox" name="requires_vn_contact" value="1"><span>Bat buoc ho so chu the (.vn)</span></label>
+      </div>
+
+      <button class="btn" type="submit">Luu bang gia</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Danh sach duoi (<%= tlds.length %>)</h2></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Duoi</th><th>Loai</th><th class="right">Von DK</th><th class="right">Ban DK</th><th class="right">Ban GH</th><th class="right">Lai/nam</th><th>Trang thai</th></tr>
+        </thead>
+        <tbody>
+          <% tlds.forEach(function (t) { %>
+            <tr>
+              <td><strong>.<%= t.tld %></strong><% if (t.requires_vn_contact) { %> <span class="badge badge-info tiny">chu the</span><% } %></td>
+              <td><span class="badge badge-muted"><%= t.kind %></span></td>
+              <td class="right small muted"><%= formatVnd(t.cost_register) %></td>
+              <td class="right"><%= formatVnd(t.price_register) %></td>
+              <td class="right"><%= formatVnd(t.price_renew) %></td>
+              <td class="right" style="color:<%= (t.price_register - t.cost_register) > 0 ? 'var(--ok)' : 'var(--danger)' %>">
+                <%= formatVnd(t.price_register - t.cost_register) %>
+              </td>
+              <td>
+                <span class="badge <%= t.is_active ? 'badge-ok' : 'badge-muted' %>"><%= t.is_active ? 'Dang ban' : 'Tam an' %></span>
+                <% if (t.is_featured) { %><span class="badge badge-info">Noi bat</span><% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,197 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<div class="container">
+  <%- include('../partials/flash') %>
+
+  <div class="row-between">
+    <div>
+      <h1 class="mono" style="margin-bottom:4px"><%= domain.domain %></h1>
+      <div>
+        <span class="badge <%= domain.status === 'active' ? 'badge-ok' : domain.status === 'expired' ? 'badge-danger' : 'badge-muted' %>"><%= domain.status %></span>
+        <% if (domain.expires_at) { %>
+          <span class="muted small">Het han: <%= domain.expires_at.slice(0, 10) %>
+            <% if (daysLeft !== null) { %>(<%= daysLeft >= 0 ? 'con ' + daysLeft + ' ngay' : 'da het han' %>)<% } %>
+          </span>
+        <% } %>
+      </div>
+    </div>
+    <div class="row">
+      <a class="btn btn-outline btn-sm" href="/control-panel/<%= domain.domain %>/whois">WHOIS</a>
+      <form method="post" action="/control-panel/<%= domain.domain %>/dong-bo">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-outline btn-sm" type="submit">Dong bo</button>
+      </form>
+      <a class="btn btn-outline btn-sm" href="/control-panel">Danh sach</a>
+    </div>
+  </div>
+
+  <% if (daysLeft !== null && daysLeft <= 30) { %>
+    <div class="alert alert-warn" style="margin-top:16px">
+      Ten mien <%= daysLeft >= 0 ? 'se het han sau ' + daysLeft + ' ngay' : 'da het han' %>.
+      Gia han ngay de tranh gian doan website va email.
+    </div>
+  <% } %>
+
+  <div class="sidebar-layout" style="margin-top:18px">
+    <div>
+      <!-- ------------------------------------------------ ban ghi DNS -->
+      <div class="card">
+        <div class="card-title">
+          <h2>Ban ghi DNS</h2>
+          <% if (dns.syncedAt) { %><span class="tiny muted">Dong bo: <%= dns.syncedAt.replace('T', ' ').slice(0, 16) %></span><% } %>
+        </div>
+
+        <% if (dns.stale) { %>
+          <div class="alert alert-error">
+            Khong doc duoc DNS tu nha dang ky: <%= dns.error %><br>
+            <span class="tiny">Dang hien thi ban luu gan nhat. He thong tam khoa thao tac sua/xoa de tranh mat ban ghi.</span>
+          </div>
+        <% } %>
+
+        <% if (!dns.records.length) { %>
+          <p class="muted small">Chua co ban ghi nao.</p>
+        <% } else { %>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Loai</th><th>Ten</th><th>Gia tri</th><th>TTL</th><th></th></tr></thead>
+              <tbody>
+                <% dns.records.forEach(function (r, idx) { %>
+                  <tr>
+                    <td><span class="badge badge-muted"><%= r.type %></span></td>
+                    <td class="mono small"><%= r.name %></td>
+                    <td class="mono small" style="word-break:break-all">
+                      <%= r.content %>
+                      <% if (r.priority !== undefined) { %><span class="tiny muted"> (uu tien <%= r.priority %>)</span><% } %>
+                    </td>
+                    <td class="small"><%= r.ttl %></td>
+                    <td class="right nowrap">
+                      <details>
+                        <summary class="btn-link tiny" style="cursor:pointer">Sua</summary>
+                        <form method="post" action="/control-panel/<%= domain.domain %>/dns/sua/<%= idx %>" style="margin-top:8px; text-align:left; min-width:260px">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <div class="field">
+                            <label>Loai</label>
+                            <select name="type">
+                              <% ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA'].forEach(function (t) { %>
+                                <option value="<%= t %>" <%= r.type === t ? 'selected' : '' %>><%= t %></option>
+                              <% }); %>
+                            </select>
+                          </div>
+                          <div class="field"><label>Ten</label><input type="text" name="name" value="<%= r.name %>"></div>
+                          <div class="field"><label>Gia tri</label><input type="text" name="content" value="<%= r.content %>" required></div>
+                          <div class="row">
+                            <div class="field" style="flex:1"><label>TTL</label><input type="number" name="ttl" value="<%= r.ttl %>"></div>
+                            <div class="field" style="flex:1"><label>Uu tien</label><input type="number" name="priority" value="<%= r.priority !== undefined ? r.priority : '' %>"></div>
+                          </div>
+                          <button class="btn btn-sm btn-block" type="submit" <%= dns.stale ? 'disabled' : '' %>>Luu</button>
+                        </form>
+                      </details>
+                      <form method="post" action="/control-panel/<%= domain.domain %>/dns/xoa/<%= idx %>"
+                            data-confirm="Xoa ban ghi <%= r.type %> <%= r.name %>?" style="display:inline">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button class="btn-link tiny" type="submit" style="color:var(--danger)" <%= dns.stale ? 'disabled' : '' %>>Xoa</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        <% } %>
+
+        <h3 class="section-heading">Them ban ghi moi</h3>
+        <form method="post" action="/control-panel/<%= domain.domain %>/dns/them">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="row" style="align-items:flex-end">
+            <div class="field" style="width:120px; margin:0">
+              <label>Loai</label>
+              <select name="type" data-record-type data-priority-target="#priority-wrap">
+                <% ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA'].forEach(function (t) { %>
+                  <option value="<%= t %>"><%= t %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="field" style="width:150px; margin:0">
+              <label>Ten</label>
+              <input type="text" name="name" value="@" placeholder="@ hoac www">
+            </div>
+            <div class="field" style="flex:1; min-width:200px; margin:0">
+              <label>Gia tri</label>
+              <input type="text" name="content" placeholder="103.28.36.1" required>
+            </div>
+            <div class="field" style="width:100px; margin:0">
+              <label>TTL</label>
+              <input type="number" name="ttl" value="3600">
+            </div>
+            <div class="field" style="width:100px; margin:0; display:none" id="priority-wrap">
+              <label>Uu tien</label>
+              <input type="number" name="priority" value="10">
+            </div>
+            <button class="btn" type="submit" <%= dns.stale ? 'disabled' : '' %>>Them</button>
+          </div>
+          <p class="hint">Dung <code>@</code> cho chinh ten mien. Thay doi DNS thuong co hieu luc sau 5 phut den 24 gio.</p>
+        </form>
+      </div>
+    </div>
+
+    <aside>
+      <!-- ------------------------------------------------ nameserver -->
+      <div class="card">
+        <div class="card-title"><h2>Nameserver</h2></div>
+        <form method="post" action="/control-panel/<%= domain.domain %>/nameservers">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field">
+            <label>Danh sach nameserver (moi dong mot ten)</label>
+            <textarea name="nameservers" rows="4" class="mono"><%= (ns.length ? ns : defaultNs).join('\n') %></textarea>
+            <div class="hint">Toi thieu 2 nameserver. De trong ve mac dinh cua he thong: <%= defaultNs.join(', ') %></div>
+          </div>
+          <button class="btn btn-block" type="submit" data-confirm="Doi nameserver se lam website/email gian doan neu cau hinh sai. Tiep tuc?">Cap nhat nameserver</button>
+        </form>
+      </div>
+
+      <!-- ------------------------------------------------ gia han -->
+      <div class="card">
+        <div class="card-title"><h2>Gia han</h2></div>
+        <% if (renewPrice) { %>
+          <div class="copy-row">
+            <span class="label">Phi gia han / nam</span>
+            <span class="value"><%= formatVnd(renewPrice.total) %></span>
+          </div>
+        <% } %>
+        <form method="post" action="/control-panel/<%= domain.domain %>/gia-han" style="margin-top:12px">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field">
+            <label>So nam gia han</label>
+            <select name="years">
+              <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> nam</option><% } %>
+            </select>
+          </div>
+          <button class="btn btn-block" type="submit">Them vao gio hang</button>
+        </form>
+
+        <form method="post" action="/control-panel/<%= domain.domain %>/tu-dong-gia-han" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line)">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="auto_renew" value="<%= domain.auto_renew ? '0' : '1' %>">
+          <div class="row-between">
+            <span class="small">Gia han tu dong: <strong><%= domain.auto_renew ? 'Dang bat' : 'Dang tat' %></strong></span>
+            <button class="btn btn-sm btn-outline" type="submit"><%= domain.auto_renew ? 'Tat' : 'Bat' %></button>
+          </div>
+          <p class="tiny muted" style="margin:8px 0 0">Khi bat, he thong se nhac gia han truoc han va uu tien xu ly cho ten mien nay.</p>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><h3>Thong tin</h3></div>
+        <div class="copy-row"><span class="label">Ngay dang ky</span><span class="value small"><%= domain.registered_at ? domain.registered_at.slice(0, 10) : '-' %></span></div>
+        <div class="copy-row"><span class="label">Ngay het han</span><span class="value small"><%= domain.expires_at ? domain.expires_at.slice(0, 10) : '-' %></span></div>
+        <div class="copy-row"><span class="label">Nha dang ky</span><span class="value small">P.A Viet Nam</span></div>
+        <% if (domain.provider_ref) { %>
+          <div class="copy-row"><span class="label">Ma tham chieu</span><span class="value small"><%= domain.provider_ref %></span></div>
+        <% } %>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
