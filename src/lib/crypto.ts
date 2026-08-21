@@ -81,7 +81,7 @@ export function decryptSecret(payload: string): string {
   return Buffer.concat([decipher.update(Buffer.from(dataB, 'base64url')), decipher.final()]).toString('utf8');
 }
 
-/** Che bot secret khi hien thi/ghi log: f8237f66... -> f823****dae8 */
+/** Che bot secret khi hien thi/ghi log: abcd1234...wxyz -> abcd****wxyz */
 export function maskSecret(s: string): string {
   if (!s) return '';
   if (s.length <= 8) return '****';

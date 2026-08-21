@@ -1,0 +1,35 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+
+<div class="container container-narrow">
+  <div class="card center">
+    <% if (outcome === 'ok') { %>
+      <div style="font-size:44px; line-height:1">&#10003;</div>
+      <h1>Xac thuc thanh cong</h1>
+      <p class="muted">Dia chi email cua ban da duoc xac nhan. Tu bay gio ban se nhan duoc
+        thong tin quan tri ten mien, canh bao het han va hoa don qua email nay.</p>
+      <a class="btn btn-lg" href="<%= loggedIn ? '/dashboard' : '/dang-nhap' %>">
+        <%= loggedIn ? 'Vao bang dieu khien' : 'Dang nhap' %>
+      </a>
+
+    <% } else if (outcome === 'already_verified') { %>
+      <h1>Email da duoc xac thuc</h1>
+      <p class="muted">Dia chi email nay da duoc xac thuc truoc do. Ban khong can lam gi them.</p>
+      <a class="btn" href="<%= loggedIn ? '/dashboard' : '/dang-nhap' %>">Tiep tuc</a>
+
+    <% } else if (outcome === 'expired') { %>
+      <h1>Lien ket da het han</h1>
+      <p class="muted">Lien ket xac thuc chi co hieu luc trong 24 gio.
+        Dang nhap roi bam <strong>Gui lai email xac thuc</strong> de nhan lien ket moi.</p>
+      <a class="btn" href="/dang-nhap">Dang nhap de gui lai</a>
+
+    <% } else { %>
+      <h1>Lien ket khong hop le</h1>
+      <p class="muted">Lien ket nay khong dung, da duoc dung roi, hoac ban da doi dia chi email
+        ke tu luc nhan thu. Dang nhap de yeu cau gui lai lien ket moi.</p>
+      <a class="btn" href="/dang-nhap">Dang nhap</a>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

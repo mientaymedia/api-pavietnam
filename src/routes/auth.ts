@@ -7,7 +7,9 @@ import { destroySession, flash, loginSession } from '../middleware/session.js';
 import { rateLimit } from '../middleware/ratelimit.js';
 import { wrap } from '../middleware/error.js';
 import { mergeCart } from '../services/cart.js';
-import { sendPasswordReset, sendWelcome } from '../services/notifications.js';
+import { sendEmailVerification, sendPasswordReset, sendWelcome } from '../services/notifications.js';
+import { canResend, consumeToken, isVerified, issueToken } from '../services/verification.js';
+import { requireAuth } from '../middleware/auth.js';
 import { audit } from '../services/audit.js';
 
 const router = Router();
@@ -74,9 +76,12 @@ router.post(
     mergeCart(guestCart, `user:${userId}`, userId);
 
     audit({ userId, action: 'user.register', entity: 'user', entityId: userId, ip: req.ip });
-    void sendWelcome({ id: userId, email, full_name });
 
-    flash(req, 'success', 'Tao tai khoan thanh cong. Chao mung ban!');
+    // Email xac thuc gui truoc; email chao mung gui sau khi xac thuc xong
+    // -> khach khong nhan hai email cung luc.
+    void sendEmailVerification({ id: userId, email, full_name }, issueToken({ id: userId, email }));
+
+    flash(req, 'success', `Tao tai khoan thanh cong. Chung toi da gui email xac thuc toi ${email}.`);
     res.redirect(safeNext(req.body?.next));
   }),
 );
@@ -200,6 +205,64 @@ router.post(
     audit({ userId: row.user_id, action: 'user.password_reset', entity: 'user', entityId: row.user_id, ip: req.ip });
     flash(req, 'success', 'Doi mat khau thanh cong. Vui long dang nhap lai.');
     res.redirect('/dang-nhap');
+  }),
+);
+
+/* ------------------------------------------------------ xac thuc email */
+
+router.get(
+  '/xac-thuc-email',
+  rateLimit({ windowMs: 60_000, max: 20 }),
+  wrap(async (req, res) => {
+    const outcome = consumeToken(String(req.query['token'] ?? ''));
+
+    if (outcome.status === 'ok') {
+      const user = db.prepare('SELECT id, email, full_name FROM users WHERE id = ?').get(outcome.userId) as
+        { id: number; email: string; full_name: string };
+      audit({ userId: outcome.userId, action: 'user.email_verified', entity: 'user', entityId: outcome.userId, ip: req.ip });
+      void sendWelcome(user);
+    }
+
+    res.status(outcome.status === 'ok' || outcome.status === 'already_verified' ? 200 : 400);
+    res.render('auth/verify-result', {
+      title: 'Xac thuc email',
+      outcome: outcome.status,
+      loggedIn: Boolean(req.currentUser),
+    });
+  }),
+);
+
+router.post(
+  '/gui-lai-xac-thuc',
+  requireAuth,
+  rateLimit({ windowMs: 3600_000, max: 10, message: 'Ban da yeu cau gui lai qua nhieu lan. Vui long thu lai sau.' }),
+  wrap(async (req, res) => {
+    const user = req.currentUser!;
+
+    if (isVerified(user.id)) {
+      flash(req, 'info', 'Email cua ban da duoc xac thuc roi.');
+      return res.redirect('/tai-khoan');
+    }
+
+    const { allowed, sentLastHour } = canResend(user.id);
+    if (!allowed) {
+      flash(req, 'error', `Da gui ${sentLastHour} email xac thuc trong mot gio qua. Vui long doi roi thu lai.`);
+      return res.redirect('/tai-khoan');
+    }
+
+    const sent = await sendEmailVerification(
+      { id: user.id, email: user.email, full_name: user.full_name },
+      issueToken({ id: user.id, email: user.email }),
+    );
+
+    flash(
+      req,
+      sent ? 'success' : 'error',
+      sent
+        ? `Da gui lai email xac thuc toi ${user.email}. Kiem tra ca thu muc spam giup chung toi.`
+        : 'Khong gui duoc email. Vui long lien he ho tro hoac kiem tra cau hinh SMTP.',
+    );
+    res.redirect('/tai-khoan');
   }),
 );
 

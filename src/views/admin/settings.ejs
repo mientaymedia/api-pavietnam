@@ -23,7 +23,9 @@
         { key: 'sepay.',   title: 'Thanh toan chuyen khoan (SePay)', note: '' },
         { key: 'momo.',    title: 'Vi MoMo', note: '' },
         { key: 'zalopay.', title: 'ZaloPay', note: '' },
-        { key: 'smtp.',    title: 'Email (SMTP)', note: 'Dung de gui thong tin quan tri ten mien, nhac gia han va canh bao noi bo.' }
+        { key: 'auth.',    title: 'Xac thuc tai khoan', note: 'Email la kenh giao thong tin quan tri ten mien - email sai dong nghia khach mat lien lac voi tai san cua ho.' },
+        { key: 'smtp.',    title: 'Email (SMTP)', note: 'Dung de gui email xac thuc, thong tin quan tri ten mien, nhac gia han va canh bao noi bo.' },
+        { key: 'zns.',     title: 'Zalo ZNS', note: 'Gui thong bao qua Zalo Official Account. Can duyet mau tin truoc khi gui duoc.' }
       ];
     %>
 
@@ -85,6 +87,86 @@
       </div>
     </div>
   </form>
+
+  <div class="card">
+    <div class="card-title"><h2>Gui thu email (kiem tra SMTP)</h2></div>
+    <p class="muted small">Gui mot email that de xac nhan host, port, tai khoan va mat khau ung dung da dung.</p>
+    <form method="post" action="/admin/cau-hinh/kiem-tra-smtp">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="flex:1; margin:0">
+          <label>Gui toi dia chi</label>
+          <input type="email" name="test_email" value="<%= currentUser.email %>" required>
+        </div>
+        <button class="btn btn-outline" type="submit">Gui email thu</button>
+      </div>
+    </form>
+    <div class="alert alert-info tiny" style="margin:14px 0 0">
+      <strong>Dung Gmail?</strong> Username phai la <u>dia chi email day du</u> (vd
+      <code>hello@mientaymedia.com</code>), khong phai ten tai khoan. Va dia chi o o
+      <em>From Mail</em> phai duoc khai bao san trong Gmail (Settings &rarr; Accounts &rarr;
+      "Send mail as") - neu khong Gmail se tu doi nguoi gui thanh dia chi that, lam email
+      de roi vao spam.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">
+      <h2>Mau tin ZNS</h2>
+      <span class="badge <%= znsReady ? 'badge-ok' : 'badge-muted' %>"><%= znsReady ? 'Da san sang' : 'Chua cau hinh' %></span>
+    </div>
+    <p class="muted small">
+      Tao mau tin tai <a href="https://business.zalo.me" target="_blank" rel="noopener">business.zalo.me</a>,
+      cho Zalo duyet, roi dan template ID vao day. <strong>Ten tham so cua mau phai dung y nhu cot "Tham so"</strong> -
+      sai ten thi Zalo tra loi <code>-213</code>.
+    </p>
+
+    <form method="post" action="/admin/cau-hinh/zns-template">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Su kien</th><th style="width:170px">Template ID</th><th>Tham so bat buoc</th><th>Goi y noi dung</th></tr></thead>
+          <tbody>
+            <% znsEvents.forEach(function (e) { %>
+              <tr>
+                <td><strong><%= e.label %></strong><div class="tiny muted mono"><%= e.event %></div></td>
+                <td><input type="text" name="<%= e.settingKey %>" value="<%= e.templateId %>" placeholder="vd 123456"></td>
+                <td class="tiny mono"><%= e.params.join(', ') %></td>
+                <td class="tiny muted"><%= e.sample %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <button class="btn" type="submit" style="margin-top:14px">Luu template ID</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Gui thu ZNS</h2></div>
+    <p class="muted small">
+      Zalo chi gui duoc toi so da tung tuong tac voi Official Account cua ban va chua chan OA.
+    </p>
+    <form method="post" action="/admin/cau-hinh/kiem-tra-zns">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="row" style="align-items:flex-end">
+        <div class="field" style="width:200px; margin:0">
+          <label>So dien thoai</label>
+          <input type="text" name="test_phone" placeholder="0901234567" required>
+        </div>
+        <div class="field" style="flex:1; margin:0">
+          <label>Dung mau cua su kien</label>
+          <select name="test_event">
+            <% znsEvents.forEach(function (e) { %>
+              <option value="<%= e.event %>" <%= e.event === 'domain_activated' ? 'selected' : '' %>><%= e.label %></option>
+            <% }); %>
+          </select>
+        </div>
+        <button class="btn btn-outline" type="submit">Gui ZNS thu</button>
+      </div>
+    </form>
+    <p class="tiny muted" style="margin:10px 0 0">Ket qua chi tiet xem tai <a href="/admin/zns">Nhat ky ZNS</a>.</p>
+  </div>
 
   <div class="card">
     <div class="card-title"><h2>Kiem tra ket noi API P.A</h2></div>

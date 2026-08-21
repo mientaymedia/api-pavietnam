@@ -9,6 +9,7 @@ import { errorHandler, notFound } from './middleware/error.js';
 import { settings } from './lib/settings.js';
 import { getCart } from './services/cart.js';
 import { formatVnd } from './lib/money.js';
+import { isVerified } from './services/verification.js';
 
 import homeRoutes from './routes/home.js';
 import authRoutes from './routes/auth.js';
@@ -68,6 +69,8 @@ export function createApp() {
     res.locals['currentPath'] = req.path;
     res.locals['appUrl'] = config.appUrl;
     res.locals['csrfToken'] = '';
+    // Hien dai nhac xac thuc email tren moi trang khi khach chua xac thuc
+    res.locals['needsEmailVerify'] = Boolean(req.currentUser) && !isVerified(req.currentUser!.id);
     next();
   });
 

@@ -216,6 +216,24 @@ Danh sach day du: [docs/API-REST.md](docs/API-REST.md).
 
 ---
 
+## 6b. Thong bao: Email va Zalo ZNS
+
+**Email** la kenh chinh (bat buoc). **Zalo ZNS** la kenh phu, bat khi can.
+Ca hai deu khong bao gio lam hong luong nghiep vu khi gui that bai.
+
+- **Xac thuc email khi dang ky**: gui ngay luc tao tai khoan, hieu luc 24 gio,
+  co dai nhac va nut gui lai (gioi han 5 lan/gio). Tuy chon **bat buoc xac thuc
+  truoc khi dat hang** - mac dinh tat.
+- **ZNS**: gui thong bao vao Zalo cho 6 su kien (don moi, da thanh toan, ten mien
+  kich hoat, nhac gia han, tu dong gia han, dang ky that bai).
+
+Ca SMTP lan ZNS deu co **nut gui thu ngay tren giao dien** _Cau hinh Control Panel_.
+
+Huong dan chi tiet - ke ca ba loi hay gap khi dung Gmail va cach xu ly
+refresh token cua Zalo: [docs/EMAIL-ZNS.md](docs/EMAIL-ZNS.md).
+
+---
+
 ## 7. Kien truc
 
 ```

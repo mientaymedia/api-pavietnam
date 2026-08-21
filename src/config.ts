@@ -94,6 +94,13 @@ export const config = {
     endpoint: str('ZALOPAY_ENDPOINT', 'https://sb-openapi.zalopay.vn/v2/create'),
   },
 
+  zns: {
+    enabled: bool('ZNS_ENABLED', false),
+    appId: str('ZNS_APP_ID'),
+    secretKey: str('ZNS_SECRET_KEY'),
+    refreshToken: str('ZNS_REFRESH_TOKEN'),
+  },
+
   seedAdmin: {
     email: str('ADMIN_EMAIL', 'admin@example.vn'),
     password: str('ADMIN_PASSWORD', ''),

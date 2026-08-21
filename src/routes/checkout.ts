@@ -8,6 +8,7 @@ import { createOrderFromCart } from '../services/orders.js';
 import { computeDiscount, findCoupon } from '../services/pricing.js';
 import { contactSchema, fieldErrors } from '../lib/validate.js';
 import { getProvider, settlePayment } from '../payments/index.js';
+import { isVerified, requireVerifiedToOrder } from '../services/verification.js';
 import { kickWorker } from '../jobs/worker.js';
 
 const router = Router();
@@ -66,6 +67,13 @@ router.post(
     if (!cart.lines.length) {
       flash(req, 'error', 'Gio hang dang trong.');
       return res.redirect('/');
+    }
+
+    // Ten mien duoc quan ly qua email; dat hang bang email chua xac thuc de
+    // dan den mat lien lac voi tai san cua chinh khach.
+    if (requireVerifiedToOrder() && !isVerified(userId)) {
+      flash(req, 'error', 'Vui long xac thuc dia chi email truoc khi dat hang. Kiem tra hop thu cua ban.');
+      return res.redirect('/thanh-toan');
     }
 
     let contactId = Number(req.body?.contact_id) || null;

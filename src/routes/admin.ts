@@ -29,6 +29,9 @@ import { kickWorker } from '../jobs/worker.js';
 import { credit } from '../payments/balance.js';
 import { audit } from '../services/audit.js';
 import { buildSepayQrUrl } from '../payments/sepay.js';
+import { sendMail } from '../lib/mailer.js';
+import { isZnsReady, normalizePhone, sendZns } from '../lib/zns.js';
+import { ZNS_EVENTS, ZNS_EVENT_LIST } from '../services/znsEvents.js';
 import { config } from '../config.js';
 
 const router = Router();
@@ -105,6 +108,16 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'zalopay.key2', label: 'ZaloPay Key2', type: 'password' },
   { key: 'zalopay.endpoint', label: 'ZaloPay endpoint' },
 
+  // Xac thuc tai khoan
+  { key: 'auth.require_email_verified', label: 'Bat buoc xac thuc email truoc khi dat hang', type: 'checkbox' },
+  { key: 'auth.verify_resend_per_hour', label: 'So lan gui lai email xac thuc / gio', type: 'number' },
+
+  // ZNS - Zalo Notification Service
+  { key: 'zns.enabled', label: 'Bat gui tin qua Zalo (ZNS)', type: 'checkbox' },
+  { key: 'zns.app_id', label: 'Zalo App ID' },
+  { key: 'zns.secret_key', label: 'Zalo Secret Key', type: 'password' },
+  { key: 'zns.refresh_token', label: 'Zalo Refresh Token', type: 'password', hint: 'Zalo doi token nay moi lan dung - he thong tu luu lai ban moi' },
+
   // Email
   { key: 'smtp.host', label: 'SMTP host' },
   { key: 'smtp.port', label: 'SMTP port', type: 'number' },
@@ -152,7 +165,22 @@ router.get('/cau-hinh', (_req, res) => {
     secretKeys: SECRET_KEYS,
     webhookUrl: `${config.appUrl}/webhooks/sepay`,
     qrPreview: buildSepayQrUrl({ amount: 10000, addInfo: 'DHTEST01' }),
+    znsEvents: ZNS_EVENT_LIST.map((e) => ({ ...e, templateId: getSetting(e.settingKey, '') })),
+    znsReady: isZnsReady(),
   });
+});
+
+/** Luu rieng cac template ID cua ZNS (danh sach dong theo su kien). */
+router.post('/cau-hinh/zns-template', (req, res) => {
+  const body = (req.body ?? {}) as Record<string, string>;
+  const updates: Record<string, string> = {};
+  for (const e of ZNS_EVENT_LIST) {
+    const v = body[e.settingKey];
+    if (v !== undefined) updates[e.settingKey] = v.trim();
+  }
+  setSettings(updates);
+  flash(req, 'success', 'Da luu template ID cua ZNS.');
+  res.redirect('/admin/cau-hinh');
 });
 
 router.post('/cau-hinh', (req, res) => {
@@ -213,6 +241,77 @@ router.post(
           'Kiem tra lai username/API Key va IP da duoc P.A whitelist chua.',
       );
     }
+    res.redirect('/admin/cau-hinh');
+  }),
+);
+
+/** Gui thu mot email de kiem tra cau hinh SMTP ngay tren giao dien. */
+router.post(
+  '/cau-hinh/kiem-tra-smtp',
+  wrap(async (req, res) => {
+    const to = String(req.body?.test_email ?? '').trim() || req.currentUser!.email;
+    const s = settings.smtp();
+
+    const ok = await sendMail({
+      to,
+      template: 'smtp_test',
+      subject: `[${settings.site().name}] Thu cau hinh SMTP`,
+      html:
+        `<p>Neu ban doc duoc email nay, cau hinh SMTP da hoat dong.</p>` +
+        `<p>May chu: <b>${s.host}:${s.port}</b> (${s.secure ? 'SSL/TLS' : 'khong ma hoa'})<br>` +
+        `Gui tu: <b>${s.from}</b></p>`,
+    });
+
+    if (ok) {
+      flash(req, 'success', `Da gui email thu toi ${to}. Kiem tra hop thu (ca thu muc spam).`);
+    } else {
+      const last = db.prepare(`SELECT error FROM email_logs WHERE status='failed' ORDER BY id DESC LIMIT 1`)
+        .get() as { error: string } | undefined;
+      flash(req, 'error', `Gui that bai. ${last?.error ?? 'Kiem tra host, port, tai khoan va mat khau ung dung.'}`);
+    }
+    res.redirect('/admin/cau-hinh');
+  }),
+);
+
+/** Gui thu mot tin ZNS de kiem tra ket noi Zalo. */
+router.post(
+  '/cau-hinh/kiem-tra-zns',
+  wrap(async (req, res) => {
+    const phone = String(req.body?.test_phone ?? '').trim();
+    const event = String(req.body?.test_event ?? 'domain_activated') as keyof typeof ZNS_EVENTS;
+    const spec = ZNS_EVENTS[event] ?? ZNS_EVENTS.domain_activated;
+
+    if (!normalizePhone(phone)) {
+      flash(req, 'error', 'So dien thoai khong hop le. Dung dang 0901234567 hoac 84901234567.');
+      return res.redirect('/admin/cau-hinh');
+    }
+
+    // Dien du lieu mau cho dung cac tham so ma mau tin khai bao
+    const templateData: Record<string, string> = {};
+    for (const key of spec.params) {
+      templateData[key] = key === 'amount' ? '100.000 d'
+        : key.includes('domain') ? 'vidu-thu.vn'
+        : key.includes('date') || key.includes('expires') ? new Date().toISOString().slice(0, 10)
+        : key.includes('days') ? '7'
+        : key.includes('order') ? 'DHTHU001'
+        : 'thu-nghiem';
+    }
+
+    const result = await sendZns({
+      phone,
+      templateId: getSetting(spec.settingKey, ''),
+      templateData,
+      event: `test_${event}`,
+      userId: req.currentUser!.id,
+    });
+
+    flash(
+      req,
+      result.ok ? 'success' : 'error',
+      result.ok
+        ? `Da gui ZNS thu toi ${phone} (msg_id: ${result.msgId ?? '-'}). Kiem tra Zalo cua so nay.`
+        : `Gui ZNS that bai: ${result.error ?? 'khong ro nguyen nhan'}`,
+    );
     res.redirect('/admin/cau-hinh');
   }),
 );
@@ -452,6 +551,14 @@ router.get('/giao-dich', (_req, res) => {
   res.render('admin/bank-transactions', {
     title: 'Doi soat ngan hang',
     transactions: db.prepare('SELECT * FROM bank_transactions ORDER BY id DESC LIMIT 200').all(),
+  });
+});
+
+router.get('/zns', (_req, res) => {
+  res.render('admin/zns-logs', {
+    title: 'Nhat ky ZNS',
+    logs: db.prepare('SELECT * FROM zns_logs ORDER BY id DESC LIMIT 200').all(),
+    ready: isZnsReady(),
   });
 });
 

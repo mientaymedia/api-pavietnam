@@ -45,6 +45,38 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
 
+-- Token xac thuc dia chi email khi dang ky
+CREATE TABLE IF NOT EXISTS email_verifications (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  email       TEXT NOT NULL,              -- luu email tai thoi diem gui, phong khi user doi email
+  token_hash  TEXT NOT NULL UNIQUE,
+  expires_at  TEXT NOT NULL,
+  used_at     TEXT,
+  sent_count  INTEGER NOT NULL DEFAULT 1,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_email_verif_user ON email_verifications(user_id);
+
+-- Nhat ky gui ZNS (Zalo Notification Service)
+CREATE TABLE IF NOT EXISTS zns_logs (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id      INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  phone        TEXT NOT NULL,
+  event        TEXT NOT NULL DEFAULT '',   -- order_created | payment_received | domain_activated | ...
+  template_id  TEXT NOT NULL DEFAULT '',
+  tracking_id  TEXT NOT NULL DEFAULT '',
+  msg_id       TEXT NOT NULL DEFAULT '',
+  status       TEXT NOT NULL DEFAULT 'sent'
+               CHECK (status IN ('sent','failed','skipped')),
+  error_code   TEXT NOT NULL DEFAULT '',
+  error        TEXT NOT NULL DEFAULT '',
+  request      TEXT NOT NULL DEFAULT '',
+  response     TEXT NOT NULL DEFAULT '',
+  created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_zns_logs_created ON zns_logs(created_at);
+
 -- Token cho REST API rieng cua khach hang (de ho tu build front-end)
 CREATE TABLE IF NOT EXISTS api_tokens (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,

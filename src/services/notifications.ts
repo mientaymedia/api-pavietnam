@@ -7,6 +7,9 @@ import { formatVnd } from '../lib/money.js';
 import { sendMail } from '../lib/mailer.js';
 import { settings } from '../lib/settings.js';
 import { db } from '../db/index.js';
+import { getSetting } from '../lib/settings.js';
+import { sendZns } from '../lib/zns.js';
+import { ZNS_EVENTS, type ZnsEvent } from './znsEvents.js';
 
 function esc(s: unknown): string {
   return String(s ?? '')
@@ -67,6 +70,38 @@ export async function sendWelcome(user: { id: number; email: string; full_name: 
   });
 }
 
+/**
+ * Email xac thuc dia chi email khi dang ky.
+ * Day la email dau tien khach nhan duoc, nen cung la phep thu SMTP tot nhat.
+ */
+export async function sendEmailVerification(
+  user: { id: number; email: string; full_name: string },
+  token: string,
+): Promise<boolean> {
+  const site = settings.site();
+  const link = url(`/xac-thuc-email?token=${encodeURIComponent(token)}`);
+
+  return sendMail({
+    to: user.email,
+    userId: user.id,
+    template: 'email_verification',
+    subject: `Xac thuc dia chi email cho tai khoan ${site.name}`,
+    html: layout('Xac thuc dia chi email', `
+      <p>Xin chao <b>${esc(user.full_name || user.email)}</b>,</p>
+      <p>Vui long xac nhan day la dia chi email cua ban. He thong dung email nay de gui
+         <b>thong tin quan tri ten mien</b>: ngay het han, nameserver, canh bao va hoa don.</p>
+      ${button('Xac thuc email cua toi', link)}
+      <p style="font-size:13px;color:#6b7280;">
+        Neu nut tren khong bam duoc, sao chep lien ket sau vao trinh duyet:<br>
+        <span style="word-break:break-all;font-family:monospace;font-size:12px;">${esc(link)}</span>
+      </p>
+      <p style="font-size:13px;color:#6b7280;">
+        Lien ket co hieu luc trong <b>24 gio</b>. Neu ban khong tao tai khoan nao, hay bo qua email nay.
+      </p>
+    `),
+  });
+}
+
 export async function sendPasswordReset(user: { id: number; email: string }, token: string): Promise<void> {
   await sendMail({
     to: user.email,
@@ -109,6 +144,12 @@ export async function sendOrderCreated(order: {
       ${button('Xem chi tiet don hang', url(`/don-hang/${order.code}`))}
     `),
   });
+
+  await notifyZns('order_created', order.user_id, {
+    order_code: order.code,
+    amount: formatVnd(order.total),
+    domain: firstDomainOf(order.id),
+  }, `order-${order.code}`);
 }
 
 export async function sendPaymentReceived(order: { id: number; code: string; total: number; user_id: number }, email: string): Promise<void> {
@@ -123,6 +164,11 @@ export async function sendPaymentReceived(order: { id: number; code: string; tot
       ${button('Theo doi don hang', url(`/don-hang/${order.code}`))}
     `),
   });
+
+  await notifyZns('payment_received', order.user_id, {
+    order_code: order.code,
+    amount: formatVnd(order.total),
+  }, `paid-${order.code}`);
 }
 
 /**
@@ -156,6 +202,11 @@ export async function sendDomainActivated(input: {
       ${site.hotline ? `<p style="font-size:13px;color:#6b7280;">Can ho tro? Goi ${esc(site.hotline)}.</p>` : ''}
     `),
   });
+
+  await notifyZns('domain_activated', input.userId, {
+    domain: input.domain,
+    expires_at: input.expiresAt ? input.expiresAt.slice(0, 10) : 'dang cap nhat',
+  }, `active-${input.domain}`);
 }
 
 /** Da gui yeu cau chuyen ten mien - con cho nha dang ky cu duyet. */
@@ -196,6 +247,11 @@ export async function sendProvisionFailed(input: {
       ${button('Xem don hang', url(`/don-hang/${input.orderCode}`))}
     `),
   });
+  await notifyZns('provision_failed', input.userId, {
+    domain: input.domain,
+    order_code: input.orderCode,
+  }, `failed-${input.orderCode}-${input.domain}`);
+
   await alertAdmin(`Dang ky that bai: ${input.domain}`, `
     <p>Don hang <b>${esc(input.orderCode)}</b> - ten mien <b>${esc(input.domain)}</b> dang ky that bai.</p>
     <pre style="background:#f3f4f6;padding:12px;border-radius:8px;white-space:pre-wrap;font-size:12px;">${esc(input.error)}</pre>
@@ -217,6 +273,12 @@ export async function sendRenewalReminder(input: {
       ${button('Gia han ngay', url(`/control-panel/${encodeURIComponent(input.domain)}/gia-han`))}
     `),
   });
+
+  await notifyZns('renewal_reminder', input.userId, {
+    domain: input.domain,
+    expires_at: input.expiresAt.slice(0, 10),
+    days_left: input.daysLeft,
+  }, `remind-${input.domain}-${input.daysLeft}`);
 }
 
 /** Da tru vi va gia han thanh cong. */
@@ -240,6 +302,12 @@ export async function sendAutoRenewCharged(input: {
       ${button('Xem don hang', url(`/don-hang/${input.orderCode}`))}
     `),
   });
+
+  await notifyZns('auto_renew_charged', input.userId, {
+    domain: input.domain,
+    amount: formatVnd(input.amount),
+    expires_at: new Date(Date.now() + input.years * 365 * 864e5).toISOString().slice(0, 10),
+  }, `autorenew-${input.orderCode}`);
 }
 
 /** Bat gia han tu dong nhung so du khong du - can khach thanh toan. */
@@ -271,8 +339,48 @@ export async function alertAdmin(subject: string, bodyHtml: string): Promise<voi
   await sendMail({ to, template: 'admin_alert', subject: `[${settings.site().name}] ${subject}`, html: layout(subject, bodyHtml) });
 }
 
+/** Ten mien dau tien trong don - dung lam noi dung tom tat cho tin ZNS. */
+function firstDomainOf(orderId: number): string {
+  const rows = db.prepare('SELECT domain FROM order_items WHERE order_id = ? ORDER BY id').all(orderId) as
+    { domain: string }[];
+  if (!rows.length) return '';
+  return rows.length === 1 ? rows[0]!.domain : `${rows[0]!.domain} +${rows.length - 1}`;
+}
+
 /** Tien ich: lay email cua chu tai khoan. */
 export function userEmail(userId: number): string {
-  const row = db.prepare('SELECT email FROM users WHERE id = ?').get(userId) as { email: string } | undefined;
-  return row?.email ?? '';
+  return userContact(userId).email;
+}
+
+/** Email + so dien thoai cua chu tai khoan (ZNS gui theo so dien thoai). */
+export function userContact(userId: number): { email: string; phone: string } {
+  const row = db.prepare('SELECT email, phone FROM users WHERE id = ?').get(userId) as
+    | { email: string; phone: string }
+    | undefined;
+  return { email: row?.email ?? '', phone: row?.phone ?? '' };
+}
+
+/**
+ * Gui ZNS cho mot su kien.
+ *
+ * Khong nem loi: ZNS la kenh phu, that bai khong duoc lam hong luong nghiep vu.
+ * Tu bo qua khi chua bat ZNS, chua khai template ID, hoac khach khong co so dien thoai.
+ */
+async function notifyZns(
+  event: ZnsEvent,
+  userId: number,
+  data: Record<string, string | number>,
+  trackingId?: string,
+): Promise<void> {
+  const { phone } = userContact(userId);
+  if (!phone) return;
+
+  await sendZns({
+    phone,
+    templateId: getSetting(ZNS_EVENTS[event].settingKey, ''),
+    templateData: data,
+    event,
+    userId,
+    ...(trackingId ? { trackingId } : {}),
+  });
 }

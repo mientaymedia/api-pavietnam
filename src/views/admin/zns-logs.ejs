@@ -1,0 +1,53 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Nhat ky ZNS</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <% if (!ready) { %>
+    <div class="alert alert-warn">
+      ZNS chua duoc bat hoac chua cau hinh day du.
+      Vao <a href="/admin/cau-hinh">Cau hinh Control Panel</a> de dien App ID, Secret Key, Refresh Token
+      va template ID cho tung su kien.
+    </div>
+  <% } %>
+
+  <div class="card">
+    <p class="muted small">
+      Moi lan gui deu duoc ghi lai, ke ca truong hop bi bo qua (khach khong co so dien thoai,
+      chua khai template ID). Xem cot <em>Ket qua</em> de biet ly do.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Thoi gian</th><th>Su kien</th><th>So dien thoai</th><th>Template</th><th>Ket qua</th><th>Ghi chu</th></tr>
+        </thead>
+        <tbody>
+          <% if (!logs.length) { %>
+            <tr><td colspan="6" class="muted center">Chua gui tin ZNS nao.</td></tr>
+          <% } %>
+          <% logs.forEach(function (l) { %>
+            <tr>
+              <td class="small nowrap"><%= l.created_at.replace('T', ' ').slice(0, 16) %></td>
+              <td class="small mono"><%= l.event %></td>
+              <td class="mono small"><%= l.phone %></td>
+              <td class="tiny mono muted"><%= l.template_id || '-' %></td>
+              <td>
+                <span class="badge <%= l.status === 'sent' ? 'badge-ok' : l.status === 'skipped' ? 'badge-muted' : 'badge-danger' %>">
+                  <%= l.status === 'sent' ? 'Da gui' : l.status === 'skipped' ? 'Bo qua' : 'That bai' %>
+                </span>
+                <% if (l.msg_id) { %><div class="tiny muted mono"><%= l.msg_id %></div><% } %>
+              </td>
+              <td class="tiny" style="max-width:320px; word-break:break-word; color:<%= l.status === 'failed' ? 'var(--danger)' : 'var(--ink-soft)' %>">
+                <%= l.error %><% if (l.error_code) { %> <span class="muted">[<%= l.error_code %>]</span><% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

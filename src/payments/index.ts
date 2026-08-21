@@ -3,7 +3,7 @@ import { db, isoIn, nowIso, tx } from '../db/index.js';
 import { log } from '../lib/logger.js';
 import { settings } from '../lib/settings.js';
 import { getOrder, getOrderByCode, markOrderPaid, type Order } from '../services/orders.js';
-import { sendPaymentReceived } from '../services/notifications.js';
+import { sendOrderCreated, sendPaymentReceived } from '../services/notifications.js';
 import { audit } from '../services/audit.js';
 import { sepayProvider } from './sepay.js';
 import { momoProvider } from './momo.js';
@@ -26,6 +26,11 @@ export interface StartPaymentInput {
   order: Order;
   providerId: ProviderId;
   clientIp: string;
+  /**
+   * Gui email/ZNS "don hang cho thanh toan" kem huong dan chuyen khoan.
+   * Dat false khi noi goi da co thong bao rieng (vd gia han tu dong).
+   */
+  notify?: boolean;
 }
 
 export interface StartPaymentOutput extends CreateResult {
@@ -50,6 +55,7 @@ export async function startPayment(input: StartPaymentInput): Promise<StartPayme
     .get(input.order.id, input.providerId, nowIso()) as PaymentRow | undefined;
 
   if (existing && existing.amount === input.order.total && (existing.pay_url || existing.qr_url)) {
+    // Dung lai giao dich cu -> khong gui lai email huong dan, tranh lam phien
     return { payment: existing, payUrl: existing.pay_url || undefined, qrUrl: existing.qr_url || undefined };
   }
 
@@ -78,6 +84,22 @@ export async function startPayment(input: StartPaymentInput): Promise<StartPayme
 
   const payment = db.prepare('SELECT * FROM payments WHERE id = ?').get(Number(info.lastInsertRowid)) as PaymentRow;
   log.info('payment_started', { order: input.order.code, provider: provider.id, amount: input.order.total });
+
+  // Gui huong dan thanh toan (so tai khoan, noi dung chuyen khoan, ma QR).
+  // Tru so du thi tien da tru xong ngay - khong co gi de huong dan.
+  if (input.notify !== false && provider.id !== 'balance') {
+    const email = (db.prepare('SELECT email FROM users WHERE id = ?').get(input.order.user_id) as
+      { email: string } | undefined)?.email;
+    if (email) {
+      await sendOrderCreated(input.order, email, {
+        provider: provider.id,
+        refCode,
+        ...(result.payUrl ? { payUrl: result.payUrl } : {}),
+        ...(result.qrUrl ? { qrUrl: result.qrUrl } : {}),
+      });
+    }
+  }
+
   return { ...result, payment };
 }
 

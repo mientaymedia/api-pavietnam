@@ -155,7 +155,8 @@ export const handlers: Record<JobType, Handler> = {
       } else {
         // Khong du so du: tao san QR chuyen khoan de khach thanh toan mot cham
         try {
-          await startPayment({ order, providerId: 'sepay', clientIp: '' });
+          // notify:false - email "can thanh toan de gia han" gui ngay ben duoi
+          await startPayment({ order, providerId: 'sepay', clientIp: '', notify: false });
         } catch (err) {
           log.warn('auto_renew_payment_setup_failed', { domain: domain.domain, error: String(err) });
         }

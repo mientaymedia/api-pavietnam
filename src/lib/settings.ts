@@ -145,6 +145,15 @@ export const settings = {
     endpoint: getSetting('zalopay.endpoint', config.zalopay.endpoint),
   }),
 
+  zns: () => ({
+    enabled: getSettingBool('zns.enabled', config.zns.enabled),
+    appId: getSetting('zns.app_id', config.zns.appId),
+    secretKey: getSetting('zns.secret_key', config.zns.secretKey),
+    refreshToken: getSetting('zns.refresh_token', config.zns.refreshToken),
+    /** Gui ZNS cho ca nhung su kien da co email (true) hay chi ZNS (false). */
+    alsoEmail: getSettingBool('zns.also_email', true),
+  }),
+
   smtp: () => ({
     host: getSetting('smtp.host', config.smtp.host),
     port: getSettingNumber('smtp.port', config.smtp.port),
@@ -166,4 +175,7 @@ export const SECRET_KEYS = [
   'zalopay.key1',
   'zalopay.key2',
   'smtp.pass',
+  'zns.secret_key',
+  'zns.refresh_token',
+  'zns.access_token',
 ];
