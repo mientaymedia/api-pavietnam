@@ -24,6 +24,7 @@ import { db, isoIn, nowIso } from '../db/index.js';
 
 // Cho phep tro sang may chu gia lap khi kiem thu; mac dinh la endpoint that cua Zalo.
 const OAUTH_URL = process.env['ZNS_OAUTH_URL'] || 'https://oauth.zaloapp.com/v4/oa/access_token';
+const PERMISSION_URL = process.env['ZNS_PERMISSION_URL'] || 'https://oauth.zaloapp.com/v4/oa/permission';
 const SEND_URL = process.env['ZNS_SEND_URL'] || 'https://business.openapi.zalo.me/message/template';
 
 /** Doi access_token som hon han that 5 phut de tranh dung dung luc het han. */
@@ -64,6 +65,67 @@ export function znsConfig(): ZnsConfig {
 export function isZnsReady(): boolean {
   const c = znsConfig();
   return c.enabled && Boolean(c.appId && c.secretKey && c.refreshToken);
+}
+
+/* ------------------------------------------- ket noi lan dau (OAuth) */
+
+/**
+ * Dia chi de quan tri vien bam vao, cap quyen cho ung dung truy cap
+ * Official Account. Zalo se chuyen ve `redirectUri` kem tham so `oa_code`.
+ */
+export function buildPermissionUrl(redirectUri: string, state = ''): string {
+  const c = znsConfig();
+  const params = new URLSearchParams({ app_id: c.appId, redirect_uri: redirectUri });
+  if (state) params.set('state', state);
+  return `${PERMISSION_URL}?${params}`;
+}
+
+/**
+ * Doi `oa_code` (Zalo tra ve sau khi cap quyen) lay cap token dau tien.
+ * Day la buoc DUY NHAT can thao tac tay; tu day tro di he thong tu duy tri token.
+ */
+export async function exchangeAuthorizationCode(oaCode: string): Promise<{ refreshToken: string }> {
+  const c = znsConfig();
+  if (!c.appId || !c.secretKey) {
+    throw new ZnsError('Chua dien App ID va Secret Key', 'NO_CONFIG');
+  }
+
+  const raw = await httpRequest(OAUTH_URL, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', secret_key: c.secretKey },
+    body: new URLSearchParams({
+      app_id: c.appId,
+      code: oaCode,
+      grant_type: 'authorization_code',
+    }).toString(),
+    timeoutMs: 20_000,
+    retries: 1,
+  });
+
+  let parsed: { access_token?: string; refresh_token?: string; expires_in?: string | number; error?: number; error_description?: string; error_name?: string };
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new ZnsError(`Zalo tra ve du lieu khong doc duoc: ${raw.slice(0, 200)}`, 'BAD_RESPONSE', raw);
+  }
+
+  if (!parsed.access_token || !parsed.refresh_token) {
+    const msg = parsed.error_description || parsed.error_name || raw.slice(0, 200);
+    throw new ZnsError(`Khong lay duoc token: ${msg}`, String(parsed.error ?? ''), raw);
+  }
+
+  const expiresInSec = Number(parsed.expires_in ?? 3600) || 3600;
+  setSettings(
+    {
+      'zns.access_token': parsed.access_token,
+      'zns.access_token_expires_at': isoIn(expiresInSec * 1000),
+      'zns.refresh_token': parsed.refresh_token,
+    },
+    ['zns.access_token', 'zns.refresh_token'],
+  );
+
+  log.info('zns_connected', { expiresInSec });
+  return { refreshToken: parsed.refresh_token };
 }
 
 /* ------------------------------------------------------------------ token */

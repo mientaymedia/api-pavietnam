@@ -258,6 +258,11 @@ cap so nhan khi API loi, va khong mat viec khi tien trinh khoi dong lai (job nam
 **Loi vinh vien vs loi tam thoi:** "ten mien da co nguoi lay" hay "khong du so du" thi dung
 ngay va bao cho khach + quan tri; loi mang/timeout thi tu thu lai (5s, 10s, 20s... toi da 30 phut).
 
+**Hoan tien khi that bai:** khach da tra tien ma khong nhan duoc ten mien thi tien duoc
+**tu dong hoan vao so du vi** ngay khi dong don that bai vinh vien (tat duoc trong cau hinh
+neu muon duyet tay). So tien hoan chia theo ty le cua dong do trong don, da tinh ca giam gia
+va VAT. Quan tri vien co nut hoan tay cho tung dong hoac ca don trong trang chi tiet don hang.
+
 **Khong phu thuoc dich vu ngoai:** CSDL la SQLite, hang doi nam trong CSDL, phien dang nhap
 cung vay. Khong can Redis, khong can dich vu phu tro nao khac.
 

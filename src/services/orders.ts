@@ -221,18 +221,29 @@ export function markOrderPaid(orderId: number, meta: { provider: string; txnId?:
 export function refreshOrderStatus(orderId: number): void {
   const items = getOrderItems(orderId);
   if (!items.length) return;
-  const all = (s: OrderItem['status']) => items.every((i) => i.status === s);
-  const some = (s: OrderItem['status']) => items.some((i) => i.status === s);
+
+  const all = (...wanted: OrderItem['status'][]) => items.every((i) => wanted.includes(i.status));
+  const some = (...wanted: OrderItem['status'][]) => items.some((i) => wanted.includes(i.status));
+  const dangXuLy = some('pending', 'processing');
 
   let status: Order['status'];
-  if (all('active')) status = 'completed';
-  else if (all('failed')) status = 'failed';
-  else if (some('active') && some('failed') && !some('pending') && !some('processing')) status = 'partially_completed';
-  else status = 'processing';
+  if (dangXuLy) {
+    status = 'processing';
+  } else if (all('active')) {
+    status = 'completed';
+  } else if (all('refunded')) {
+    status = 'refunded';
+  } else if (all('failed', 'refunded')) {
+    // Khong dong nao thanh cong; da hoan tien mot phan hay chua deu la don that bai
+    status = some('refunded') && all('refunded') ? 'refunded' : 'failed';
+  } else {
+    // Co dong thanh cong lan dong khong - hoan tat mot phan
+    status = 'partially_completed';
+  }
 
-  const completedAt = status === 'completed' || status === 'partially_completed' || status === 'failed' ? nowIso() : null;
+  const xong = status !== 'processing';
   db.prepare('UPDATE orders SET status=?, completed_at=COALESCE(?, completed_at), updated_at=? WHERE id=?')
-    .run(status, completedAt, nowIso(), orderId);
+    .run(status, xong ? nowIso() : null, nowIso(), orderId);
 }
 
 export function cancelOrder(orderId: number, reason = ''): void {

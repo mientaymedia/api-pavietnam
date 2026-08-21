@@ -1,7 +1,7 @@
 import './helpers/db.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { explainZnsError, isZnsReady, normalizePhone } from '../src/lib/zns.js';
+import { buildPermissionUrl, explainZnsError, isZnsReady, normalizePhone } from '../src/lib/zns.js';
 import { ZNS_EVENTS, ZNS_EVENT_LIST } from '../src/services/znsEvents.js';
 import { setSettings } from '../src/lib/settings.js';
 
@@ -69,4 +69,19 @@ test('khoa cau hinh cua tung su kien khong trung nhau', () => {
   const keys = ZNS_EVENT_LIST.map((e) => e.settingKey);
   assert.equal(new Set(keys).size, keys.length);
   assert.equal(Object.keys(ZNS_EVENTS).length, keys.length);
+});
+
+test('dia chi cap quyen chua du tham so Zalo can', () => {
+  setSettings({ 'zns.app_id': '1234567890123456789' });
+  const url = new URL(buildPermissionUrl('https://vidu.vn/admin/zns/callback', 'trang-thai-123'));
+
+  assert.equal(url.searchParams.get('app_id'), '1234567890123456789');
+  assert.equal(url.searchParams.get('redirect_uri'), 'https://vidu.vn/admin/zns/callback');
+  assert.equal(url.searchParams.get('state'), 'trang-thai-123');
+});
+
+test('khong co state thi khong gan tham so state', () => {
+  setSettings({ 'zns.app_id': 'APP' });
+  const url = new URL(buildPermissionUrl('https://vidu.vn/cb'));
+  assert.equal(url.searchParams.has('state'), false);
 });

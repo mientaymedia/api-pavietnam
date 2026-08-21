@@ -22,9 +22,18 @@
                   <td class="small"><%= i.action %></td>
                   <td class="small"><%= i.years %></td>
                   <td>
-                    <span class="badge <%= i.status === 'active' ? 'badge-ok' : i.status === 'failed' ? 'badge-danger' : 'badge-muted' %>"><%= i.status %></span>
+                    <span class="badge <%= i.status === 'active' ? 'badge-ok' : i.status === 'failed' ? 'badge-danger' : i.status === 'refunded' ? 'badge-info' : 'badge-muted' %>">
+                      <%= i.status === 'refunded' ? 'da hoan tien' : i.status %>
+                    </span>
                     <% if (i.error) { %><div class="tiny" style="color:var(--danger)"><%= i.error %></div><% } %>
                     <% if (i.attempts) { %><div class="tiny muted">Da thu <%= i.attempts %> lan</div><% } %>
+                    <% if (i.status === 'failed') { %>
+                      <form method="post" action="/admin/don-hang/<%= order.id %>/hoan-tien/<%= i.id %>"
+                            data-confirm="Hoan tien dong nay vao so du khach hang?" style="margin-top:6px">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button class="btn btn-sm btn-outline" type="submit">Hoan tien vao vi</button>
+                      </form>
+                    <% } %>
                   </td>
                   <td class="tiny mono muted"><%= i.provider_ref || '-' %></td>
                   <td class="right"><%= formatVnd(i.amount) %></td>
@@ -84,6 +93,16 @@
             <button class="btn btn-block" type="submit">Xac nhan da thanh toan</button>
           </form>
           <p class="tiny muted" style="margin-top:8px">Dung khi khach da chuyen khoan nhung webhook khong doi soat duoc.</p>
+        <% } %>
+
+        <% var soDongThatBai = items.filter(function (i) { return i.status === 'failed'; }).length; %>
+        <% if (soDongThatBai > 1) { %>
+          <form method="post" action="/admin/don-hang/<%= order.id %>/hoan-tien-tat-ca"
+                data-confirm="Hoan tien <%= soDongThatBai %> dong da that bai?" style="margin-top:12px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field"><label>Ly do hoan tien</label><input type="text" name="reason" placeholder="VD: ten mien da co nguoi dang ky"></div>
+            <button class="btn btn-outline btn-block" type="submit">Hoan tien tat ca (<%= soDongThatBai %> dong)</button>
+          </form>
         <% } %>
 
         <% if (['paid','processing','failed','partially_completed'].indexOf(order.status) >= 0) { %>

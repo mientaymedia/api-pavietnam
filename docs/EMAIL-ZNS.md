@@ -77,12 +77,31 @@ Gui thong bao vao Zalo cua khach qua Official Account cua doanh nghiep.
 
 ### Chuan bi
 
-1. Tai [developers.zalo.me](https://developers.zalo.me): tao ung dung, **lien ket voi Zalo OA**
-2. Lay **App ID** va **Secret Key**
-3. Cap **refresh_token** lan dau qua luong OAuth cua Zalo
-4. Tai [business.zalo.me](https://business.zalo.me): tao mau tin va **cho Zalo duyet**
-5. Dan template ID vao _Cau hinh Control Panel > Mau tin ZNS_
-6. Bam **Gui ZNS thu** de kiem tra
+1. Tai [business.zalo.me](https://business.zalo.me): tao va **xac thuc Zalo Official Account**
+   (OA chua xac thuc thi khong gui ZNS duoc)
+2. Tai [developers.zalo.me](https://developers.zalo.me): tao ung dung, **lien ket voi OA vua tao**,
+   lay **App ID** va **Secret Key**
+3. Dien App ID + Secret Key vao _Cau hinh Control Panel > Zalo ZNS_
+4. Vao _Quan tri > ZNS_ bam **Ket noi Zalo OA** - Zalo hoi cap quyen, dong y la xong.
+   He thong tu lay va tu duy tri token, **khong phai sao chep refresh token bang tay**
+5. Tao mau tin tai business.zalo.me va **cho Zalo duyet**
+6. Dan template ID vao _Cau hinh Control Panel > Mau tin ZNS_
+7. Bam **Gui ZNS thu** de kiem tra
+
+> **Zalo Mini App khong phai ZNS.** Mini App la chuong trinh chay trong Zalo, dung ID rieng.
+> ZNS gui tin qua Official Account. Chi co **App ID** va **Secret Key** cua ung dung tren
+> developers.zalo.me la dung chung - Mini App ID khong dung den o day.
+
+### Nut "Ket noi Zalo OA" lam gi
+
+Bam nut -> Zalo hoi ban co cho phep ung dung truy cap Official Account khong -> dong y ->
+Zalo chuyen ve `/admin/zns/callback` kem ma cap quyen -> he thong doi ma do lay cap token
+dau tien va luu lai (da ma hoa).
+
+Duong dan callback duoc hien san tren trang de ban khai bao ben Zalo neu duoc hoi.
+
+Chi can **ket noi lai** khi: nhat ky bao loi `-124`/`-125` lien tuc (token bi he thong khac
+dung mat), hoac ban doi sang Official Account khac.
 
 ### Refresh token xoay moi lan dung - dieu can biet nhat
 
@@ -91,8 +110,8 @@ He thong tu luu ban moi vao CSDL trong cung mot buoc, nen ban khong phai lam gi.
 
 Hai he qua:
 
-- Gia tri `ZNS_REFRESH_TOKEN` trong `.env` **se cu di** sau lan chay dau. Day la binh thuong.
-  Dat token qua giao dien admin thi de theo doi hon.
+- Gia tri `ZNS_REFRESH_TOKEN` trong `.env` **se cu di** sau lan chay dau. Day la binh thuong -
+  nen dung nut **Ket noi Zalo OA** thay vi dien tay vao `.env`.
 - **Khong dung chung mot refresh_token cho hai he thong.** He thong nay doi token thi
   he thong kia mat quyen ngay lap tuc.
 

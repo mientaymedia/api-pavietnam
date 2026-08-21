@@ -105,6 +105,7 @@ const DEFAULTS: Record<string, string> = {
   'order.payment_ttl_hours': '48',
   'order.renew_notice_days': '30,15,7,1',
   'order.auto_renew_days_before': '14',
+  'order.auto_refund_failed': '1',
   'sepay.enabled': '1',
   'sepay.bank_code': config.sepay.bankCode || 'TCB',
   'sepay.bank_name': config.sepay.bankName || 'Techcombank',

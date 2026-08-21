@@ -19,6 +19,7 @@ import { sendDomainActivated, sendProvisionFailed, sendTransferSubmitted, userEm
 import { audit } from './audit.js';
 import { enqueue } from '../jobs/queue.js';
 import { upsertDomainFromProvider } from './domainRepo.js';
+import { autoRefundEnabled, refundOrderItem } from './refunds.js';
 
 /** Loi khong the khac phuc bang cach thu lai. */
 const PERMANENT_PATTERNS = [
@@ -117,6 +118,18 @@ export async function provisionItem(itemId: number): Promise<boolean> {
         orderCode: order.code,
         error: message,
       });
+
+      // Khach da tra tien nhung khong nhan duoc ten mien -> tra lai ngay.
+      // Tat trong cau hinh neu doanh nghiep muon duyet tay tung truong hop.
+      if (autoRefundEnabled()) {
+        const refund = await refundOrderItem(claimed.id, {
+          reason: `Dang ky khong thanh cong: ${message.slice(0, 200)}`,
+        });
+        if (refund.status === 'refunded') {
+          log.info('auto_refund_done', { domain: claimed.domain, amount: refund.amount });
+        }
+      }
+
       refreshOrderStatus(order.id);
       return false;
     }

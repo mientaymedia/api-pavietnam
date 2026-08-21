@@ -34,6 +34,7 @@
                   <td class="small"><%= i.years %> nam</td>
                   <td>
                     <% if (i.status === 'active') { %><span class="badge badge-ok">Da kich hoat</span>
+                    <% } else if (i.status === 'refunded') { %><span class="badge badge-info">Da hoan tien vao vi</span>
                     <% } else if (i.status === 'failed') { %><span class="badge badge-danger">That bai</span>
                     <% } else if (i.status === 'processing') { %><span class="badge badge-info">Dang dang ky</span>
                     <% } else { %><span class="badge badge-muted">Cho xu ly</span><% } %>

@@ -258,6 +258,38 @@ export async function sendProvisionFailed(input: {
   `);
 }
 
+/** Da hoan tien vao vi sau khi dang ky ten mien that bai. */
+export async function sendRefunded(input: {
+  userId: number; email: string; domain: string; orderCode: string;
+  amount: number; balanceAfter: number; reason: string;
+}): Promise<void> {
+  const site = settings.site();
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'refunded',
+    subject: `Da hoan ${formatVnd(input.amount)} cho ${input.domain}`,
+    html: layout('Da hoan tien vao tai khoan cua ban', `
+      <p>Rat tiec, ten mien <b>${esc(input.domain)}</b> khong dang ky duoc. Chung toi da hoan lai
+         so tien tuong ung vao so du tai khoan cua ban.</p>
+      ${table([
+        ['Ten mien', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
+        ['Ma don hang', esc(input.orderCode)],
+        ['So tien hoan', esc(formatVnd(input.amount))],
+        ['So du hien tai', esc(formatVnd(input.balanceAfter))],
+        ['Ly do', esc(input.reason)],
+      ])}
+      <p>So du nay dung duoc ngay cho don hang tiep theo - chon thanh toan bang
+         <b>So du tai khoan</b> khi dat hang.</p>
+      <p style="font-size:13px;color:#6b7280;">
+        Muon nhan lai bang tien mat thay vi so du? Lien he
+        ${esc(site.supportEmail || site.hotline || 'bo phan ho tro')} kem ma don <b>${esc(input.orderCode)}</b>.
+      </p>
+      ${button('Xem so du tai khoan', url('/tai-khoan'))}
+    `),
+  });
+}
+
 export async function sendRenewalReminder(input: {
   userId: number; email: string; domain: string; expiresAt: string; daysLeft: number; renewPrice: number;
 }): Promise<void> {

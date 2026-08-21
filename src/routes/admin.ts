@@ -16,7 +16,7 @@ import { db, nowIso, parseJson } from '../db/index.js';
 import { requireAdmin, requireAuth } from '../middleware/auth.js';
 import { flash } from '../middleware/session.js';
 import { wrap } from '../middleware/error.js';
-import { maskSecret } from '../lib/crypto.js';
+import { maskSecret, randomToken } from '../lib/crypto.js';
 import { resetMailer } from '../lib/mailer.js';
 import { SECRET_KEYS, getSetting, setSettings, settings } from '../lib/settings.js';
 import { listTlds, upsertTld } from '../services/pricing.js';
@@ -30,8 +30,10 @@ import { credit } from '../payments/balance.js';
 import { audit } from '../services/audit.js';
 import { buildSepayQrUrl } from '../payments/sepay.js';
 import { sendMail } from '../lib/mailer.js';
-import { isZnsReady, normalizePhone, sendZns } from '../lib/zns.js';
+import { buildPermissionUrl, exchangeAuthorizationCode, isZnsReady, normalizePhone, sendZns } from '../lib/zns.js';
 import { ZNS_EVENTS, ZNS_EVENT_LIST } from '../services/znsEvents.js';
+import { pendingRefundCount, refundFailedItems, refundOrderItem } from '../services/refunds.js';
+import { formatVnd } from '../lib/money.js';
 import { config } from '../config.js';
 
 const router = Router();
@@ -50,7 +52,7 @@ router.get('/', (_req, res) => {
       domains: count('SELECT COUNT(*) AS n FROM domains'),
       activeDomains: count(`SELECT COUNT(*) AS n FROM domains WHERE status='active'`),
       pendingOrders: count(`SELECT COUNT(*) AS n FROM orders WHERE status='pending_payment'`),
-      failedItems: count(`SELECT COUNT(*) AS n FROM order_items WHERE status='failed'`),
+      failedItems: pendingRefundCount(),
       revenue: (db.prepare(`SELECT COALESCE(SUM(total),0) AS n FROM orders WHERE status IN ('paid','processing','completed','partially_completed')`).get() as { n: number }).n,
     },
     jobs: jobStats(),
@@ -85,6 +87,7 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'pricing.vat_percent', label: 'VAT mac dinh (%)', type: 'number' },
   { key: 'order.auto_provision', label: 'Tu dong dang ky sau khi thanh toan', type: 'checkbox' },
   { key: 'order.payment_ttl_hours', label: 'Gio giu don cho thanh toan', type: 'number' },
+  { key: 'order.auto_refund_failed', label: 'Tu dong hoan tien vao vi khi dang ky that bai', type: 'checkbox' },
   { key: 'order.renew_notice_days', label: 'Moc nhac gia han (ngay)', hint: 'Vi du: 30,15,7,1' },
 
   // SePay
@@ -483,6 +486,46 @@ router.post(
   }),
 );
 
+/** Hoan tien mot dong don da that bai vao so du khach hang. */
+router.post(
+  '/don-hang/:id/hoan-tien/:itemId',
+  wrap(async (req, res) => {
+    const orderId = Number(req.params.id);
+    const outcome = await refundOrderItem(Number(req.params.itemId), {
+      actorUserId: req.currentUser!.id,
+      reason: String(req.body?.reason ?? '').slice(0, 200),
+    });
+
+    const thongBao: Record<string, [string, string]> = {
+      refunded: ['success', `Da hoan ${outcome.status === 'refunded' ? formatVnd(outcome.amount) : ''} vao so du khach hang.`],
+      already_refunded: ['info', 'Dong don nay da duoc hoan tien truoc do.'],
+      not_refundable: ['error', outcome.status === 'not_refundable' ? outcome.reason : 'Khong hoan duoc'],
+      not_found: ['error', 'Khong tim thay dong don hang.'],
+    };
+    const [loai, noiDung] = thongBao[outcome.status] ?? ['error', 'Khong hoan duoc'];
+    flash(req, loai as 'success' | 'info' | 'error', noiDung);
+    res.redirect(`/admin/don-hang/${orderId}`);
+  }),
+);
+
+/** Hoan tien toan bo cac dong da that bai cua don. */
+router.post(
+  '/don-hang/:id/hoan-tien-tat-ca',
+  wrap(async (req, res) => {
+    const orderId = Number(req.params.id);
+    const { refunded, total } = await refundFailedItems(orderId, {
+      actorUserId: req.currentUser!.id,
+      reason: String(req.body?.reason ?? '').slice(0, 200),
+    });
+    flash(
+      req,
+      refunded ? 'success' : 'info',
+      refunded ? `Da hoan ${refunded} dong, tong ${formatVnd(total)} vao so du khach hang.` : 'Khong co dong nao can hoan tien.',
+    );
+    res.redirect(`/admin/don-hang/${orderId}`);
+  }),
+);
+
 /* -------------------------------------------------------------- ten mien */
 
 router.get('/ten-mien', (req, res) => {
@@ -554,11 +597,60 @@ router.get('/giao-dich', (_req, res) => {
   });
 });
 
+/** Buoc 1: chuyen quan tri vien sang Zalo de cap quyen cho ung dung. */
+router.get('/zns/ket-noi', (req, res) => {
+  const cfg = settings.zns();
+  if (!cfg.appId || !cfg.secretKey) {
+    flash(req, 'error', 'Vui long dien App ID va Secret Key truoc khi ket noi.');
+    return res.redirect('/admin/cau-hinh');
+  }
+
+  // state chong CSRF: Zalo se tra lai nguyen ven, ta doi chieu o buoc 2
+  const state = randomToken(16);
+  req.session['znsOauthState'] = state;
+  res.redirect(buildPermissionUrl(`${config.appUrl}/admin/zns/callback`, state));
+});
+
+/** Buoc 2: Zalo chuyen ve day kem oa_code -> doi lay refresh token va luu. */
+router.get(
+  '/zns/callback',
+  wrap(async (req, res) => {
+    const state = String(req.query['state'] ?? '');
+    const luu = String(req.session['znsOauthState'] ?? '');
+    delete req.session['znsOauthState'];
+
+    if (!luu || state !== luu) {
+      flash(req, 'error', 'Phien ket noi khong hop le hoac da het han. Vui long bam Ket noi lai.');
+      return res.redirect('/admin/zns');
+    }
+
+    const oaCode = String(req.query['oa_code'] ?? req.query['code'] ?? '');
+    if (!oaCode) {
+      const loi = String(req.query['error_description'] ?? req.query['error'] ?? 'Zalo khong tra ve ma cap quyen');
+      flash(req, 'error', `Ket noi that bai: ${loi}`);
+      return res.redirect('/admin/zns');
+    }
+
+    try {
+      await exchangeAuthorizationCode(oaCode);
+      audit({ userId: req.currentUser!.id, action: 'zns.connected', entity: 'settings', ip: req.ip });
+      flash(req, 'success', 'Da ket noi Zalo OA thanh cong. Tu day he thong tu duy tri token, ban khong phai lam gi them.');
+    } catch (err) {
+      flash(req, 'error', err instanceof Error ? err.message : 'Khong doi duoc token');
+    }
+    res.redirect('/admin/zns');
+  }),
+);
+
 router.get('/zns', (_req, res) => {
+  const cfg = settings.zns();
   res.render('admin/zns-logs', {
     title: 'Nhat ky ZNS',
     logs: db.prepare('SELECT * FROM zns_logs ORDER BY id DESC LIMIT 200').all(),
     ready: isZnsReady(),
+    coAppId: Boolean(cfg.appId && cfg.secretKey),
+    daKetNoi: Boolean(cfg.refreshToken),
+    callbackUrl: `${config.appUrl}/admin/zns/callback`,
   });
 });
 

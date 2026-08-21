@@ -5,11 +5,43 @@
   <h1>Nhat ky ZNS</h1>
   <%- include('../partials/admin-nav') %>
 
+  <div class="card">
+    <div class="card-title">
+      <h2>Ket noi Zalo Official Account</h2>
+      <span class="badge <%= daKetNoi ? 'badge-ok' : 'badge-warn' %>"><%= daKetNoi ? 'Da ket noi' : 'Chua ket noi' %></span>
+    </div>
+
+    <% if (!coAppId) { %>
+      <p class="muted small">
+        Buoc 1: vao <a href="/admin/cau-hinh">Cau hinh Control Panel</a> dien <strong>App ID</strong> va
+        <strong>Secret Key</strong> lay tu developers.zalo.me, roi quay lai day.
+      </p>
+    <% } else { %>
+      <p class="muted small">
+        Bam nut duoi day, Zalo se hoi ban cho phep ung dung truy cap Official Account.
+        Cho phep xong, he thong <strong>tu lay va tu duy tri token</strong> - ban khong phai
+        sao chep refresh token bang tay, cung khong phai lam lai dinh ky.
+      </p>
+      <div class="copy-row" style="margin-bottom:12px">
+        <span class="label">Dia chi callback (khai bao trong Zalo neu duoc hoi)</span>
+        <span class="value"><%= callbackUrl %>
+          <button type="button" class="btn-link tiny" data-copy="<%= callbackUrl %>">chep</button></span>
+      </div>
+      <a class="btn" href="/admin/zns/ket-noi"><%= daKetNoi ? 'Ket noi lai' : 'Ket noi Zalo OA' %></a>
+      <% if (daKetNoi) { %>
+        <p class="tiny muted" style="margin:10px 0 0">
+          Chi ket noi lai khi token bi hong (Nhat ky bao loi -124/-125 lien tuc)
+          hoac khi doi sang Official Account khac.
+        </p>
+      <% } %>
+    <% } %>
+  </div>
+
   <% if (!ready) { %>
     <div class="alert alert-warn">
-      ZNS chua duoc bat hoac chua cau hinh day du.
-      Vao <a href="/admin/cau-hinh">Cau hinh Control Panel</a> de dien App ID, Secret Key, Refresh Token
-      va template ID cho tung su kien.
+      ZNS chua san sang. Can du ba thu: <strong>bat ZNS</strong>, <strong>App ID + Secret Key</strong>,
+      va <strong>ket noi Zalo OA</strong> o tren. Sau do khai template ID cho tung su kien
+      trong <a href="/admin/cau-hinh">Cau hinh Control Panel</a>.
     </div>
   <% } %>
 
