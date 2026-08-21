@@ -297,6 +297,28 @@ CREATE TABLE IF NOT EXISTS domains (
 CREATE INDEX IF NOT EXISTS idx_domains_user    ON domains(user_id);
 CREATE INDEX IF NOT EXISTS idx_domains_expires ON domains(expires_at);
 
+-- Yeu cau DOI CHU THE ten mien (khac voi sua thong tin lien he).
+-- Voi .vn day la thu tuc phap ly: can ban khai + giay to, VNNIC duyet, khong
+-- phai mot lenh API. Bang nay theo doi ho so tu luc khach nop den khi hoan tat.
+CREATE TABLE IF NOT EXISTS ownership_requests (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  domain_id      INTEGER NOT NULL REFERENCES domains(id) ON DELETE CASCADE,
+  user_id        INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  -- Ban chup thong tin chu the CU tai thoi diem nop, de doi chieu ve sau
+  current_owner  TEXT NOT NULL DEFAULT '{}',
+  new_contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL,
+  reason         TEXT NOT NULL DEFAULT '',
+  status         TEXT NOT NULL DEFAULT 'pending'
+                 CHECK (status IN ('pending','in_review','need_documents','approved','completed','rejected','cancelled')),
+  admin_note     TEXT NOT NULL DEFAULT '',
+  handled_by     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  handled_at     TEXT,
+  created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+  updated_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_ownership_status ON ownership_requests(status);
+CREATE INDEX IF NOT EXISTS idx_ownership_domain ON ownership_requests(domain_id);
+
 -- Ban ghi DNS (cache cuc bo; nguon su that la API P.A)
 CREATE TABLE IF NOT EXISTS dns_records (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,

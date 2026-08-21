@@ -421,6 +421,70 @@ export async function sendTransferLockChanged(input: {
   });
 }
 
+/** Bao khi thong tin lien he chu the thay doi (gui ca dia chi cu lan moi). */
+export async function sendContactUpdated(input: {
+  userId: number; email: string; domain: string; emailCu: string; emailMoi: string; ip: string;
+}): Promise<void> {
+  const doiEmail = input.emailCu && input.emailCu !== input.emailMoi;
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'contact_updated',
+    subject: `${input.domain}: thong tin chu the vua duoc cap nhat`,
+    html: layout('Thong tin chu the ten mien da thay doi', `
+      <p>Thong tin lien he cua chu the ten mien <b>${esc(input.domain)}</b> vua duoc cap nhat.</p>
+      ${table([
+        ['Ten mien', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
+        ...(doiEmail
+          ? ([['Email chu the', `${esc(input.emailCu)} &rarr; <b>${esc(input.emailMoi)}</b>`]] as [string, string][])
+          : ([['Email chu the', esc(input.emailMoi)]] as [string, string][])),
+        ['Thoi diem', new Date().toISOString().replace('T', ' ').slice(0, 16)],
+        ['Dia chi IP', esc(input.ip || 'khong xac dinh')],
+      ])}
+      ${doiEmail
+        ? `<p style="background:#fffbeb;border:1px solid #fde68a;padding:12px;border-radius:8px;font-size:14px;">
+             Email chu the la duong khoi phuc quyen kiem soat ten mien. Email nay duoc gui toi
+             <b>ca dia chi cu va moi</b> de hai ben cung biet.
+           </p>`
+        : ''}
+      <p style="font-size:13px;color:#6b7280;">Neu khong phai ban thao tac, hay doi mat khau ngay va lien he chung toi.</p>
+      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+    `),
+  });
+}
+
+/** Bao trang thai ho so doi chu the. */
+export async function sendOwnershipRequestStatus(input: {
+  userId: number; email: string; domain: string; status: string; note: string; requestId: number;
+}): Promise<void> {
+  const moTa: Record<string, { tieuDe: string; noiDung: string }> = {
+    in_review: { tieuDe: 'Ho so dang duoc xem xet', noiDung: 'Chung toi da tiep nhan va dang kiem tra ho so cua ban.' },
+    need_documents: { tieuDe: 'Ho so can bo sung giay to', noiDung: 'Ho so chua du dieu kien. Vui long bo sung theo huong dan ben duoi.' },
+    approved: { tieuDe: 'Ho so da duoc duyet', noiDung: 'Ho so hop le. Chung toi dang tien hanh thu tuc voi nha dang ky.' },
+    completed: { tieuDe: 'Da doi chu the thanh cong', noiDung: 'Ten mien da chuyen sang chu the moi.' },
+    rejected: { tieuDe: 'Ho so khong duoc chap nhan', noiDung: 'Rat tiec, ho so cua ban khong duoc chap nhan.' },
+    cancelled: { tieuDe: 'Ho so da huy', noiDung: 'Ho so doi chu the da duoc huy.' },
+  };
+  const m = moTa[input.status] ?? { tieuDe: 'Cap nhat ho so doi chu the', noiDung: `Trang thai moi: ${input.status}` };
+
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'ownership_request_status',
+    subject: `${input.domain}: ${m.tieuDe.toLowerCase()}`,
+    html: layout(m.tieuDe, `
+      <p>Ho so doi chu the cho ten mien <b>${esc(input.domain)}</b> (ma ho so <b>#${input.requestId}</b>):</p>
+      <p>${esc(m.noiDung)}</p>
+      ${input.note
+        ? `<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:12px;border-radius:8px;font-size:14px;">
+             <b>Ghi chu tu bo phan xu ly:</b><br>${esc(input.note)}
+           </div>`
+        : ''}
+      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+    `),
+  });
+}
+
 export async function alertAdmin(subject: string, bodyHtml: string): Promise<void> {
   const to = settings.smtp().adminAlert;
   if (!to) return;

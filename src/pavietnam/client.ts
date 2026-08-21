@@ -293,6 +293,43 @@ export async function transferDomain(input: {
   };
 }
 
+/** Doc thong tin chu the dang luu tai nha dang ky. */
+export async function getDomainContact(domain: string): Promise<{ contact: Record<string, string> } & RawResult> {
+  const d = normalizeDomain(domain);
+  const res = await call(ACTIONS.contactGet, { [FIELDS.domain]: d }, { domainForLog: d });
+
+  const doc = (keys: string[]) => pick(res.data, keys) ?? '';
+  return {
+    ...res,
+    contact: {
+      fullName: doc(['name', 'fullname', 'ownername', 'owner', 'registrant']),
+      orgName: doc(['company', 'organization', 'org', 'congty']),
+      idNumber: doc(['idnumber', 'id_number', 'idcard', 'cmnd']),
+      taxCode: doc(['taxcode', 'tax_code', 'mst']),
+      email: doc(['email', 'owneremail']),
+      phone: doc(['phone', 'tel', 'ownerphone']),
+      address: doc(['address', 'addr', 'diachi']),
+      city: doc(['city']),
+      province: doc(['province', 'state']),
+      country: doc(['country']),
+    },
+  };
+}
+
+/**
+ * Cap nhat THONG TIN LIEN HE cua chu the (email, dien thoai, dia chi).
+ *
+ * KHONG dung de doi CHU THE sang nguoi/to chuc khac - viec do la thu tuc phap ly
+ * rieng, xem `src/services/domainContact.ts`.
+ */
+export async function updateDomainContact(domain: string, contact: RegisterContact): Promise<RawResult> {
+  const d = normalizeDomain(domain);
+  return ensureOk(
+    await call(ACTIONS.contactSet, { [FIELDS.domain]: d, ...contactParams(contact) }, { method: 'POST', domainForLog: d }),
+    `Cap nhat thong tin lien he ${d}`,
+  );
+}
+
 /**
  * Lay ma EPP (Auth Code) de khach CHUYEN TEN MIEN DI noi khac.
  *
@@ -562,6 +599,15 @@ function sandboxResponse(action: string, params: Record<string, string | number 
   }
   if (action === ACTIONS.list) {
     return JSON.stringify({ status: 'OK', items: [{ domain, status: 'active', expiredate: inOneYear, ns: 'ns1.pavietnam.vn,ns2.pavietnam.vn' }] });
+  }
+  if (action === ACTIONS.contactGet) {
+    return JSON.stringify({
+      status: 'OK', domain, name: 'Nguyen Van A', email: 'chuthe@example.vn',
+      phone: '0901234567', address: '123 Le Loi', province: 'TP HCM', country: 'VN',
+    });
+  }
+  if (action === ACTIONS.contactSet) {
+    return JSON.stringify({ status: 'OK', domain, message: 'Da cap nhat thong tin lien he' });
   }
   if (action === ACTIONS.authCode) {
     return JSON.stringify({ status: 'OK', domain, authcode: `EPP-${sha256(domain).slice(0, 10).toUpperCase()}` });

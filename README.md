@@ -178,6 +178,28 @@ con duoi 14 ngay (sua duoc trong _Cau hinh Control Panel_) va:
 
 Khach chi nhan **mot** email cho moi lan gia han, khong bi gui lap.
 
+### Chu the ten mien: hai viec khac nhau
+
+Day la cho hay bi lam sai, nen he thong tach doi ro rang:
+
+| Viec | Cach lam | Thoi gian |
+|---|---|---|
+| **Sua thong tin lien he** (email, dien thoai, dia chi cua *cung* mot chu the) | Goi API, khach tu lam trong Control Panel | Ngay lap tuc |
+| **Doi chu the** (sang nguoi/to chuc *khac*) | Nop ho so, quan tri vien xu ly | Vai ngay |
+
+Vi sao doi chu the khong tu dong: voi `.vn` day la **thu tuc phap ly** theo quy dinh VNNIC -
+can ban khai co chu ky/con dau va giay to phap nhan cua ca hai ben. Voi ten mien quoc te,
+doi chu the thuong keo theo khoa chuyen doi 60 ngay va can xac nhan tu ca chu cu lan chu moi
+theo quy dinh ICANN. He thong nhan **ho so** roi theo doi tung buoc, thay vi gia vo rang no
+la mot lenh API.
+
+Ho so di qua cac trang thai: cho tiep nhan -> dang xem xet -> can bo sung giay to -> da duyet
+-> hoan tat (hoac tu choi/huy). **Moi lan doi trang thai deu gui email cho khach** kem ghi chu
+cua bo phan xu ly. Chi khi ho so **hoan tat** thi chu the cua ten mien moi thuc su doi.
+
+Khi email chu the thay doi, he thong bao cho **ca dia chi cu va moi** - vi email chu the la
+duong khoi phuc quyen kiem soat ten mien.
+
 ### Chuyen ten mien di (transfer-out)
 
 Ten mien la tai san cua khach - ho co quyen mang di bat cu luc nao, va he thong

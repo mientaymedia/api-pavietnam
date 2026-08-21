@@ -19,6 +19,10 @@ import { getTld, priceFor } from '../services/pricing.js';
 import { addToCart } from '../services/cart.js';
 import { lookupWhois } from '../services/domains.js';
 import { changeTransferLock, requestAuthCode } from '../services/transferOut.js';
+import {
+  ownershipRequestFor, readRegistrarContact, submitOwnershipRequest, updateContact, type ContactRow,
+} from '../services/domainContact.js';
+import { db } from '../db/index.js';
 import { enqueue } from '../jobs/queue.js';
 import { settings } from '../lib/settings.js';
 
@@ -50,6 +54,7 @@ router.get(
 
     const dns = await listRecords(domain);
     const tld = getTld(domain.tld);
+    const chuThe = await readRegistrarContact(domain);
 
     res.render('domains/detail', {
       title: `Control Panel - ${domain.domain}`,
@@ -61,6 +66,11 @@ router.get(
       presets: RECORD_PRESETS,
       renewPrice: tld ? priceFor(tld, 'renew', 1) : null,
       recordErrors: {},
+      chuThe,
+      hoSoChuThe: db.prepare('SELECT * FROM contacts WHERE user_id = ? ORDER BY is_default DESC, id')
+        .all(req.currentUser!.id),
+      hoSoDoiChuThe: ownershipRequestFor(domain.id),
+      canHoSoDayDu: tld?.requires_vn_contact === 1,
     });
   }),
 );
@@ -187,6 +197,59 @@ router.post('/:domain/gia-han', (req, res) => {
   flash(req, 'success', `Da them lenh gia han ${domain.domain} (${years} nam) vao gio hang.`);
   res.redirect('/gio-hang');
 });
+
+/* ------------------------------------------------ thong tin chu the */
+
+router.post(
+  '/:domain/chu-the',
+  rateLimit({ windowMs: 60_000, max: 10 }),
+  wrap(async (req, res) => {
+    const domain = load(req);
+    if (!domain) return res.redirect('/control-panel');
+
+    const contactId = Number(req.body?.contact_id) || 0;
+    const contact = db.prepare('SELECT * FROM contacts WHERE id = ? AND user_id = ?')
+      .get(contactId, req.currentUser!.id) as ContactRow | undefined;
+
+    if (!contact) {
+      flash(req, 'error', 'Ho so chu the khong hop le.');
+      return res.redirect(`/control-panel/${domain.domain}#chu-the`);
+    }
+
+    const outcome = await updateContact(domain, contact, { userId: req.currentUser!.id, ip: req.ip ?? '' });
+    if (outcome.status === 'ok') {
+      flash(req, 'success', 'Da cap nhat thong tin lien he chu the tai nha dang ky.');
+    } else {
+      flash(req, 'error', outcome.message);
+    }
+    res.redirect(`/control-panel/${domain.domain}#chu-the`);
+  }),
+);
+
+/** Nop ho so xin doi chu the (thu tuc phap ly, quan tri vien xu ly). */
+router.post(
+  '/:domain/doi-chu-the',
+  rateLimit({ windowMs: 3600_000, max: 5 }),
+  wrap(async (req, res) => {
+    const domain = load(req);
+    if (!domain) return res.redirect('/control-panel');
+
+    const result = submitOwnershipRequest({
+      domain,
+      newContactId: Number(req.body?.new_contact_id) || 0,
+      reason: String(req.body?.reason ?? ''),
+      userId: req.currentUser!.id,
+      ip: req.ip ?? '',
+    });
+
+    if (result.ok) {
+      flash(req, 'success', `Da nhan ho so doi chu the (ma #${result.id}). Bo phan nghiep vu se lien he huong dan giay to can nop.`);
+    } else {
+      flash(req, 'error', result.error);
+    }
+    res.redirect(`/control-panel/${domain.domain}#chu-the`);
+  }),
+);
 
 /* ------------------------------------------------- chuyen ten mien di */
 

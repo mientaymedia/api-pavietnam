@@ -32,6 +32,8 @@ export type ActionKey =
   | 'register'
   | 'renew'
   | 'transfer'
+  | 'contactGet'    // doc thong tin chu the dang luu tai nha dang ky
+  | 'contactSet'    // cap nhat thong tin lien he chu the
   | 'authCode'      // lay ma EPP de chuyen ten mien di
   | 'lockSet'       // khoa / mo khoa chuyen doi
   | 'whois'
@@ -48,6 +50,8 @@ export const ACTIONS: Record<ActionKey, string> = {
   register: env('PA_ACTION_REGISTER', 'regdomain'),
   renew: env('PA_ACTION_RENEW', 'renewdomain'),
   transfer: env('PA_ACTION_TRANSFER', 'transferdomain'),
+  contactGet: env('PA_ACTION_CONTACT_GET', 'getcontact'),
+  contactSet: env('PA_ACTION_CONTACT_SET', 'updatecontact'),
   authCode: env('PA_ACTION_AUTH_CODE', 'geteppcode'),
   lockSet: env('PA_ACTION_LOCK_SET', 'lockdomain'),
   whois: env('PA_ACTION_WHOIS', 'whois'),
@@ -68,6 +72,8 @@ export const ACTION_CANDIDATES: Record<ActionKey, string[]> = {
   register: ['regdomain', 'register', 'registerdomain', 'adddomain', 'createdomain'],
   renew: ['renewdomain', 'renew', 'extenddomain', 'gia_han'],
   transfer: ['transferdomain', 'transfer', 'movedomain', 'transferin', 'chuyen_ve'],
+  contactGet: ['getcontact', 'contactinfo', 'getowner', 'domaincontact', 'getdomaincontact'],
+  contactSet: ['updatecontact', 'modifycontact', 'updateowner', 'changecontact', 'updatedomaininfo'],
   authCode: ['geteppcode', 'getepp', 'getauthcode', 'authcode', 'eppcode', 'getauthinfo'],
   lockSet: ['lockdomain', 'setlock', 'domainlock', 'updatelock', 'setdomainlock'],
   whois: ['whois', 'domainwhois', 'whoisdomain'],

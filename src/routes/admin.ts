@@ -33,6 +33,9 @@ import { sendMail } from '../lib/mailer.js';
 import { buildPermissionUrl, exchangeAuthorizationCode, isZnsReady, normalizePhone, sendZns } from '../lib/zns.js';
 import { ZNS_EVENTS, ZNS_EVENT_LIST } from '../services/znsEvents.js';
 import { pendingRefundCount, refundFailedItems, refundOrderItem } from '../services/refunds.js';
+import {
+  listOwnershipRequests, ownerSnapshot, pendingOwnershipCount, setOwnershipStatus,
+} from '../services/domainContact.js';
 import { formatVnd } from '../lib/money.js';
 import { config } from '../config.js';
 
@@ -53,6 +56,7 @@ router.get('/', (_req, res) => {
       activeDomains: count(`SELECT COUNT(*) AS n FROM domains WHERE status='active'`),
       pendingOrders: count(`SELECT COUNT(*) AS n FROM orders WHERE status='pending_payment'`),
       failedItems: pendingRefundCount(),
+      ownershipPending: pendingOwnershipCount(),
       revenue: (db.prepare(`SELECT COALESCE(SUM(total),0) AS n FROM orders WHERE status IN ('paid','processing','completed','partially_completed')`).get() as { n: number }).n,
     },
     jobs: jobStats(),
@@ -526,6 +530,37 @@ router.post(
       refunded ? `Da hoan ${refunded} dong, tong ${formatVnd(total)} vao so du khach hang.` : 'Khong co dong nao can hoan tien.',
     );
     res.redirect(`/admin/don-hang/${orderId}`);
+  }),
+);
+
+/* ------------------------------------------------- ho so doi chu the */
+
+router.get('/doi-chu-the', (req, res) => {
+  const status = String(req.query['status'] ?? '');
+  res.render('admin/ownership', {
+    title: 'Ho so doi chu the',
+    requests: listOwnershipRequests(status ? { status } : {}),
+    status,
+    ownerSnapshot,
+  });
+});
+
+router.post(
+  '/doi-chu-the/:id/trang-thai',
+  wrap(async (req, res) => {
+    const status = String(req.body?.status ?? '') as Parameters<typeof setOwnershipStatus>[1];
+    const hopLe = ['pending', 'in_review', 'need_documents', 'approved', 'completed', 'rejected', 'cancelled'];
+    if (!hopLe.includes(status)) {
+      flash(req, 'error', 'Trang thai khong hop le.');
+      return res.redirect('/admin/doi-chu-the');
+    }
+
+    const ok = await setOwnershipStatus(Number(req.params.id), status, {
+      adminUserId: req.currentUser!.id,
+      note: String(req.body?.note ?? ''),
+    });
+    flash(req, ok ? 'success' : 'error', ok ? 'Da cap nhat ho so va gui email cho khach.' : 'Khong tim thay ho so.');
+    res.redirect('/admin/doi-chu-the');
   }),
 );
 

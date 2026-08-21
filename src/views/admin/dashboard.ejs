@@ -12,6 +12,10 @@
     <div class="stat"><div class="stat-value" style="color:var(--warn)"><%= stats.pendingOrders %></div><div class="stat-label">Don cho thanh toan</div></div>
     <div class="stat"><div class="stat-value" style="color:<%= stats.failedItems ? 'var(--danger)' : 'inherit' %>"><%= stats.failedItems %></div><div class="stat-label">Dong don that bai</div></div>
     <div class="stat">
+      <div class="stat-value" style="color:<%= stats.ownershipPending ? 'var(--warn)' : 'inherit' %>"><%= stats.ownershipPending %></div>
+      <div class="stat-label"><a href="/admin/doi-chu-the">Ho so doi chu the cho xu ly</a></div>
+    </div>
+    <div class="stat">
       <div class="stat-value"><%= jobs.queued %></div>
       <div class="stat-label">Job dang cho<% if (jobs.failed) { %> &middot; <span style="color:var(--danger)"><%= jobs.failed %> loi</span><% } %></div>
     </div>

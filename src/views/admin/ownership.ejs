@@ -1,0 +1,95 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Ho so doi chu the</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="alert alert-info">
+    Doi chu the <strong>khong tu dong</strong>: voi <code>.vn</code> can ban khai co chu ky/con dau va
+    giay to phap nhan theo quy dinh VNNIC; voi ten mien quoc te can xac nhan tu ca hai ben theo ICANN.
+    Trang nay theo doi ho so tu luc khach nop den khi hoan tat. Moi lan doi trang thai deu gui email cho khach.
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-bottom:14px">
+      <% ['', 'pending', 'in_review', 'need_documents', 'approved', 'completed', 'rejected'].forEach(function (s) { %>
+        <a class="btn btn-sm <%= status === s ? '' : 'btn-outline' %>" href="/admin/doi-chu-the<%= s ? '?status=' + s : '' %>">
+          <%= s === '' ? 'Tat ca' : s %>
+        </a>
+      <% }); %>
+    </div>
+
+    <% if (!requests.length) { %>
+      <p class="muted center">Khong co ho so nao.</p>
+    <% } %>
+
+    <% requests.forEach(function (r) { %>
+      <%
+        var nhan = {
+          pending: ['badge-warn', 'Cho tiep nhan'],
+          in_review: ['badge-info', 'Dang xem xet'],
+          need_documents: ['badge-warn', 'Can bo sung giay to'],
+          approved: ['badge-info', 'Da duyet'],
+          completed: ['badge-ok', 'Hoan tat'],
+          rejected: ['badge-danger', 'Tu choi'],
+          cancelled: ['badge-muted', 'Da huy']
+        }[r.status] || ['badge-muted', r.status];
+        var cu = ownerSnapshot(r);
+      %>
+      <div style="padding:16px 0; border-bottom:1px solid var(--line)">
+        <div class="row-between">
+          <div>
+            <strong class="mono"><%= r.domain %></strong>
+            <span class="badge <%= nhan[0] %>" style="margin-left:6px"><%= nhan[1] %></span>
+            <div class="tiny muted">Ho so #<%= r.id %> &middot; <%= r.email %> &middot; <%= r.created_at.replace('T',' ').slice(0,16) %></div>
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:10px">
+          <div>
+            <div class="tiny muted">Chu the hien tai</div>
+            <div class="small"><%= cu.org_name || cu.full_name || '(khong co du lieu)' %></div>
+            <% if (cu.tax_code) { %><div class="tiny muted">MST: <%= cu.tax_code %></div><% } %>
+            <% if (cu.id_number) { %><div class="tiny muted">CCCD: <%= cu.id_number %></div><% } %>
+            <% if (cu.email) { %><div class="tiny muted"><%= cu.email %></div><% } %>
+          </div>
+          <div>
+            <div class="tiny muted">Chu the moi</div>
+            <div class="small"><%= r.new_owner_name || '(ho so da bi xoa)' %></div>
+            <% if (r.new_owner_tax) { %><div class="tiny muted">MST: <%= r.new_owner_tax %></div><% } %>
+            <% if (r.new_owner_id) { %><div class="tiny muted">CCCD: <%= r.new_owner_id %></div><% } %>
+            <% if (r.new_owner_email) { %><div class="tiny muted"><%= r.new_owner_email %></div><% } %>
+          </div>
+        </div>
+
+        <% if (r.reason) { %>
+          <div class="tiny" style="margin-top:8px"><strong>Ly do:</strong> <%= r.reason %></div>
+        <% } %>
+        <% if (r.admin_note) { %>
+          <div class="tiny muted" style="margin-top:4px"><strong>Ghi chu xu ly:</strong> <%= r.admin_note %></div>
+        <% } %>
+
+        <form method="post" action="/admin/doi-chu-the/<%= r.id %>/trang-thai" style="margin-top:10px">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="row" style="align-items:flex-end">
+            <div class="field" style="width:190px; margin:0">
+              <label>Chuyen trang thai</label>
+              <select name="status">
+                <% ['in_review','need_documents','approved','completed','rejected','cancelled'].forEach(function (s) { %>
+                  <option value="<%= s %>"><%= s %></option>
+                <% }); %>
+              </select>
+            </div>
+            <div class="field" style="flex:1; min-width:220px; margin:0">
+              <label>Ghi chu gui cho khach</label>
+              <input type="text" name="note" placeholder="VD: vui long nop ban khai co dau va giay DKKD">
+            </div>
+            <button class="btn btn-sm" type="submit">Cap nhat</button>
+          </div>
+        </form>
+      </div>
+    <% }); %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

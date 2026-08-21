@@ -181,6 +181,93 @@
         </form>
       </div>
 
+      <!-- ------------------------------------------ thong tin chu the -->
+      <div class="card" id="chu-the">
+        <div class="card-title"><h2>Chu the ten mien</h2></div>
+
+        <% if (chuThe.error) { %>
+          <div class="alert alert-warn tiny">Khong doc duoc thong tin tu nha dang ky: <%= chuThe.error %></div>
+        <% } else if (chuThe.contact && chuThe.contact.fullName) { %>
+          <div class="copy-row"><span class="label">Chu the</span><span class="value small"><%= chuThe.contact.orgName || chuThe.contact.fullName %></span></div>
+          <div class="copy-row"><span class="label">Email</span><span class="value small"><%= chuThe.contact.email || '-' %></span></div>
+          <div class="copy-row"><span class="label">Dien thoai</span><span class="value small"><%= chuThe.contact.phone || '-' %></span></div>
+        <% } %>
+
+        <h3 class="section-heading">Sua thong tin lien he</h3>
+        <p class="tiny muted" style="margin-top:-4px">
+          Doi email, dien thoai, dia chi cua <strong>cung mot chu the</strong>. Co hieu luc ngay.
+        </p>
+        <% if (!hoSoChuThe.length) { %>
+          <p class="small muted">Ban chua co ho so chu the nao. <a href="/tai-khoan/ho-so">Tao ho so</a> truoc.</p>
+        <% } else { %>
+          <form method="post" action="/control-panel/<%= domain.domain %>/chu-the">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label>Ap dung ho so</label>
+              <select name="contact_id">
+                <% hoSoChuThe.forEach(function (c) { %>
+                  <option value="<%= c.id %>" <%= domain.contact_id === c.id ? 'selected' : '' %>>
+                    <%= c.org_name || c.full_name %> - <%= c.email %>
+                  </option>
+                <% }); %>
+              </select>
+              <div class="hint"><a href="/tai-khoan/ho-so">Sua noi dung ho so</a> roi quay lai day de day len nha dang ky.</div>
+            </div>
+            <button class="btn btn-block" type="submit">Cap nhat len nha dang ky</button>
+          </form>
+        <% } %>
+
+        <h3 class="section-heading">Doi sang chu the khac</h3>
+        <% if (hoSoDoiChuThe && ['pending','in_review','need_documents','approved'].indexOf(hoSoDoiChuThe.status) >= 0) { %>
+          <%
+            var nhan = {
+              pending: ['badge-warn', 'Cho tiep nhan'],
+              in_review: ['badge-info', 'Dang xem xet'],
+              need_documents: ['badge-warn', 'Can bo sung giay to'],
+              approved: ['badge-info', 'Da duyet, dang xu ly']
+            }[hoSoDoiChuThe.status];
+          %>
+          <p class="small">
+            Ho so <strong>#<%= hoSoDoiChuThe.id %></strong>
+            <span class="badge <%= nhan[0] %>"><%= nhan[1] %></span>
+          </p>
+          <% if (hoSoDoiChuThe.admin_note) { %>
+            <div class="alert alert-info tiny"><strong>Ghi chu tu bo phan xu ly:</strong><br><%= hoSoDoiChuThe.admin_note %></div>
+          <% } %>
+          <p class="tiny muted">Chung toi se lien he qua email de huong dan giay to can nop.</p>
+        <% } else { %>
+          <div class="alert alert-warn tiny">
+            <% if (canHoSoDayDu) { %>
+              Doi chu the ten mien <strong>.vn</strong> la <strong>thu tuc phap ly</strong> theo quy dinh VNNIC:
+              can ban khai co chu ky/con dau va giay to phap nhan cua ca hai ben. Khong thuc hien tu dong duoc.
+            <% } else { %>
+              Doi chu the ten mien quoc te thuong keo theo <strong>khoa chuyen doi 60 ngay</strong> va can xac nhan
+              tu ca chu cu lan chu moi theo quy dinh ICANN.
+            <% } %>
+            Nop ho so ben duoi, bo phan nghiep vu se huong dan cu the.
+          </div>
+          <% if (hoSoChuThe.length) { %>
+            <form method="post" action="/control-panel/<%= domain.domain %>/doi-chu-the"
+                  data-confirm="Nop ho so doi chu the cho <%= domain.domain %>?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <div class="field">
+                <label>Chu the moi</label>
+                <select name="new_contact_id">
+                  <% hoSoChuThe.forEach(function (c) { %>
+                    <option value="<%= c.id %>"><%= c.org_name || c.full_name %> - <%= c.email %></option>
+                  <% }); %>
+                </select>
+              </div>
+              <div class="field">
+                <label>Ly do doi chu the</label>
+                <textarea name="reason" rows="2" placeholder="VD: doi ten doanh nghiep, sap nhap, chuyen nhuong..."></textarea>
+              </div>
+              <button class="btn btn-outline btn-block" type="submit">Nop ho so doi chu the</button>
+            </form>
+          <% } %>
+        <% } %>
+      </div>
+
       <!-- ------------------------------------------ chuyen ten mien di -->
       <div class="card" id="chuyen-di">
         <div class="card-title">
