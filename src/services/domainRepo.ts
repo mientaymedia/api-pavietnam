@@ -11,6 +11,8 @@ export interface DomainRow {
   provider_ref: string;
   nameservers: string;
   auto_renew: number;
+  transfer_lock: number;
+  auth_code_last_at: string | null;
   registered_at: string | null;
   expires_at: string | null;
   last_sync_at: string | null;

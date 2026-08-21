@@ -34,6 +34,7 @@ Ket qua mau:
 Ten nao tra ve du lieu hop le chinh la ten can dung.
 
 Chi cac lenh **chi doc** duoc goi: `check`, `whois`, `info`, `dnsGet`, `list`, `balance`.
+Khong do `authCode` va `lockSet` vi chung tac dong len ten mien that.
 Cong cu **khong bao gio** goi `register`/`renew` vi chung phat sinh chi phi that.
 
 Goi mot action bat ky de thu nghiem:
@@ -50,6 +51,8 @@ PA_ACTION_CHECK=checkdomain
 PA_ACTION_REGISTER=regdomain
 PA_ACTION_RENEW=renewdomain
 PA_ACTION_TRANSFER=transferdomain
+PA_ACTION_AUTH_CODE=geteppcode
+PA_ACTION_LOCK_SET=lockdomain
 PA_ACTION_WHOIS=whois
 PA_ACTION_DNS_GET=getdns
 PA_ACTION_DNS_SET=updatedns
@@ -66,6 +69,7 @@ PA_FIELD_DOMAIN=domain
 PA_FIELD_YEARS=year
 PA_FIELD_NS=ns
 PA_FIELD_AUTH_CODE=authcode
+PA_FIELD_LOCK=lock
 PA_FIELD_RECORD_TYPE=type
 PA_FIELD_RECORD_NAME=name
 PA_FIELD_RECORD_VALUE=value
@@ -147,5 +151,6 @@ Tat ghi log: `PAVIETNAM_LOG=0`.
 | Check duoc nhung dang ky loi | Thieu ho so chu the, hoac tai khoan dai ly khong du so du |
 | DNS doc duoc nhung khong sua duoc | Ten action `PA_ACTION_DNS_SET` chua dung |
 | Chuyen ten mien ve bi tu choi | Ten mien dang khoa, chua qua 60 ngay, hoac ma EPP sai |
+| Khong lay duoc ma EPP | Ten mien dang khoa chuyen doi, hoac chua qua 60 ngay |
 
 Kiem tra nhanh ngay tren giao dien: _Quan tri > Cau hinh Control Panel > Kiem tra ket noi API_.

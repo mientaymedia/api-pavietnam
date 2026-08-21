@@ -365,6 +365,62 @@ export async function sendAutoRenewNeedsPayment(input: {
   });
 }
 
+/**
+ * Canh bao: co nguoi vua lay ma EPP cua ten mien.
+ * Email nay quan trong ve mat an toan - neu chu that khong phai nguoi lay,
+ * ho can biet ngay de doi mat khau va khoa lai ten mien.
+ */
+export async function sendAuthCodeIssued(input: {
+  userId: number; email: string; domain: string; ip: string;
+}): Promise<void> {
+  const site = settings.site();
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'auth_code_issued',
+    subject: `Canh bao: ma chuyen doi cua ${input.domain} vua duoc lay`,
+    html: layout('Ma chuyen doi ten mien vua duoc lay', `
+      <p>Ma EPP (Auth Code) cua ten mien <b>${esc(input.domain)}</b> vua duoc lay tu tai khoan cua ban.</p>
+      ${table([
+        ['Ten mien', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
+        ['Thoi diem', new Date().toISOString().replace('T', ' ').slice(0, 16)],
+        ['Dia chi IP', esc(input.ip || 'khong xac dinh')],
+      ])}
+      <p style="background:#ecfdf5;border:1px solid #a7f3d0;padding:12px;border-radius:8px;font-size:14px;">
+        <b>Neu chinh ban vua thao tac:</b> khong can lam gi them. Dung ma do tai nha dang ky moi de
+        hoan tat viec chuyen ten mien.
+      </p>
+      <p style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:8px;font-size:14px;">
+        <b>Neu KHONG phai ban:</b> tai khoan cua ban co the da bi truy cap trai phep. Hay
+        <b>doi mat khau ngay</b>, sau do vao Control Panel <b>khoa chuyen doi</b> cho ten mien nay.
+        ${site.hotline ? `Can gap, goi ${esc(site.hotline)}.` : ''}
+      </p>
+      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+    `),
+  });
+}
+
+/** Bao khi trang thai khoa chuyen doi thay doi. */
+export async function sendTransferLockChanged(input: {
+  userId: number; email: string; domain: string; locked: boolean;
+}): Promise<void> {
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'transfer_lock_changed',
+    subject: `${input.domain}: da ${input.locked ? 'khoa' : 'mo khoa'} chuyen doi`,
+    html: layout(`Da ${input.locked ? 'khoa' : 'mo khoa'} chuyen doi`, `
+      <p>Ten mien <b>${esc(input.domain)}</b> vua duoc <b>${input.locked ? 'khoa' : 'mo khoa'}</b> chuyen doi.</p>
+      ${input.locked
+        ? '<p>Ten mien dang duoc bao ve: khong ai co the chuyen no sang nha dang ky khac.</p>'
+        : '<p style="background:#fffbeb;border:1px solid #fde68a;padding:12px;border-radius:8px;font-size:14px;">' +
+          'Trong thoi gian mo khoa, ten mien <b>co the bi chuyen di</b> neu ai do co ma EPP. ' +
+          'Nen khoa lai ngay sau khi hoan tat cong viec.</p>'}
+      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+    `),
+  });
+}
+
 export async function alertAdmin(subject: string, bodyHtml: string): Promise<void> {
   const to = settings.smtp().adminAlert;
   if (!to) return;

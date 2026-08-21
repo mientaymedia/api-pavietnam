@@ -181,6 +181,52 @@
         </form>
       </div>
 
+      <!-- ------------------------------------------ chuyen ten mien di -->
+      <div class="card" id="chuyen-di">
+        <div class="card-title">
+          <h2>Chuyen ten mien di</h2>
+          <span class="badge <%= domain.transfer_lock ? 'badge-ok' : 'badge-warn' %>">
+            <%= domain.transfer_lock ? 'Dang khoa' : 'Dang mo khoa' %>
+          </span>
+        </div>
+
+        <p class="muted small">
+          Ten mien la tai san cua ban - ban co quyen chuyen no sang nha dang ky khac bat cu luc nao.
+          Can hai buoc: <strong>mo khoa</strong> roi <strong>lay ma EPP</strong>.
+        </p>
+
+        <form method="post" action="/control-panel/<%= domain.domain %>/khoa-chuyen-doi"
+              <% if (domain.transfer_lock) { %>data-confirm="Mo khoa se cho phep chuyen ten mien di neu ai do co ma EPP. Tiep tuc?"<% } %>>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="locked" value="<%= domain.transfer_lock ? '0' : '1' %>">
+          <button class="btn btn-outline btn-block" type="submit">
+            <%= domain.transfer_lock ? 'Mo khoa chuyen doi' : 'Khoa lai (khuyen nghi)' %>
+          </button>
+        </form>
+
+        <% if (!domain.transfer_lock) { %>
+          <form method="post" action="/control-panel/<%= domain.domain %>/ma-chuyen-doi"
+                data-confirm="Lay ma EPP? Chung toi se gui email canh bao ve tai khoan cua ban."
+                style="margin-top:10px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn-block" type="submit">Lay ma chuyen doi (EPP)</button>
+          </form>
+          <p class="tiny muted" style="margin:8px 0 0">
+            Ma chi hien <strong>mot lan</strong> tren man hinh, khong luu lai. Moi lan lay deu co
+            email canh bao gui ve - de ban phat hien ngay neu tai khoan bi nguoi khac dung.
+          </p>
+        <% } else { %>
+          <p class="tiny muted" style="margin:10px 0 0">
+            Ten mien dang duoc bao ve. Mo khoa truoc neu ban muon lay ma EPP.
+          </p>
+        <% } %>
+
+        <p class="tiny muted" style="margin:12px 0 0; padding-top:12px; border-top:1px solid var(--line)">
+          Luu y: ten mien chi chuyen duoc sau <strong>60 ngay</strong> ke tu lan dang ky moi hoac
+          lan chuyen gan nhat - day la quy dinh chung, khong nha dang ky nao bo qua duoc.
+        </p>
+      </div>
+
       <div class="card">
         <div class="card-title"><h3>Thong tin</h3></div>
         <div class="copy-row"><span class="label">Ngay dang ky</span><span class="value small"><%= domain.registered_at ? domain.registered_at.slice(0, 10) : '-' %></span></div>

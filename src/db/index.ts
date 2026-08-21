@@ -21,7 +21,29 @@ export function migrate(): void {
     : path.join(here, '..', '..', 'src', 'db', 'schema.sql');
   const sql = fs.readFileSync(schemaPath, 'utf8');
   db.exec(sql);
+  addMissingColumns();
   log.info('db_migrated', { file: config.databaseFile });
+}
+
+/**
+ * Them cot moi vao bang da ton tai.
+ *
+ * `CREATE TABLE IF NOT EXISTS` khong sua duoc bang da co, nen cot them sau phai
+ * duoc bo sung o day. Moi muc chi chay mot lan; chay lai la khong lam gi.
+ */
+function addMissingColumns(): void {
+  const themCot: { bang: string; cot: string; dinhNghia: string }[] = [
+    { bang: 'domains', cot: 'transfer_lock', dinhNghia: 'INTEGER NOT NULL DEFAULT 1' },
+    { bang: 'domains', cot: 'auth_code_last_at', dinhNghia: 'TEXT' },
+  ];
+
+  for (const { bang, cot, dinhNghia } of themCot) {
+    const daCo = (db.prepare(`PRAGMA table_info(${bang})`).all() as { name: string }[])
+      .some((c) => c.name === cot);
+    if (daCo) continue;
+    db.exec(`ALTER TABLE ${bang} ADD COLUMN ${cot} ${dinhNghia}`);
+    log.info('db_column_added', { bang, cot });
+  }
 }
 
 /** Thoi diem hien tai dang ISO-8601 UTC (dung thong nhat toan he thong). */

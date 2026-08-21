@@ -284,6 +284,9 @@ CREATE TABLE IF NOT EXISTS domains (
   provider_ref   TEXT NOT NULL DEFAULT '',
   nameservers    TEXT NOT NULL DEFAULT '[]',   -- JSON mang chuoi
   auto_renew     INTEGER NOT NULL DEFAULT 1,
+  -- Khoa chuyen doi (clientTransferProhibited). 1 = khoa, an toan mac dinh.
+  transfer_lock  INTEGER NOT NULL DEFAULT 1,
+  auth_code_last_at TEXT,          -- lan gan nhat khach lay ma EPP
   registered_at  TEXT,
   expires_at     TEXT,
   last_sync_at   TEXT,

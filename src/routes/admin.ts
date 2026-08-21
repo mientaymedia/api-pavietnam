@@ -88,6 +88,9 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'order.auto_provision', label: 'Tu dong dang ky sau khi thanh toan', type: 'checkbox' },
   { key: 'order.payment_ttl_hours', label: 'Gio giu don cho thanh toan', type: 'number' },
   { key: 'order.auto_refund_failed', label: 'Tu dong hoan tien vao vi khi dang ky that bai', type: 'checkbox' },
+  { key: 'order.sync_batch_size', label: 'So ten mien dong bo moi lan quet', type: 'number' },
+  { key: 'order.sync_stale_hours', label: 'Lam moi ten mien sau bao nhieu gio', type: 'number' },
+  { key: 'order.sync_near_expiry_hours', label: 'Ten mien sap het han: doc lai moi (gio)', type: 'number' },
   { key: 'order.renew_notice_days', label: 'Moc nhac gia han (ngay)', hint: 'Vi du: 30,15,7,1' },
 
   // SePay

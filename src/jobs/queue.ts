@@ -13,7 +13,8 @@ import { log } from '../lib/logger.js';
 export type JobType =
   | 'provision_order'      // dang ky/gia han toan bo mot don hang
   | 'provision_item'       // xu ly mot dong don hang
-  | 'sync_domain'          // dong bo trang thai/ngay het han tu P.A
+  | 'sync_domain'          // dong bo trang thai/ngay het han tu P.A cho MOT ten mien
+  | 'sync_domains_due'     // quet va xep lich dong bo cac ten mien can lam moi
   | 'send_renewal_reminders'
   | 'auto_renew_domains'    // tu dong gia han ten mien da bat auto_renew
   | 'expire_stale_orders'

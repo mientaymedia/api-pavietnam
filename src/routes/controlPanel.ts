@@ -18,6 +18,7 @@ import { dnsRecordSchema, fieldErrors, nameserverSchema } from '../lib/validate.
 import { getTld, priceFor } from '../services/pricing.js';
 import { addToCart } from '../services/cart.js';
 import { lookupWhois } from '../services/domains.js';
+import { changeTransferLock, requestAuthCode } from '../services/transferOut.js';
 import { enqueue } from '../jobs/queue.js';
 import { settings } from '../lib/settings.js';
 
@@ -186,6 +187,53 @@ router.post('/:domain/gia-han', (req, res) => {
   flash(req, 'success', `Da them lenh gia han ${domain.domain} (${years} nam) vao gio hang.`);
   res.redirect('/gio-hang');
 });
+
+/* ------------------------------------------------- chuyen ten mien di */
+
+router.post(
+  '/:domain/khoa-chuyen-doi',
+  rateLimit({ windowMs: 60_000, max: 10 }),
+  wrap(async (req, res) => {
+    const domain = load(req);
+    if (!domain) return res.redirect('/control-panel');
+
+    const khoa = String(req.body?.locked ?? '') === '1';
+    const result = await changeTransferLock(domain, khoa, { userId: req.currentUser!.id, ip: req.ip ?? '' });
+
+    if (!result.ok) {
+      flash(req, 'error', result.error);
+    } else {
+      flash(
+        req,
+        'success',
+        khoa
+          ? 'Da khoa chuyen doi. Ten mien khong the bi chuyen sang nha dang ky khac.'
+          : 'Da mo khoa chuyen doi. Nen khoa lai ngay sau khi xong viec.',
+      );
+    }
+    res.redirect(`/control-panel/${domain.domain}#chuyen-di`);
+  }),
+);
+
+router.post(
+  '/:domain/ma-chuyen-doi',
+  rateLimit({ windowMs: 15 * 60_000, max: 5, message: 'Ban lay ma chuyen doi qua nhieu lan. Vui long thu lai sau.' }),
+  wrap(async (req, res) => {
+    const domain = load(req);
+    if (!domain) return res.redirect('/control-panel');
+
+    const outcome = await requestAuthCode(domain, { userId: req.currentUser!.id, ip: req.ip ?? '' });
+
+    if (outcome.status === 'ok') {
+      // Ma chi hien MOT lan qua flash, khong luu vao CSDL cua he thong
+      flash(req, 'success', `Ma chuyen doi (EPP) cua ${domain.domain}: ${outcome.authCode}`);
+      flash(req, 'info', 'Sao chep ngay - ma nay chi hien mot lan. Chung toi da gui email canh bao ve tai khoan cua ban.');
+    } else {
+      flash(req, 'error', outcome.message);
+    }
+    res.redirect(`/control-panel/${domain.domain}#chuyen-di`);
+  }),
+);
 
 router.get(
   '/:domain/whois',

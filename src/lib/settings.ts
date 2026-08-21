@@ -117,6 +117,12 @@ export const settings = {
       .split(',').map((s) => Number(s.trim())).filter((n) => Number.isFinite(n) && n > 0),
     /** Bat dau gia han tu dong khi ten mien con bao nhieu ngay. */
     autoRenewDaysBefore: getSettingNumber('order.auto_renew_days_before', 14),
+    /** So ten mien dong bo moi lan quet - giu nho de khong dap API nha dang ky. */
+    syncBatchSize: getSettingNumber('order.sync_batch_size', 50),
+    /** Ten mien khong dong bo qua bao nhieu gio thi lam moi. */
+    syncStaleHours: getSettingNumber('order.sync_stale_hours', 168),
+    /** Ten mien sap het han thi doc day hon - bao nhieu gio mot lan. */
+    syncNearExpiryHours: getSettingNumber('order.sync_near_expiry_hours', 24),
   }),
 
   sepay: () => ({

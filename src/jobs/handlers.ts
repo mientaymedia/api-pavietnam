@@ -14,7 +14,7 @@ import { getTld, priceFor } from '../services/pricing.js';
 import { balanceOf, debit } from '../payments/balance.js';
 import { fetchRecentTransactions, ORDER_CODE_RE } from '../payments/sepay.js';
 import { settlePayment, startPayment } from '../payments/index.js';
-import type { JobType } from './queue.js';
+import { enqueue, type JobType } from './queue.js';
 
 export type Handler = (payload: Record<string, unknown>) => Promise<void>;
 
@@ -57,6 +57,45 @@ export const handlers: Record<JobType, Handler> = {
         db.prepare(`UPDATE domains SET status='expired', updated_at=? WHERE id=?`).run(nowIso(), refreshed.id);
       }
     }
+  },
+
+  /**
+   * Quet va xep lich dong bo cac ten mien can lam moi.
+   *
+   * Vi sao can: ngay het han co the doi ma he thong khong biet - khach gia han
+   * thang tai P.A, nha dang ky dieu chinh, hoac ten mien chuyen di. Ngay het han
+   * sai dan den nhac gia han sai, va nang nhat la ten mien het han ma khong ai hay.
+   *
+   * Uu tien ten mien sap het han (doc thuong xuyen hon), va gioi han so luong moi
+   * lan chay de khong dap qua nhieu request vao API nha dang ky.
+   */
+  async sync_domains_due() {
+    const { syncBatchSize, syncStaleHours, syncNearExpiryHours } = settings.order();
+    if (syncBatchSize <= 0) return;
+
+    const rows = db
+      .prepare(
+        `SELECT domain, expires_at, last_sync_at FROM domains
+         WHERE status IN ('active','pending')
+           AND (
+             last_sync_at IS NULL
+             OR last_sync_at < ?
+             OR (expires_at IS NOT NULL AND expires_at <= ? AND last_sync_at < ?)
+           )
+         ORDER BY expires_at IS NULL, expires_at
+         LIMIT ?`,
+      )
+      .all(
+        isoIn(-syncStaleHours * 3600_000),                 // qua lau chua dong bo
+        new Date(Date.now() + 45 * 86_400_000).toISOString(), // sap het han trong 45 ngay
+        isoIn(-syncNearExpiryHours * 3600_000),            // thi doc day hon
+        syncBatchSize,
+      ) as { domain: string }[];
+
+    for (const row of rows) {
+      enqueue('sync_domain', { domain: row.domain }, { dedupeKey: `sync:${row.domain}`, maxAttempts: 3 });
+    }
+    if (rows.length) log.info('domains_queued_for_sync', { count: rows.length });
   },
 
   /** Gui email nhac gia han theo cac moc cau hinh (mac dinh 30/15/7/1 ngay). */
@@ -241,6 +280,7 @@ export const RECURRING: { type: JobType; everyMs: number }[] = [
   { type: 'auto_renew_domains', everyMs: 12 * 3600_000 },
   { type: 'expire_stale_orders', everyMs: 3600_000 },
   { type: 'reconcile_sepay', everyMs: 10 * 60_000 },
+  { type: 'sync_domains_due', everyMs: 4 * 3600_000 },
 ];
 
 /** Tien ich: xac dinh don hang cua mot job (dung cho trang admin). */

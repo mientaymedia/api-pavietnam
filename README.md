@@ -178,6 +178,22 @@ con duoi 14 ngay (sua duoc trong _Cau hinh Control Panel_) va:
 
 Khach chi nhan **mot** email cho moi lan gia han, khong bi gui lap.
 
+### Chuyen ten mien di (transfer-out)
+
+Ten mien la tai san cua khach - ho co quyen mang di bat cu luc nao, va he thong
+khong duoc gay kho de. Trong Control Panel, muc **Chuyen ten mien di** cho phep
+khach tu **mo khoa** roi **lay ma EPP**, khong can lien he ho tro.
+
+Ma EPP dong thoi la chia khoa chiem doat ten mien, nen moi lan lay deu:
+
+- Yeu cau **mo khoa truoc** (khoa la trang thai an toan mac dinh)
+- Chi hien **mot lan** tren man hinh, he thong khong luu lai
+- **Gui email canh bao ngay** cho chu so huu, kem IP va thoi diem - de neu tai
+  khoan bi chiem, chu that biet ngay va con kip doi mat khau + khoa lai
+- Ghi nhat ky kiem toan (ai lay, IP nao) **nhung khong ghi ma**
+- Che ma khoi nhat ky ky thuat `api_logs`
+- Cho 5 phut giua hai lan lay, va toi da 5 lan moi 15 phut
+
 ### Chuyen ten mien ve (transfer-in)
 
 Trang `/chuyen-ten-mien` nhan ten mien + **ma EPP/Auth Code** lay tu nha dang ky cu.
@@ -265,6 +281,12 @@ va VAT. Quan tri vien co nut hoan tay cho tung dong hoac ca don trong trang chi 
 
 **Khong phu thuoc dich vu ngoai:** CSDL la SQLite, hang doi nam trong CSDL, phien dang nhap
 cung vay. Khong can Redis, khong can dich vu phu tro nao khac.
+
+**Dong bo dinh ky:** ngay het han co the doi ma he thong khong biet (khach gia han
+thang tai P.A, nha dang ky dieu chinh, ten mien chuyen di). Ngay sai dan den nhac gia
+han sai - nang nhat la ten mien het han ma khong ai hay. Moi 4 gio he thong quet va
+lam moi: ten mien thuong doc lai sau 7 ngay, ten mien **sap het han trong 45 ngay** doc
+lai moi 24 gio. Moi lan chi lam mot lo nho (mac dinh 50) de khong dap API nha dang ky.
 
 **Tach worker khi can:** mac dinh worker chay chung tien trinh web cho don gian. Khi luu
 luong lon, chay `node dist/jobs/worker.js` rieng va dat `WORKER_DISABLED=1` cho tien trinh

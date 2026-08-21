@@ -32,6 +32,8 @@ export type ActionKey =
   | 'register'
   | 'renew'
   | 'transfer'
+  | 'authCode'      // lay ma EPP de chuyen ten mien di
+  | 'lockSet'       // khoa / mo khoa chuyen doi
   | 'whois'
   | 'dnsGet'
   | 'dnsSet'
@@ -46,6 +48,8 @@ export const ACTIONS: Record<ActionKey, string> = {
   register: env('PA_ACTION_REGISTER', 'regdomain'),
   renew: env('PA_ACTION_RENEW', 'renewdomain'),
   transfer: env('PA_ACTION_TRANSFER', 'transferdomain'),
+  authCode: env('PA_ACTION_AUTH_CODE', 'geteppcode'),
+  lockSet: env('PA_ACTION_LOCK_SET', 'lockdomain'),
   whois: env('PA_ACTION_WHOIS', 'whois'),
   dnsGet: env('PA_ACTION_DNS_GET', 'getdns'),
   dnsSet: env('PA_ACTION_DNS_SET', 'updatedns'),
@@ -64,6 +68,8 @@ export const ACTION_CANDIDATES: Record<ActionKey, string[]> = {
   register: ['regdomain', 'register', 'registerdomain', 'adddomain', 'createdomain'],
   renew: ['renewdomain', 'renew', 'extenddomain', 'gia_han'],
   transfer: ['transferdomain', 'transfer', 'movedomain', 'transferin', 'chuyen_ve'],
+  authCode: ['geteppcode', 'getepp', 'getauthcode', 'authcode', 'eppcode', 'getauthinfo'],
+  lockSet: ['lockdomain', 'setlock', 'domainlock', 'updatelock', 'setdomainlock'],
   whois: ['whois', 'domainwhois', 'whoisdomain'],
   dnsGet: ['getdns', 'listdns', 'getrecord', 'dnsinfo', 'getdnsrecord'],
   dnsSet: ['updatedns', 'setdns', 'adddns', 'dnsupdate', 'updaterecord'],
@@ -82,6 +88,8 @@ export const FIELDS = {
   ns: env('PA_FIELD_NS', 'ns'),
   /** Ma xac thuc chuyen ten mien (EPP / Auth Code) do nha dang ky cu cap. */
   authCode: env('PA_FIELD_AUTH_CODE', 'authcode'),
+  /** Gia tri bat/tat khoa chuyen doi. */
+  lock: env('PA_FIELD_LOCK', 'lock'),
   recordType: env('PA_FIELD_RECORD_TYPE', 'type'),
   recordName: env('PA_FIELD_RECORD_NAME', 'name'),
   recordValue: env('PA_FIELD_RECORD_VALUE', 'value'),
@@ -104,6 +112,8 @@ export const RESPONSE_KEYS = {
   registrar: ['registrar', 'sponsor', 'nhadangky'],
   transactionId: ['transactionid', 'transaction_id', 'orderid', 'order_id', 'id', 'ref'],
   balance: ['balance', 'sodu', 'credit', 'amount'],
+  authCode: ['authcode', 'auth_code', 'eppcode', 'epp_code', 'epp', 'transferkey', 'password'],
+  lock: ['lock', 'locked', 'lockstatus', 'transferlock', 'clientupdateprohibited'],
   records: ['records', 'record', 'rows', 'data', 'items', 'list'],
 } as const;
 

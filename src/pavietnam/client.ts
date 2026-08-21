@@ -135,13 +135,25 @@ function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'me
   return { ok, code: status, message: message || (ok ? '' : raw.slice(0, 500)) };
 }
 
+/**
+ * Ma EPP la chia khoa chuyen ten mien di - ai co no cung co the doat ten mien.
+ * Vi vay khong luu vao nhat ky, ke ca nhat ky ky thuat chi quan tri vien xem duoc.
+ */
+function redactAuthCode(action: string, response: string): string {
+  if (action !== ACTIONS.authCode) return response;
+  return response.replace(
+    /("?(?:authcode|auth_code|eppcode|epp_code|epp|transferkey|password)"?\s*[:=]\s*"?)([^",&}\s]+)/gi,
+    '$1***DA-CHE***',
+  );
+}
+
 function writeApiLog(action: string, domain: string, request: string, response: string, ok: boolean, durationMs: number) {
   if (!config.pa.log) return;
   try {
     db.prepare(
       `INSERT INTO api_logs (provider, action, domain, request, response, ok, duration_ms, created_at)
        VALUES ('pavietnam', ?, ?, ?, ?, ?, ?, ?)`,
-    ).run(action, domain, request.slice(0, 4000), response.slice(0, 8000), ok ? 1 : 0, durationMs, nowIso());
+    ).run(action, domain, request.slice(0, 4000), redactAuthCode(action, response).slice(0, 8000), ok ? 1 : 0, durationMs, nowIso());
   } catch (err) {
     log.warn('api_log_write_failed', { error: String(err) });
   }
@@ -279,6 +291,48 @@ export async function transferDomain(input: {
     providerRef: pick(res.data, [...RESPONSE_KEYS.transactionId]) ?? '',
     expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires])),
   };
+}
+
+/**
+ * Lay ma EPP (Auth Code) de khach CHUYEN TEN MIEN DI noi khac.
+ *
+ * Day la quyen cua chu ten mien - khong duoc gay kho de. Nhung cung la duong
+ * chiem doat ten mien neu lot vao tay nguoi khac, nen tang tren ghi nhat ky
+ * va gui email bao cho chu so huu moi lan ma duoc lay.
+ */
+export async function getAuthCode(domain: string): Promise<{ authCode: string } & RawResult> {
+  const d = normalizeDomain(domain);
+  const res = ensureOk(
+    await call(ACTIONS.authCode, { [FIELDS.domain]: d }, { domainForLog: d }),
+    `Lay ma EPP cua ${d}`,
+  );
+
+  const code = pick(res.data, [...RESPONSE_KEYS.authCode]) ?? '';
+  if (!code) {
+    throw new RegistrarError(
+      'Nha dang ky khong tra ve ma EPP. Ten mien co the dang bi khoa chuyen doi, ' +
+        'hoac chua qua 60 ngay ke tu lan dang ky/chuyen gan nhat.',
+      'NO_AUTH_CODE',
+      res.raw,
+    );
+  }
+  return { ...res, authCode: code };
+}
+
+/**
+ * Khoa / mo khoa chuyen doi (clientTransferProhibited).
+ * Khoa la trang thai an toan mac dinh; phai mo khoa truoc khi chuyen ten mien di.
+ */
+export async function setDomainLock(domain: string, locked: boolean): Promise<RawResult> {
+  const d = normalizeDomain(domain);
+  return ensureOk(
+    await call(
+      ACTIONS.lockSet,
+      { [FIELDS.domain]: d, [FIELDS.lock]: locked ? '1' : '0', status: locked ? 'lock' : 'unlock' },
+      { method: 'POST', domainForLog: d },
+    ),
+    `${locked ? 'Khoa' : 'Mo khoa'} ten mien ${d}`,
+  );
 }
 
 /** Tra cuu WHOIS. */
@@ -508,6 +562,12 @@ function sandboxResponse(action: string, params: Record<string, string | number 
   }
   if (action === ACTIONS.list) {
     return JSON.stringify({ status: 'OK', items: [{ domain, status: 'active', expiredate: inOneYear, ns: 'ns1.pavietnam.vn,ns2.pavietnam.vn' }] });
+  }
+  if (action === ACTIONS.authCode) {
+    return JSON.stringify({ status: 'OK', domain, authcode: `EPP-${sha256(domain).slice(0, 10).toUpperCase()}` });
+  }
+  if (action === ACTIONS.lockSet) {
+    return JSON.stringify({ status: 'OK', domain, lock: params['lock'], message: 'Da cap nhat trang thai khoa' });
   }
   if (action === ACTIONS.balance) {
     return JSON.stringify({ status: 'OK', balance: 50_000_000 });
