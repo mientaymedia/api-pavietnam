@@ -184,5 +184,31 @@ Ung dung ghi log dang JSON mot dong moi ban ghi, tien cho viec thu thap tap trun
 ## 10. Tach worker (khi luu luong lon)
 
 Mac dinh worker chay chung tien trinh web - don gian va du cho hau het truong hop.
-Neu can tach rieng, tao service thu hai chay `dist/jobs/worker.js` va dat `WORKER_DISABLED=1`
-cho tien trinh web (can bo sung co nay trong `src/server.ts`).
+
+De tach rieng: dat `WORKER_DISABLED=1` trong `.env` (tien trinh web se khong chay worker nua)
+roi tao service thu hai:
+
+```ini
+[Unit]
+Description=Domain shop worker
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/domain-shop
+EnvironmentFile=/var/www/domain-shop/.env
+Environment=WORKER_DISABLED=0
+ExecStart=/usr/bin/node dist/jobs/worker.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Luu y `Environment=WORKER_DISABLED=0` o service worker - no ghi de gia tri trong
+`EnvironmentFile`, de web tat worker con tien trinh nay van chay.
+
+Chi chay **mot** tien trinh worker. Hai worker cung luc van an toan (job duoc gianh
+quyen bang transaction) nhung khong nhanh hon dang ke va lam kho theo doi.

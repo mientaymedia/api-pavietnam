@@ -38,7 +38,12 @@ export function getSetting(key: string, fallback = ''): string {
 }
 
 export function getSettingNumber(key: string, fallback: number): number {
-  const v = Number(getSetting(key, ''));
+  // Phai kiem tra chuoi RONG truoc: Number('') === 0 va 0 la so huu han,
+  // nen neu doi thang sang so thi fallback se khong bao gio duoc dung -
+  // cau hinh de trong se am tham thanh 0 (vd smtp.port = 0, ttl don = 0 gio).
+  const raw = getSetting(key, '').trim();
+  if (!raw) return fallback;
+  const v = Number(raw);
   return Number.isFinite(v) ? v : fallback;
 }
 
@@ -110,6 +115,8 @@ export const settings = {
     paymentTtlHours: getSettingNumber('order.payment_ttl_hours', 48),
     renewNoticeDays: getSetting('order.renew_notice_days', '30,15,7,1')
       .split(',').map((s) => Number(s.trim())).filter((n) => Number.isFinite(n) && n > 0),
+    /** Bat dau gia han tu dong khi ten mien con bao nhieu ngay. */
+    autoRenewDaysBefore: getSettingNumber('order.auto_renew_days_before', 14),
   }),
 
   sepay: () => ({

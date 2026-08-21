@@ -90,6 +90,7 @@ kem van ban goc.
 | `items[].domain` | co | Ten mien day du |
 | `items[].action` | khong | `register` (mac dinh), `renew`, `transfer` |
 | `items[].years` | khong | Mac dinh 1, toi da 10 |
+| `items[].authCode` | khi `transfer` | Ma EPP/Auth Code tu nha dang ky cu |
 | `contactId` | khong | Ho so chu the; bo trong se dung ho so mac dinh |
 | `coupon` | khong | Ma giam gia |
 | `payWith` | khong | `sepay`, `momo`, `zalopay`, `balance` - tao luon giao dich thanh toan |
@@ -114,6 +115,19 @@ Phan hoi (`201`):
 Voi `sepay`: hien `qrUrl` cho khach quet. Voi `momo`/`zalopay`: chuyen huong khach sang `payUrl`.
 
 Ten mien duoc dang ky **tu dong** ngay khi thanh toan duoc ghi nhan - khong can goi them lenh nao.
+
+**Chuyen ten mien ve** can them `authCode`:
+
+```json
+{
+  "items": [ { "domain": "tenmien-cua-ban.com", "action": "transfer", "years": 1, "authCode": "EPP-abc123" } ],
+  "payWith": "sepay"
+}
+```
+
+Sau khi thanh toan, `items[].status` chuyen sang `active` nghia la **da gui yeu cau** -
+ten mien ve thuc su sau 5-7 ngay khi nha dang ky cu duyet. Trang thai ten mien trong
+`GET /domains` se la `pending` cho den luc do.
 
 ### `GET /orders` va `GET /orders/{code}` - Theo doi don hang
 

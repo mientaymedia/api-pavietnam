@@ -245,6 +245,42 @@ export async function renewDomain(domain: string, years: number): Promise<Regist
   };
 }
 
+/**
+ * Chuyen ten mien ve (transfer-in).
+ *
+ * Khac voi dang ky moi: can `authCode` (ma EPP) do nha dang ky CU cap, va ket qua
+ * thuong la "da tiep nhan yeu cau" chu chua phai "da hoan tat" - viec chuyen ten mien
+ * mat 5-7 ngay voi ten mien quoc te. Trang thai duoc dong bo lai qua job `sync_domain`.
+ */
+export async function transferDomain(input: {
+  domain: string;
+  years: number;
+  authCode: string;
+  contact?: RegisterContact;
+}): Promise<RegisterResult> {
+  const d = normalizeDomain(input.domain);
+  const params: Record<string, string | number> = {
+    [FIELDS.domain]: d,
+    [FIELDS.years]: input.years,
+    [FIELDS.authCode]: input.authCode,
+    // Gui kem vai bien the ten pho bien de tang kha nang tuong thich
+    eppcode: input.authCode,
+    auth_code: input.authCode,
+    ...(input.contact ? contactParams(input.contact) : {}),
+  };
+
+  const res = ensureOk(
+    await call(ACTIONS.transfer, params, { method: 'POST', domainForLog: d }),
+    `Chuyen ten mien ${d}`,
+  );
+  return {
+    ...res,
+    domain: d,
+    providerRef: pick(res.data, [...RESPONSE_KEYS.transactionId]) ?? '',
+    expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires])),
+  };
+}
+
 /** Tra cuu WHOIS. */
 export async function whois(domain: string): Promise<WhoisResult> {
   const d = normalizeDomain(domain);

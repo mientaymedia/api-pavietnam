@@ -1,0 +1,119 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Ma giam gia</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="card">
+    <div class="card-title"><h2>Tao / cap nhat ma</h2></div>
+    <p class="muted small" style="margin-top:-6px">Nhap lai mot ma da co se cap nhat ma do.</p>
+
+    <form method="post" action="/admin/ma-giam-gia">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="grid grid-4" style="gap:0 14px">
+        <div class="field">
+          <label>Ma giam gia</label>
+          <input type="text" name="code" placeholder="TETVUI2027" required style="text-transform:uppercase">
+          <div class="hint">Chu, so, gach ngang - 3 den 30 ky tu</div>
+        </div>
+        <div class="field">
+          <label>Kieu giam</label>
+          <select name="discount_type">
+            <option value="percent">Theo phan tram (%)</option>
+            <option value="fixed">So tien co dinh (VND)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Muc giam</label>
+          <input type="number" name="value" placeholder="10" required>
+          <div class="hint">10 = giam 10% hoac 10 VND tuy kieu tren</div>
+        </div>
+        <div class="field">
+          <label>Giam toi da (VND)</label>
+          <input type="number" name="max_discount" value="0">
+          <div class="hint">0 = khong gioi han</div>
+        </div>
+
+        <div class="field">
+          <label>Don toi thieu (VND)</label>
+          <input type="number" name="min_amount" value="0">
+        </div>
+        <div class="field">
+          <label>Gioi han luot dung</label>
+          <input type="number" name="max_uses" value="0">
+          <div class="hint">0 = khong gioi han</div>
+        </div>
+        <div class="field">
+          <label>Bat dau</label>
+          <input type="date" name="starts_at">
+        </div>
+        <div class="field">
+          <label>Ket thuc</label>
+          <input type="date" name="expires_at">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Chi ap dung cho duoi (de trong = tat ca)</label>
+        <input type="text" name="tld_filter" placeholder="vn,com.vn">
+        <div class="hint">
+          Cach nhau bang dau phay. Duoi dang ban:
+          <%= tlds.filter(function (t) { return t.is_active; }).map(function (t) { return t.tld; }).join(', ') %>
+        </div>
+      </div>
+
+      <label class="check" style="margin-bottom:14px">
+        <input type="checkbox" name="is_active" value="1" checked>
+        <span>Kich hoat ngay</span>
+      </label>
+
+      <button class="btn" type="submit">Luu ma giam gia</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Danh sach (<%= coupons.length %>)</h2></div>
+    <% if (!coupons.length) { %>
+      <p class="muted small">Chua co ma giam gia nao.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Ma</th><th>Muc giam</th><th>Dieu kien</th><th>Hieu luc</th><th>Da dung</th><th>Trang thai</th><th></th></tr>
+          </thead>
+          <tbody>
+            <% coupons.forEach(function (c) { %>
+              <tr>
+                <td class="mono"><strong><%= c.code %></strong></td>
+                <td>
+                  <%= c.discount_type === 'percent' ? c.value + '%' : formatVnd(c.value) %>
+                  <% if (c.max_discount) { %><div class="tiny muted">toi da <%= formatVnd(c.max_discount) %></div><% } %>
+                </td>
+                <td class="small">
+                  <% if (c.min_amount) { %>Don tu <%= formatVnd(c.min_amount) %><br><% } %>
+                  <% if (c.tld_filter) { %><span class="tiny muted">Duoi: <%= c.tld_filter %></span><% } else { %><span class="tiny muted">Moi duoi</span><% } %>
+                </td>
+                <td class="small">
+                  <%= c.starts_at ? c.starts_at.slice(0, 10) : 'Ngay' %>
+                  &rarr;
+                  <%= c.expires_at ? c.expires_at.slice(0, 10) : 'Khong han' %>
+                </td>
+                <td class="small"><%= c.used_count %><%= c.max_uses ? ' / ' + c.max_uses : '' %></td>
+                <td><span class="badge <%= c.is_active ? 'badge-ok' : 'badge-muted' %>"><%= c.is_active ? 'Dang chay' : 'Tam tat' %></span></td>
+                <td class="right">
+                  <form method="post" action="/admin/ma-giam-gia/<%= c.id %>/trang-thai">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn btn-sm btn-outline" type="submit"><%= c.is_active ? 'Tat' : 'Bat' %></button>
+                  </form>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

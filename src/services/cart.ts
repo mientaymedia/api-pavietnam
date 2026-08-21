@@ -37,6 +37,8 @@ export function addToCart(input: {
   domain: string;
   action: DomainAction;
   years: number;
+  /** Du lieu kem theo dong hang, vi du { authCode } khi chuyen ten mien ve. */
+  meta?: Record<string, unknown>;
 }): { ok: true } | { ok: false; error: string } {
   const domain = normalizeDomain(input.domain);
   const parsed = splitDomain(domain, knownTlds());
@@ -45,13 +47,18 @@ export function addToCart(input: {
   const tld = getTld(parsed.tld);
   if (!tld || !tld.is_active) return { ok: false, error: 'Duoi ten mien khong duoc ho tro' };
 
+  if (input.action === 'transfer' && !input.meta?.['authCode']) {
+    return { ok: false, error: 'Chuyen ten mien ve can ma xac thuc (EPP/Auth Code) tu nha dang ky cu' };
+  }
+
   const price = priceFor(tld, input.action, input.years);
 
   db.prepare(
     `INSERT INTO cart_items (cart_key, user_id, action, domain, tld, years, unit_price, amount, meta, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, '{}', ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(cart_key, domain, action) DO UPDATE SET
-       years=excluded.years, unit_price=excluded.unit_price, amount=excluded.amount, user_id=excluded.user_id`,
+       years=excluded.years, unit_price=excluded.unit_price, amount=excluded.amount,
+       user_id=excluded.user_id, meta=excluded.meta`,
   ).run(
     input.cartKey,
     input.userId,
@@ -61,6 +68,7 @@ export function addToCart(input: {
     price.years,
     price.unitPrice,
     price.subtotal,
+    JSON.stringify(input.meta ?? {}),
     nowIso(),
   );
   return { ok: true };

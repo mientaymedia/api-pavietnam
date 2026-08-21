@@ -2,15 +2,18 @@ import { db, isoIn, nowIso } from '../db/index.js';
 import { log } from '../lib/logger.js';
 import { settings } from '../lib/settings.js';
 import { provisionOrder, provisionItem } from '../services/provisioning.js';
-import { cancelOrder, getOrder, refreshOrderStatus } from '../services/orders.js';
+import { cancelOrder, createRenewalOrder, getOrder, refreshOrderStatus } from '../services/orders.js';
 import { domainInfo } from '../pavietnam/client.js';
 import {
   daysUntilExpiry, domainsExpiringWithin, getDomainByName, upsertDomainFromProvider,
 } from '../services/domainRepo.js';
-import { sendRenewalReminder, userEmail } from '../services/notifications.js';
+import {
+  sendAutoRenewCharged, sendAutoRenewNeedsPayment, sendRenewalReminder, userEmail,
+} from '../services/notifications.js';
 import { getTld, priceFor } from '../services/pricing.js';
+import { balanceOf, debit } from '../payments/balance.js';
 import { fetchRecentTransactions, ORDER_CODE_RE } from '../payments/sepay.js';
-import { settlePayment } from '../payments/index.js';
+import { settlePayment, startPayment } from '../payments/index.js';
 import type { JobType } from './queue.js';
 
 export type Handler = (payload: Record<string, unknown>) => Promise<void>;
@@ -93,6 +96,84 @@ export const handlers: Record<JobType, Handler> = {
     if (sent) log.info('renewal_reminders_sent', { count: sent });
   },
 
+  /**
+   * GIA HAN TU DONG.
+   *
+   * Voi moi ten mien da bat `auto_renew` va sap het han:
+   *   1. Tao don gia han (bo qua neu da co don dang cho - tranh tao trung)
+   *   2. Du so du -> tru vi va gia han ngay
+   *   3. Khong du -> giu don lai va gui email kem link thanh toan
+   *
+   * Chay lai an toan: `createRenewalOrder` tra ve don da co thay vi tao don moi.
+   */
+  async auto_renew_domains() {
+    const daysBefore = settings.order().autoRenewDaysBefore;
+    if (daysBefore <= 0) return;
+
+    let renewed = 0;
+    let awaitingPayment = 0;
+
+    for (const domain of domainsExpiringWithin(daysBefore)) {
+      if (!domain.auto_renew || domain.status !== 'active') continue;
+
+      const left = daysUntilExpiry(domain);
+      if (left === null || left < 0) continue;
+
+      const created = createRenewalOrder({
+        userId: domain.user_id,
+        contactId: domain.contact_id,
+        domain: domain.domain,
+        tld: domain.tld,
+        years: 1,
+        note: 'Gia han tu dong',
+      });
+      if (!created.ok) {
+        log.warn('auto_renew_order_failed', { domain: domain.domain, error: created.error });
+        continue;
+      }
+      // Don da ton tai tu lan chay truoc -> khong lam gi them, tranh gui email lap
+      if (created.existing) continue;
+
+      const order = created.order;
+      const email = userEmail(domain.user_id);
+
+      if (debit(domain.user_id, order.total, `auto_renew:${order.code}`, `Gia han tu dong ${domain.domain}`)) {
+        await settlePayment({
+          provider: 'balance',
+          refCode: order.code,
+          amount: order.total,
+          providerTxn: `AUTORENEW-${order.id}`,
+          silent: true, // email rieng "da tru vi va gia han" se duoc gui ngay duoi
+        });
+        renewed++;
+        if (email) {
+          await sendAutoRenewCharged({
+            userId: domain.user_id, email, domain: domain.domain, years: 1,
+            amount: order.total, balanceAfter: balanceOf(domain.user_id), orderCode: order.code,
+          });
+        }
+      } else {
+        // Khong du so du: tao san QR chuyen khoan de khach thanh toan mot cham
+        try {
+          await startPayment({ order, providerId: 'sepay', clientIp: '' });
+        } catch (err) {
+          log.warn('auto_renew_payment_setup_failed', { domain: domain.domain, error: String(err) });
+        }
+        awaitingPayment++;
+        if (email) {
+          await sendAutoRenewNeedsPayment({
+            userId: domain.user_id, email, domain: domain.domain, daysLeft: left,
+            amount: order.total, balance: balanceOf(domain.user_id), orderCode: order.code,
+          });
+        }
+      }
+    }
+
+    if (renewed || awaitingPayment) {
+      log.info('auto_renew_run', { renewed, awaitingPayment });
+    }
+  },
+
   /** Huy cac don qua han thanh toan de giai phong ma don va ma giam gia. */
   async expire_stale_orders() {
     const ttlHours = settings.order().paymentTtlHours;
@@ -156,6 +237,7 @@ export const handlers: Record<JobType, Handler> = {
 /** Job dinh ky: [ten job, chu ky ms]. */
 export const RECURRING: { type: JobType; everyMs: number }[] = [
   { type: 'send_renewal_reminders', everyMs: 6 * 3600_000 },
+  { type: 'auto_renew_domains', everyMs: 12 * 3600_000 },
   { type: 'expire_stale_orders', everyMs: 3600_000 },
   { type: 'reconcile_sepay', everyMs: 10 * 60_000 },
 ];

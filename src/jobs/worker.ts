@@ -5,6 +5,7 @@
 import { log } from '../lib/logger.js';
 import { claimNext, completeJob, enqueue, failJob, requeueStuckJobs } from './queue.js';
 import { handlers, RECURRING } from './handlers.js';
+import { migrate } from '../db/index.js';
 
 let timer: NodeJS.Timeout | null = null;
 let running = false;
@@ -77,4 +78,26 @@ export function stopWorker(): void {
 /** Chay 1 vong ngay lap tuc - dung sau khi ghi nhan thanh toan de kich hoat nhanh. */
 export function kickWorker(): void {
   void drain();
+}
+
+/**
+ * Cho phep chay worker nhu mot tien trinh doc lap:
+ *
+ *     node dist/jobs/worker.js
+ *
+ * Khi do dat WORKER_DISABLED=1 cho tien trinh web de hai ben khong tranh job.
+ */
+const runDirectly = process.argv[1] !== undefined && /jobs[/\\]worker\.(ts|js)$/.test(process.argv[1]);
+if (runDirectly) {
+  migrate();
+  startWorker();
+  log.info('worker_process_started', {});
+
+  const shutdown = (signal: string) => {
+    log.info('worker_shutting_down', { signal });
+    stopWorker();
+    setTimeout(() => process.exit(0), 500).unref();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }

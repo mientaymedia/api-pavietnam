@@ -31,6 +31,7 @@ export type ActionKey =
   | 'check'
   | 'register'
   | 'renew'
+  | 'transfer'
   | 'whois'
   | 'dnsGet'
   | 'dnsSet'
@@ -44,6 +45,7 @@ export const ACTIONS: Record<ActionKey, string> = {
   check: env('PA_ACTION_CHECK', 'checkdomain'),
   register: env('PA_ACTION_REGISTER', 'regdomain'),
   renew: env('PA_ACTION_RENEW', 'renewdomain'),
+  transfer: env('PA_ACTION_TRANSFER', 'transferdomain'),
   whois: env('PA_ACTION_WHOIS', 'whois'),
   dnsGet: env('PA_ACTION_DNS_GET', 'getdns'),
   dnsSet: env('PA_ACTION_DNS_SET', 'updatedns'),
@@ -61,6 +63,7 @@ export const ACTION_CANDIDATES: Record<ActionKey, string[]> = {
   check: ['checkdomain', 'check', 'domaincheck', 'checkdomains', 'availability'],
   register: ['regdomain', 'register', 'registerdomain', 'adddomain', 'createdomain'],
   renew: ['renewdomain', 'renew', 'extenddomain', 'gia_han'],
+  transfer: ['transferdomain', 'transfer', 'movedomain', 'transferin', 'chuyen_ve'],
   whois: ['whois', 'domainwhois', 'whoisdomain'],
   dnsGet: ['getdns', 'listdns', 'getrecord', 'dnsinfo', 'getdnsrecord'],
   dnsSet: ['updatedns', 'setdns', 'adddns', 'dnsupdate', 'updaterecord'],
@@ -77,6 +80,8 @@ export const FIELDS = {
   domain: env('PA_FIELD_DOMAIN', 'domain'),
   years: env('PA_FIELD_YEARS', 'year'),
   ns: env('PA_FIELD_NS', 'ns'),
+  /** Ma xac thuc chuyen ten mien (EPP / Auth Code) do nha dang ky cu cap. */
+  authCode: env('PA_FIELD_AUTH_CODE', 'authcode'),
   recordType: env('PA_FIELD_RECORD_TYPE', 'type'),
   recordName: env('PA_FIELD_RECORD_NAME', 'name'),
   recordValue: env('PA_FIELD_RECORD_VALUE', 'value'),

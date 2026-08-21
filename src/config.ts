@@ -40,6 +40,11 @@ export const config = {
   sessionSecret: secret('SESSION_SECRET'),
   encryptionKey: secret('ENCRYPTION_KEY'),
   trustProxy: bool('TRUST_PROXY', false),
+  /**
+   * Tat worker trong tien trinh web. Dat 1 khi ban chay worker rieng
+   * (`node dist/jobs/worker.js`) de tranh hai tien trinh cung tranh job.
+   */
+  workerDisabled: bool('WORKER_DISABLED', false),
   databaseFile: path.resolve(str('DATABASE_FILE', './data/app.sqlite')),
 
   pa: {

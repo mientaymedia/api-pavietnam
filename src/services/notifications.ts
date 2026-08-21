@@ -158,6 +158,29 @@ export async function sendDomainActivated(input: {
   });
 }
 
+/** Da gui yeu cau chuyen ten mien - con cho nha dang ky cu duyet. */
+export async function sendTransferSubmitted(input: {
+  userId: number; email: string; domain: string; orderCode: string;
+}): Promise<void> {
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'transfer_submitted',
+    subject: `Da tiep nhan yeu cau chuyen ten mien ${input.domain}`,
+    html: layout('Yeu cau chuyen ten mien da duoc gui', `
+      <p>Chung toi da gui yeu cau chuyen <b>${esc(input.domain)}</b> ve he thong (don hang <b>${esc(input.orderCode)}</b>).</p>
+      <p><b>Viec ban can lam tiep:</b></p>
+      <ul style="font-size:14px; line-height:1.8;">
+        <li>Kiem tra hop thu cua <b>email quan tri ten mien</b> - nha dang ky cu se gui thu xac nhan.</li>
+        <li>Bam duyet trong thu do. Neu khong duyet, yeu cau se tu huy sau 5-7 ngay.</li>
+        <li>Dam bao ten mien <b>khong bi khoa</b> (trang thai clientTransferProhibited) va da qua 60 ngay ke tu lan dang ky/chuyen gan nhat.</li>
+      </ul>
+      <p>Ten mien quoc te thuong mat 5-7 ngay de hoan tat. Chung toi se gui email khi ten mien ve tai khoan cua ban.</p>
+      ${button('Theo doi don hang', url(`/don-hang/${input.orderCode}`))}
+    `),
+  });
+}
+
 export async function sendProvisionFailed(input: {
   userId: number; email: string; domain: string; orderCode: string; error: string;
 }): Promise<void> {
@@ -192,6 +215,52 @@ export async function sendRenewalReminder(input: {
       ${table([['Phi gia han 1 nam', esc(formatVnd(input.renewPrice))]])}
       <p>De tranh gian doan website va email, vui long gia han truoc ngay het han.</p>
       ${button('Gia han ngay', url(`/control-panel/${encodeURIComponent(input.domain)}/gia-han`))}
+    `),
+  });
+}
+
+/** Da tru vi va gia han thanh cong. */
+export async function sendAutoRenewCharged(input: {
+  userId: number; email: string; domain: string; years: number; amount: number; balanceAfter: number; orderCode: string;
+}): Promise<void> {
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'auto_renew_charged',
+    subject: `Da tu dong gia han ${input.domain}`,
+    html: layout('Gia han tu dong thanh cong', `
+      <p>Ten mien <b>${esc(input.domain)}</b> da duoc gia han tu dong.</p>
+      ${table([
+        ['Thoi han gia han', `${esc(input.years)} nam`],
+        ['So tien da tru', esc(formatVnd(input.amount))],
+        ['So du con lai', esc(formatVnd(input.balanceAfter))],
+        ['Ma don hang', esc(input.orderCode)],
+      ])}
+      <p class="tiny">Muon dung gia han tu dong? Tat trong Control Panel cua ten mien.</p>
+      ${button('Xem don hang', url(`/don-hang/${input.orderCode}`))}
+    `),
+  });
+}
+
+/** Bat gia han tu dong nhung so du khong du - can khach thanh toan. */
+export async function sendAutoRenewNeedsPayment(input: {
+  userId: number; email: string; domain: string; daysLeft: number; amount: number; balance: number; orderCode: string;
+}): Promise<void> {
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'auto_renew_needs_payment',
+    subject: `Can thanh toan de gia han ${input.domain} (con ${input.daysLeft} ngay)`,
+    html: layout('Gia han tu dong: can thanh toan', `
+      <p>Ten mien <b>${esc(input.domain)}</b> se het han sau <b>${esc(input.daysLeft)} ngay</b>.</p>
+      <p>He thong da tao san don gia han, nhung so du tai khoan khong du de tru tu dong:</p>
+      ${table([
+        ['Can thanh toan', esc(formatVnd(input.amount))],
+        ['So du hien tai', esc(formatVnd(input.balance))],
+        ['Ma don hang', esc(input.orderCode)],
+      ])}
+      <p>Vui long thanh toan don duoi day de ten mien duoc gia han. Don se tu huy neu khong thanh toan.</p>
+      ${button('Thanh toan ngay', url(`/don-hang/${input.orderCode}`))}
     `),
   });
 }

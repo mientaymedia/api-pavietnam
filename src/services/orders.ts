@@ -3,7 +3,7 @@ import { randomCode } from '../lib/crypto.js';
 import { toVnd } from '../lib/money.js';
 import { log } from '../lib/logger.js';
 import { clearCart, getCart } from './cart.js';
-import { computeDiscount, findCoupon, getTld } from './pricing.js';
+import { computeDiscount, findCoupon, getTld, priceFor } from './pricing.js';
 import { enqueue } from '../jobs/queue.js';
 import { audit } from './audit.js';
 
@@ -39,6 +39,7 @@ export interface OrderItem {
   provider_ref: string;
   error: string;
   attempts: number;
+  meta: string;
 }
 
 /** Ma don hang - dong thoi la noi dung chuyen khoan. Ngan, de doc, khong trung. */
@@ -93,9 +94,12 @@ export function createOrderFromCart(input: CreateOrderInput):
     const orderId = Number(info.lastInsertRowid);
     for (const line of cart.lines) {
       db.prepare(
-        `INSERT INTO order_items (order_id, action, domain, tld, years, unit_price, amount, status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
-      ).run(orderId, line.action, line.domain, line.tld, line.years, line.unit_price, line.amount, nowIso(), nowIso());
+        `INSERT INTO order_items (order_id, action, domain, tld, years, unit_price, amount, status, meta, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
+      ).run(
+        orderId, line.action, line.domain, line.tld, line.years, line.unit_price, line.amount,
+        line.meta || '{}', nowIso(), nowIso(),
+      );
     }
 
     if (coupon) {
@@ -108,6 +112,69 @@ export function createOrderFromCart(input: CreateOrderInput):
   audit({ userId: input.userId, action: 'order.create', entity: 'order', entityId: order.id, ip: input.ip, meta: { total, items: cart.lines.length } });
   log.info('order_created', { code: order.code, total });
   return { ok: true, order };
+}
+
+/**
+ * Tao don gia han truc tiep (khong qua gio hang) - dung cho gia han TU DONG.
+ *
+ * Tra ve `existing` neu ten mien da co don gia han dang cho xu ly, de tranh
+ * tao trung don khi job chay lai.
+ */
+export function createRenewalOrder(input: {
+  userId: number;
+  contactId: number | null;
+  domain: string;
+  tld: string;
+  years: number;
+  note?: string;
+}):
+  | { ok: true; order: Order; existing: boolean }
+  | { ok: false; error: string } {
+  // Da co don gia han chua xong cho ten mien nay?
+  const pending = db
+    .prepare(
+      `SELECT o.* FROM orders o
+       JOIN order_items i ON i.order_id = o.id
+       WHERE i.domain = ? COLLATE NOCASE AND i.action = 'renew'
+         AND o.status IN ('pending_payment','paid','processing')
+       ORDER BY o.id DESC LIMIT 1`,
+    )
+    .get(input.domain) as Order | undefined;
+  if (pending) return { ok: true, order: pending, existing: true };
+
+  const tld = getTld(input.tld);
+  if (!tld || !tld.is_active) return { ok: false, error: `Duoi .${input.tld} khong con duoc ho tro` };
+
+  const price = priceFor(tld, 'renew', input.years);
+
+  const order = tx((): Order => {
+    const code = generateOrderCode();
+    const info = db
+      .prepare(
+        `INSERT INTO orders (code, user_id, contact_id, status, subtotal, discount, vat, total, note, created_at, updated_at)
+         VALUES (?, ?, ?, 'pending_payment', ?, 0, ?, ?, ?, ?, ?)`,
+      )
+      .run(code, input.userId, input.contactId, price.subtotal, price.vat, price.total, input.note ?? '', nowIso(), nowIso());
+
+    const orderId = Number(info.lastInsertRowid);
+    db.prepare(
+      `INSERT INTO order_items (order_id, action, domain, tld, years, unit_price, amount, status, meta, created_at, updated_at)
+       VALUES (?, 'renew', ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
+    ).run(
+      orderId, input.domain, tld.tld, price.years, price.unitPrice, price.subtotal,
+      // Danh dau de khau cap phat khong gui email trung voi email "da tru vi gia han"
+      JSON.stringify({ autoRenew: true }), nowIso(), nowIso(),
+    );
+
+    return db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId) as Order;
+  });
+
+  audit({
+    userId: input.userId, action: 'order.auto_renew_created', entity: 'order', entityId: order.id,
+    meta: { domain: input.domain, years: input.years, total: order.total },
+  });
+  log.info('auto_renew_order_created', { code: order.code, domain: input.domain, total: order.total });
+  return { ok: true, order, existing: false };
 }
 
 export function getOrderByCode(code: string): Order | undefined {

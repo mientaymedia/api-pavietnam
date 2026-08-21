@@ -33,6 +33,17 @@ export const sldSchema = z
   .max(63)
   .regex(/^[a-z0-9¡-￿](?:[a-z0-9¡-￿-]*[a-z0-9¡-￿])?$/i, 'Ten mien chi gom chu, so va dau gach ngang');
 
+/**
+ * Ma xac thuc chuyen ten mien (EPP / Auth Code) do nha dang ky CU cap.
+ * Moi nha dang ky sinh mot dinh dang khac nhau nen chi kiem tra do dai va
+ * loai bo khoang trang, khong ap dat quy tac ky tu.
+ */
+export const authCodeSchema = z
+  .string()
+  .trim()
+  .min(4, 'Ma xac thuc chuyen ten mien qua ngan')
+  .max(100, 'Ma xac thuc chuyen ten mien qua dai');
+
 export const yearsSchema = z.coerce.number().int().min(1).max(10);
 
 export const nameserverSchema = z

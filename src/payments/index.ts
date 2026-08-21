@@ -88,6 +88,12 @@ export interface SettleInput {
   providerTxn: string;
   /** Cho phep so tien nho hon tong don (vd khach chuyen thieu) hay khong. */
   allowPartial?: boolean;
+  /**
+   * Khong gui email "da nhan thanh toan".
+   * Dung cho gia han TU DONG: khach khong tu bam thanh toan, va da co email
+   * rieng bao da tru vi - gui them email nay chi lam phien.
+   */
+  silent?: boolean;
 }
 
 export type SettleOutcome =
@@ -150,8 +156,10 @@ export async function settlePayment(input: SettleInput): Promise<SettleOutcome> 
     meta: { provider: input.provider, amount: input.amount, txn: input.providerTxn },
   });
 
-  const email = (db.prepare('SELECT email FROM users WHERE id = ?').get(order.user_id) as { email: string } | undefined)?.email;
-  if (email) await sendPaymentReceived(updated ?? order, email);
+  if (!input.silent) {
+    const email = (db.prepare('SELECT email FROM users WHERE id = ?').get(order.user_id) as { email: string } | undefined)?.email;
+    if (email) await sendPaymentReceived(updated ?? order, email);
+  }
 
   return { status: 'paid', order: updated ?? order };
 }

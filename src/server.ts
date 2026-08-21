@@ -14,7 +14,11 @@ const server = app.listen(config.port, () => {
   console.log(`\n  ${config.appName} dang chay tai ${config.appUrl}\n  Trang quan tri: ${config.appUrl}/admin\n`);
 });
 
-startWorker();
+if (config.workerDisabled) {
+  log.info('worker_disabled_in_web_process', { hint: 'Chay rieng: node dist/jobs/worker.js' });
+} else {
+  startWorker();
+}
 
 const cleanup = setInterval(() => {
   const removed = purgeExpiredSessions();

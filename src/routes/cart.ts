@@ -3,7 +3,7 @@ import { addToCart, clearCart, getCart, removeFromCart, updateCartYears } from '
 import { flash } from '../middleware/session.js';
 import { wrap } from '../middleware/error.js';
 import { checkDomain } from '../pavietnam/client.js';
-import { domainSchema, yearsSchema } from '../lib/validate.js';
+import { authCodeSchema, domainSchema, yearsSchema } from '../lib/validate.js';
 
 const router = Router();
 
@@ -21,6 +21,23 @@ router.post(
     if (!domain.success) {
       flash(req, 'error', 'Ten mien khong hop le.');
       return res.redirect('back');
+    }
+
+    // Chuyen ten mien ve: bat buoc co ma EPP, va ten mien phai DA duoc dang ky
+    let meta: Record<string, unknown> | undefined;
+    if (action === 'transfer') {
+      const raw = req.body?.auth_code;
+      // Zod tra "Required" khi thieu truong - thay bang thong bao nguoi dung hieu duoc
+      if (raw === undefined || String(raw).trim() === '') {
+        flash(req, 'error', 'Vui long nhap ma xac thuc (EPP/Auth Code) lay tu nha dang ky hien tai.');
+        return res.redirect('back');
+      }
+      const code = authCodeSchema.safeParse(raw);
+      if (!code.success) {
+        flash(req, 'error', code.error.issues[0]?.message ?? 'Ma xac thuc khong hop le');
+        return res.redirect('back');
+      }
+      meta = { authCode: code.data };
     }
 
     // Kiem tra lai truoc khi them: tranh cho khach mua ten mien vua bi nguoi khac lay
@@ -42,6 +59,7 @@ router.post(
       domain: domain.data,
       action,
       years: years.success ? years.data : 1,
+      ...(meta ? { meta } : {}),
     });
 
     if (!result.ok) {

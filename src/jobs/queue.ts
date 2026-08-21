@@ -15,6 +15,7 @@ export type JobType =
   | 'provision_item'       // xu ly mot dong don hang
   | 'sync_domain'          // dong bo trang thai/ngay het han tu P.A
   | 'send_renewal_reminders'
+  | 'auto_renew_domains'    // tu dong gia han ten mien da bat auto_renew
   | 'expire_stale_orders'
   | 'reconcile_sepay';      // doi soat bu khi webhook SePay that lac
 

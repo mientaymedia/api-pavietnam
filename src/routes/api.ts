@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { requireApiToken } from '../middleware/auth.js';
 import { rateLimit } from '../middleware/ratelimit.js';
 import { wrap } from '../middleware/error.js';
-import { firstError, domainSchema, dnsRecordSchema, nameserverSchema, yearsSchema } from '../lib/validate.js';
+import { authCodeSchema, firstError, domainSchema, dnsRecordSchema, nameserverSchema, yearsSchema } from '../lib/validate.js';
 import { listTlds, priceFor, getTld } from '../services/pricing.js';
 import { searchDomains, lookupWhois } from '../services/domains.js';
 import { checkDomain } from '../pavietnam/client.js';
@@ -112,11 +112,22 @@ router.get('/me', (req, res) => {
 const orderSchema = z.object({
   items: z
     .array(
-      z.object({
-        domain: domainSchema,
-        action: z.enum(['register', 'renew', 'transfer']).default('register'),
-        years: yearsSchema.default(1),
-      }),
+      z
+        .object({
+          domain: domainSchema,
+          action: z.enum(['register', 'renew', 'transfer']).default('register'),
+          years: yearsSchema.default(1),
+          /** Bat buoc khi action = 'transfer'. Ma EPP do nha dang ky cu cap. */
+          authCode: authCodeSchema.optional(),
+        })
+        .superRefine((v, ctx) => {
+          if (v.action === 'transfer' && !v.authCode) {
+            ctx.addIssue({
+              code: 'custom', path: ['authCode'],
+              message: `${v.domain}: chuyen ten mien ve can authCode (ma EPP)`,
+            });
+          }
+        }),
     )
     .min(1, 'Can it nhat mot ten mien')
     .max(20, 'Toi da 20 ten mien moi don'),
@@ -139,7 +150,10 @@ router.post(
     const cartKey = `api:${userId}:${Date.now()}`;
 
     for (const item of parsed.data.items) {
-      const added = addToCart({ cartKey, userId, domain: item.domain, action: item.action, years: item.years });
+      const added = addToCart({
+        cartKey, userId, domain: item.domain, action: item.action, years: item.years,
+        ...(item.authCode ? { meta: { authCode: item.authCode } } : {}),
+      });
       if (!added.ok) {
         res.status(422).json({ error: `${item.domain}: ${added.error}` });
         return;

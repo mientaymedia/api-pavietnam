@@ -1,0 +1,71 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container container-mid">
+  <%- include('partials/flash') %>
+  <h1>Chuyen ten mien ve</h1>
+  <p class="muted">Chuyen ten mien dang o nha dang ky khac ve quan ly tai day. Thoi han su dung con lai duoc giu nguyen va cong them thoi gian ban mua.</p>
+
+  <div class="card">
+    <div class="card-title"><h2>Thong tin ten mien</h2></div>
+    <form method="post" action="/gio-hang/them">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="action" value="transfer">
+
+      <div class="field">
+        <label for="domain">Ten mien can chuyen</label>
+        <input id="domain" type="text" name="domain" value="<%= values.domain || '' %>" placeholder="tenmien-cua-ban.com" required autofocus>
+      </div>
+
+      <div class="field">
+        <label for="auth_code">Ma xac thuc (EPP / Auth Code)</label>
+        <input id="auth_code" type="text" name="auth_code" class="mono" required>
+        <div class="hint">Lay tai trang quan ly cua nha dang ky <strong>hien tai</strong>. Moi noi goi mot ten: EPP Code, Auth Code, Transfer Key hoac Ma chuyen doi.</div>
+      </div>
+
+      <div class="field" style="max-width:200px">
+        <label for="years">Gia han them</label>
+        <select id="years" name="years">
+          <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> nam</option><% } %>
+        </select>
+      </div>
+
+      <button class="btn btn-lg" type="submit">Them vao gio hang</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><h2>Truoc khi chuyen, kiem tra 4 dieu</h2></div>
+    <ol class="stack" style="padding-left:20px; margin:0">
+      <li><strong>Da qua 60 ngay</strong> ke tu lan dang ky moi hoac lan chuyen gan nhat. Day la quy dinh chung cua ICANN, khong nha dang ky nao bo qua duoc.</li>
+      <li><strong>Ten mien khong bi khoa.</strong> Trang thai <code>clientTransferProhibited</code> phai duoc go tai nha dang ky cu.</li>
+      <li><strong>Email quan tri ten mien con truy cap duoc.</strong> Thu xac nhan se gui vao email dang ky trong WHOIS - khong duyet thi yeu cau tu huy sau 5-7 ngay.</li>
+      <li><strong>Ten mien con han it nhat vai ngay.</strong> Ten mien sap het han nen gia han truoc roi hay chuyen.</li>
+    </ol>
+    <p class="tiny muted" style="margin:14px 0 0">Ten mien quoc te thuong mat 5-7 ngay de hoan tat. Ten mien .vn theo qui trinh rieng cua VNNIC.</p>
+  </div>
+
+  <% if (tlds.length) { %>
+    <div class="card">
+      <div class="card-title"><h2>Phi chuyen ve</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Duoi</th><th class="right">Phi chuyen ve</th><th>Bao gom</th></tr></thead>
+          <tbody>
+            <% tlds.forEach(function (t) { %>
+              <tr>
+                <td><strong>.<%= t.tld %></strong></td>
+                <td class="right"><strong><%= formatVnd(priceFor(t, 'transfer', 1).total) %></strong></td>
+                <td class="small muted">Cong them 1 nam su dung</td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="alert alert-info">Hien chua co duoi ten mien nao mo dich vu chuyen ve. Vui long lien he de duoc ho tro.</div>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

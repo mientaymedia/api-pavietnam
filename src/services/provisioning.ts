@@ -8,15 +8,16 @@
  *  3. Loi tam thoi (mang, timeout) duoc thu lai; loi vinh vien (ten mien da co
  *     nguoi lay) dung ngay va bao cho khach + quan tri.
  */
-import { db, nowIso, tx } from '../db/index.js';
+import { db, nowIso, parseJson, tx } from '../db/index.js';
 import { log } from '../lib/logger.js';
-import { registerDomain, renewDomain, setNameservers } from '../pavietnam/client.js';
+import { registerDomain, renewDomain, setNameservers, transferDomain } from '../pavietnam/client.js';
 import { RegistrarError, type RegisterContact } from '../pavietnam/types.js';
 import { settings } from '../lib/settings.js';
 import { clearCheckCache } from './domains.js';
 import { getOrder, getOrderItems, orderContactId, refreshOrderStatus, type Order, type OrderItem } from './orders.js';
-import { sendDomainActivated, sendProvisionFailed, userEmail } from './notifications.js';
+import { sendDomainActivated, sendProvisionFailed, sendTransferSubmitted, userEmail } from './notifications.js';
 import { audit } from './audit.js';
+import { enqueue } from '../jobs/queue.js';
 import { upsertDomainFromProvider } from './domainRepo.js';
 
 /** Loi khong the khac phuc bang cach thu lai. */
@@ -96,6 +97,8 @@ export async function provisionItem(itemId: number): Promise<boolean> {
   try {
     if (claimed.action === 'renew') {
       await doRenew(order, claimed);
+    } else if (claimed.action === 'transfer') {
+      await doTransfer(order, claimed);
     } else {
       await doRegister(order, claimed);
     }
@@ -193,6 +196,9 @@ async function doRenew(order: Order, item: OrderItem): Promise<void> {
 
   audit({ userId: order.user_id, action: 'domain.renew', entity: 'domain', entityId: domainId, meta: { domain: item.domain, years: item.years, expiresAt: newExpiry } });
 
+  // Gia han TU DONG da co email rieng ("da tru vi va gia han") - khong gui trung
+  if (parseJson<{ autoRenew?: boolean }>(item.meta, {}).autoRenew) return;
+
   await sendDomainActivated({
     userId: order.user_id,
     email: userEmail(order.user_id),
@@ -200,6 +206,62 @@ async function doRenew(order: Order, item: OrderItem): Promise<void> {
     expiresAt: newExpiry,
     nameservers: [],
     years: item.years,
+  });
+}
+
+/**
+ * Chuyen ten mien ve (transfer-in).
+ *
+ * Khac dang ky moi o hai diem quan trong:
+ *  - Can ma EPP (luu trong `order_items.meta` tu luc them vao gio hang)
+ *  - Nha dang ky thuong chi TIEP NHAN yeu cau; ten mien ve thuc su sau 5-7 ngay.
+ *    Vi vay ten mien duoc ghi trang thai `pending` chu khong phai `active`, va
+ *    duoc xep lich dong bo lai de cap nhat khi hoan tat.
+ */
+async function doTransfer(order: Order, item: OrderItem): Promise<void> {
+  const meta = parseJson<{ authCode?: string }>(item.meta, {});
+  const authCode = (meta.authCode ?? '').trim();
+  if (!authCode) {
+    throw new RegistrarError('Thieu ma xac thuc (EPP/Auth Code) de chuyen ten mien', 'NO_AUTH_CODE');
+  }
+
+  const contact = loadContact(order);
+  const result = await transferDomain({
+    domain: item.domain,
+    years: item.years,
+    authCode,
+    ...(contact ? { contact } : {}),
+  });
+
+  const domainId = upsertDomainFromProvider({
+    userId: order.user_id,
+    contactId: order.contact_id,
+    domain: item.domain,
+    tld: item.tld,
+    status: 'pending', // cho nha dang ky cu duyet
+    providerRef: result.providerRef,
+    ...(result.expiresAt ? { expiresAt: result.expiresAt } : {}),
+  });
+
+  db.prepare(`UPDATE order_items SET status='active', domain_id=?, provider_ref=?, error='', updated_at=? WHERE id=?`)
+    .run(domainId, result.providerRef, nowIso(), item.id);
+
+  audit({
+    userId: order.user_id, action: 'domain.transfer', entity: 'domain', entityId: domainId,
+    meta: { domain: item.domain, years: item.years },
+  });
+
+  // Kiem tra lai sau 6 gio de cap nhat trang thai khi ben cu da duyet
+  enqueue('sync_domain', { domain: item.domain }, {
+    delayMs: 6 * 3600_000,
+    dedupeKey: `sync:${item.domain}`,
+  });
+
+  await sendTransferSubmitted({
+    userId: order.user_id,
+    email: userEmail(order.user_id),
+    domain: item.domain,
+    orderCode: order.code,
   });
 }
 

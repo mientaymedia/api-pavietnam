@@ -8,6 +8,8 @@ import { InsufficientBalance } from '../payments/balance.js';
 import { settlePayment } from '../payments/index.js';
 import { kickWorker } from '../jobs/worker.js';
 import { rateLimit } from '../middleware/ratelimit.js';
+import { db } from '../db/index.js';
+import { settings } from '../lib/settings.js';
 
 const router = Router();
 
@@ -104,6 +106,28 @@ router.post('/:code/huy', (req, res) => {
   cancelOrder(order.id, 'Khach hang tu huy');
   flash(req, 'info', `Da huy don hang ${order.code}.`);
   res.redirect('/don-hang');
+});
+
+/** Phieu thanh toan - ban in duoc, dung cho khach can chung tu noi bo. */
+router.get('/:code/hoa-don', (req, res) => {
+  const order = loadOrder(req, String(req.params.code));
+  if (!order) {
+    flash(req, 'error', 'Khong tim thay don hang.');
+    return res.redirect('/don-hang');
+  }
+
+  res.render('orders/invoice', {
+    title: `Phieu thanh toan ${order.code}`,
+    order,
+    items: getOrderItems(order.id),
+    payments: listPayments(order.id).filter((p) => p.status === 'paid'),
+    contact: order.contact_id
+      ? db.prepare('SELECT * FROM contacts WHERE id = ?').get(order.contact_id)
+      : null,
+    customer: db.prepare('SELECT email, full_name, phone FROM users WHERE id = ?').get(order.user_id),
+    site: settings.site(),
+    bank: settings.sepay(),
+  });
 });
 
 /** Kiem tra trang thai thanh toan (trang don hang tu goi de tu cap nhat). */

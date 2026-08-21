@@ -254,6 +254,75 @@ router.post('/bang-gia', (req, res) => {
   res.redirect('/admin/bang-gia');
 });
 
+/* ---------------------------------------------------------- ma giam gia */
+
+router.get('/ma-giam-gia', (_req, res) => {
+  res.render('admin/coupons', {
+    title: 'Ma giam gia',
+    coupons: db.prepare('SELECT * FROM coupons ORDER BY id DESC LIMIT 200').all(),
+    tlds: listTlds({ activeOnly: false }),
+  });
+});
+
+router.post('/ma-giam-gia', (req, res) => {
+  const body = (req.body ?? {}) as Record<string, string>;
+  const code = String(body['code'] ?? '').trim().toUpperCase();
+
+  if (!/^[A-Z0-9_-]{3,30}$/.test(code)) {
+    flash(req, 'error', 'Ma giam gia chi gom chu, so, gach ngang - tu 3 den 30 ky tu.');
+    return res.redirect('/admin/ma-giam-gia');
+  }
+
+  const discountType = body['discount_type'] === 'fixed' ? 'fixed' : 'percent';
+  const value = Math.max(0, Number(body['value']) || 0);
+  if (discountType === 'percent' && value > 100) {
+    flash(req, 'error', 'Giam theo phan tram khong the vuot qua 100%.');
+    return res.redirect('/admin/ma-giam-gia');
+  }
+  if (!value) {
+    flash(req, 'error', 'Vui long nhap muc giam.');
+    return res.redirect('/admin/ma-giam-gia');
+  }
+
+  // Ngay nhap dang yyyy-mm-dd (gio Viet Nam) -> quy ve moc UTC de so sanh nhat quan
+  const toIso = (d: string, endOfDay = false) => {
+    if (!d?.trim()) return null;
+    const t = Date.parse(endOfDay ? `${d}T23:59:59+07:00` : `${d}T00:00:00+07:00`);
+    return Number.isNaN(t) ? null : new Date(t).toISOString().replace(/\.\d{3}Z$/, 'Z');
+  };
+
+  db.prepare(
+    `INSERT INTO coupons (code, discount_type, value, min_amount, max_discount, tld_filter,
+                          max_uses, starts_at, expires_at, is_active, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(code) DO UPDATE SET
+       discount_type=excluded.discount_type, value=excluded.value, min_amount=excluded.min_amount,
+       max_discount=excluded.max_discount, tld_filter=excluded.tld_filter, max_uses=excluded.max_uses,
+       starts_at=excluded.starts_at, expires_at=excluded.expires_at, is_active=excluded.is_active`,
+  ).run(
+    code, discountType, value,
+    Math.max(0, Number(body['min_amount']) || 0),
+    Math.max(0, Number(body['max_discount']) || 0),
+    String(body['tld_filter'] ?? '').trim().toLowerCase(),
+    Math.max(0, Number(body['max_uses']) || 0),
+    toIso(String(body['starts_at'] ?? '')),
+    toIso(String(body['expires_at'] ?? ''), true),
+    body['is_active'] ? 1 : 0,
+    nowIso(),
+  );
+
+  audit({ userId: req.currentUser!.id, action: 'coupon.save', entity: 'coupon', entityId: code, ip: req.ip });
+  flash(req, 'success', `Da luu ma giam gia ${code}.`);
+  res.redirect('/admin/ma-giam-gia');
+});
+
+router.post('/ma-giam-gia/:id/trang-thai', (req, res) => {
+  const id = Number(req.params.id);
+  db.prepare('UPDATE coupons SET is_active = CASE is_active WHEN 1 THEN 0 ELSE 1 END WHERE id = ?').run(id);
+  flash(req, 'success', 'Da doi trang thai ma giam gia.');
+  res.redirect('/admin/ma-giam-gia');
+});
+
 /* ------------------------------------------------------------------ don hang */
 
 router.get('/don-hang', (req, res) => {

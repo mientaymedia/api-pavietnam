@@ -1,0 +1,112 @@
+<%- include('../partials/head') %>
+
+<div class="container container-mid" style="padding-top:28px; padding-bottom:60px">
+
+  <div class="row-between no-print" style="margin-bottom:18px">
+    <a class="btn btn-outline btn-sm" href="/don-hang/<%= order.code %>">&larr; Ve don hang</a>
+    <button class="btn btn-sm" type="button" onclick="window.print()">In phieu</button>
+  </div>
+
+  <div class="card invoice">
+    <div class="row-between" style="align-items:flex-start; margin-bottom:24px">
+      <div>
+        <div style="font-size:1.2rem; font-weight:700"><%= site.name %></div>
+        <% if (site.address) { %><div class="small muted"><%= site.address %></div><% } %>
+        <% if (site.hotline) { %><div class="small muted">Hotline: <%= site.hotline %></div><% } %>
+        <% if (site.supportEmail) { %><div class="small muted"><%= site.supportEmail %></div><% } %>
+      </div>
+      <div class="right">
+        <h1 style="margin:0 0 4px; font-size:1.3rem">PHIEU THANH TOAN</h1>
+        <div class="mono"><strong><%= order.code %></strong></div>
+        <div class="small muted">Ngay: <%= (order.paid_at || order.created_at).slice(0, 10) %></div>
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="margin-bottom:22px">
+      <div>
+        <div class="section-heading">Ben mua</div>
+        <% if (contact) { %>
+          <div><strong><%= contact.kind === 'organization' && contact.org_name ? contact.org_name : contact.full_name %></strong></div>
+          <% if (contact.kind === 'organization' && contact.tax_code) { %>
+            <div class="small">Ma so thue: <%= contact.tax_code %></div>
+          <% } %>
+          <% if (contact.address) { %><div class="small"><%= contact.address %><%= contact.province ? ', ' + contact.province : '' %></div><% } %>
+          <div class="small"><%= contact.email %> &middot; <%= contact.phone %></div>
+        <% } else if (customer) { %>
+          <div><strong><%= customer.full_name || customer.email %></strong></div>
+          <div class="small"><%= customer.email %><%= customer.phone ? ' · ' + customer.phone : '' %></div>
+        <% } %>
+      </div>
+
+      <div>
+        <div class="section-heading">Thanh toan</div>
+        <% if (payments.length) { %>
+          <% payments.forEach(function (p) { %>
+            <div class="small">
+              <%= p.provider === 'sepay' ? 'Chuyen khoan ngan hang' : p.provider === 'balance' ? 'Tru so du tai khoan' : p.provider === 'manual' ? 'Xac nhan thu cong' : p.provider %>
+              <% if (p.paid_at) { %> &middot; <%= p.paid_at.replace('T', ' ').slice(0, 16) %><% } %>
+            </div>
+            <% if (p.provider_txn) { %><div class="tiny muted mono">GD: <%= p.provider_txn %></div><% } %>
+          <% }); %>
+        <% } else { %>
+          <div class="small muted">Chua ghi nhan thanh toan</div>
+        <% } %>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th style="width:34px">#</th><th>Noi dung</th><th class="right">Thoi han</th><th class="right">Don gia</th><th class="right">Thanh tien</th></tr>
+      </thead>
+      <tbody>
+        <% items.forEach(function (i, idx) { %>
+          <tr>
+            <td class="small muted"><%= idx + 1 %></td>
+            <td>
+              <strong class="mono"><%= i.domain %></strong>
+              <div class="tiny muted"><%= i.action === 'register' ? 'Dang ky ten mien' : i.action === 'renew' ? 'Gia han ten mien' : 'Chuyen ten mien ve' %></div>
+            </td>
+            <td class="right small"><%= i.years %> nam</td>
+            <td class="right small"><%= formatVnd(i.unit_price) %></td>
+            <td class="right"><%= formatVnd(i.amount) %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+
+    <div style="margin-left:auto; max-width:320px; margin-top:18px">
+      <div class="copy-row"><span class="label">Tam tinh</span><span class="value"><%= formatVnd(order.subtotal) %></span></div>
+      <% if (order.discount) { %>
+        <div class="copy-row">
+          <span class="label">Giam gia<%= order.coupon_code ? ' (' + order.coupon_code + ')' : '' %></span>
+          <span class="value">-<%= formatVnd(order.discount) %></span>
+        </div>
+      <% } %>
+      <% if (order.vat) { %>
+        <div class="copy-row"><span class="label">VAT</span><span class="value"><%= formatVnd(order.vat) %></span></div>
+      <% } %>
+      <div class="copy-row" style="border-top:2px solid var(--line); padding-top:12px">
+        <span class="label"><strong>Tong cong</strong></span>
+        <span class="value" style="font-size:1.15rem"><%= formatVnd(order.total) %></span>
+      </div>
+    </div>
+
+    <p class="tiny muted" style="margin-top:28px; border-top:1px solid var(--line); padding-top:14px">
+      Phieu nay la chung tu xac nhan giao dich cua he thong, <strong>khong thay the hoa don gia tri gia tang</strong>.
+      Neu can hoa don VAT, vui long lien he
+      <%= site.supportEmail || site.hotline || 'bo phan ho tro' %> kem ma don <%= order.code %>.
+    </p>
+  </div>
+</div>
+
+<style>
+  .invoice table th { font-size: .72rem; }
+  @media print {
+    .no-print, .site-header, .site-footer { display: none !important; }
+    body { background: #fff; }
+    .card { border: 0; box-shadow: none; padding: 0; }
+    .container { max-width: 100%; padding: 0; }
+  }
+</style>
+</body>
+</html>

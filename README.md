@@ -148,8 +148,11 @@ sua file `.env` va khong can khoi dong lai server:
 Gia tri bi mat (API Key, webhook token, khoa cong thanh toan) duoc **ma hoa AES-256-GCM**
 truoc khi luu vao CSDL va luon hien thi dang che (`abcd****wxyz`).
 
-Cac trang quan tri khac: Bang gia, Don hang, Ten mien, Khach hang, Doi soat ngan hang,
-Hang doi xu ly, Nhat ky goi API.
+Cac trang quan tri khac: Bang gia, **Ma giam gia**, Don hang, Ten mien, Khach hang,
+Doi soat ngan hang, Hang doi xu ly, Nhat ky goi API.
+
+**Ma giam gia** ho tro giam theo phan tram hoac so tien co dinh, tran giam toi da,
+gioi han theo duoi ten mien, don toi thieu, so luot dung va khoang thoi gian hieu luc.
 
 ---
 
@@ -161,6 +164,29 @@ Hang doi xu ly, Nhat ky goi API.
 - Bat/tat gia han tu dong, dat lenh gia han
 - Tra cuu WHOIS, dong bo lai thong tin tu nha dang ky
 - Ho so chu the ten mien (bat buoc voi `.vn` theo quy dinh VNNIC)
+- Phieu thanh toan in duoc cho moi don da hoan tat
+
+### Gia han tu dong hoat dong the nao
+
+Voi ten mien da bat `Gia han tu dong`, moi 12 gio he thong quet cac ten mien
+con duoi 14 ngay (sua duoc trong _Cau hinh Control Panel_) va:
+
+1. Tao don gia han - **bo qua neu ten mien da co don dang cho**, nen job chay
+   lai bao nhieu lan cung khong sinh don trung
+2. **Du so du vi** -> tru tien, gia han ngay, gui email bao da tru
+3. **Khong du** -> giu don lai, tao san ma QR va gui email kem link thanh toan
+
+Khach chi nhan **mot** email cho moi lan gia han, khong bi gui lap.
+
+### Chuyen ten mien ve (transfer-in)
+
+Trang `/chuyen-ten-mien` nhan ten mien + **ma EPP/Auth Code** lay tu nha dang ky cu.
+He thong bat buoc phai co ma nay truoc khi cho vao gio hang.
+
+Sau khi thanh toan, yeu cau duoc gui sang nha dang ky. Vi ten mien quoc te mat
+5-7 ngay moi ve, ten mien duoc ghi trang thai `pending` (khong phai `active`) va
+duoc **xep lich tu dong kiem tra lai sau 6 gio**. Khach nhan email huong dan
+duyet thu xac nhan tu nha dang ky cu.
 
 **An toan du lieu DNS:** moi thao tac sua/xoa deu doc bo ban ghi hien tai tu P.A truoc.
 Neu khong doc duoc, he thong **tu choi ghi** thay vi ghi de - tranh xoa mat ban ghi cua khach.
@@ -217,6 +243,10 @@ ngay va bao cho khach + quan tri; loi mang/timeout thi tu thu lai (5s, 10s, 20s.
 **Khong phu thuoc dich vu ngoai:** CSDL la SQLite, hang doi nam trong CSDL, phien dang nhap
 cung vay. Khong can Redis, khong can dich vu phu tro nao khac.
 
+**Tach worker khi can:** mac dinh worker chay chung tien trinh web cho don gian. Khi luu
+luong lon, chay `node dist/jobs/worker.js` rieng va dat `WORKER_DISABLED=1` cho tien trinh
+web de hai ben khong tranh cung mot job.
+
 ---
 
 ## 8. Bao mat
@@ -249,6 +279,7 @@ cung vay. Khong can Redis, khong can dich vu phu tro nao khac.
 | `npm run migrate` | Tao/cap nhat cau truc CSDL |
 | `npm run seed` | Tao admin + bang gia mau + cau hinh mac dinh |
 | `npm run pa:probe -- --domain abc.com` | Do ten action cua API P.A |
+| `node dist/jobs/worker.js` | Chay worker rieng (dat `WORKER_DISABLED=1` cho web) |
 | `npm test` | Chay bo kiem thu |
 | `npm run typecheck` | Kiem tra kieu TypeScript |
 

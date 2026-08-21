@@ -11,7 +11,12 @@
         <span class="muted small"> Tao luc <%= order.created_at.replace('T', ' ').slice(0, 16) %></span>
       </div>
     </div>
-    <a class="btn btn-outline" href="/don-hang">Tat ca don hang</a>
+    <div class="row">
+      <% if (order.status !== 'pending_payment' && order.status !== 'cancelled') { %>
+        <a class="btn btn-outline" href="/don-hang/<%= order.code %>/hoa-don" target="_blank" rel="noopener">Phieu thanh toan</a>
+      <% } %>
+      <a class="btn btn-outline" href="/don-hang">Tat ca don hang</a>
+    </div>
   </div>
 
   <div class="sidebar-layout" style="margin-top:18px">
