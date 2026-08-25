@@ -337,6 +337,7 @@ web de hai ben khong tranh cung mot job.
 
 ## 8. Bao mat
 
+- **Content-Security-Policy**: trinh duyet tu choi chay script khong phai cua may chu - xem muc 8.2
 - **Xac thuc hai lop (TOTP)** cho tai khoan quan tri - xem muc 8.1 ben duoi
 - Mat khau bam bang **scrypt** (co san trong Node, co salt rieng tung tai khoan)
 - Phien dang nhap luu trong CSDL, cookie chi chua id da ky HMAC, **xoay id khi dang nhap**
@@ -383,6 +384,38 @@ tai khoan `admin` / `staff` **bat buoc** bat xac thuc hai lop moi vao duoc `/adm
 *Bat buoc xac thuc hai lop cho tai khoan quan tri*. Chi nen lam khi that su ket
 duong: tat di nghia la mat khau bi lo la mat toan bo quyen quan tri.
 
+### 8.2. Content-Security-Policy
+
+Neu co mot lo XSS lot qua khau escape du lieu, CSP la luoi do phia sau: trinh
+duyet se **tu choi chay** doan ma cua ke tan cong. Chinh sach dang ap dung:
+
+```
+default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
+img-src 'self' data: https://qr.sepay.vn [+ goc cua logo neu co];
+font-src 'self'; connect-src 'self'; form-action 'self';
+frame-ancestors 'self'; base-uri 'none'; object-src 'none'
+```
+
+- `script-src 'self'` - **khong** co `unsafe-inline`, khong co `unsafe-eval`.
+  Day la phan co gia tri nhat: ma chen vao trang se khong chay duoc.
+- `form-action 'self'` chan kieu tan cong doi dich bieu mau de cuop du lieu khach nhap.
+- `base-uri 'none'` chan chen the `<base>` de doi goc cua moi duong dan tuong doi.
+- `img-src` chi mo dung hai nguon anh o ben ngoai: ma QR chuyen khoan cua SePay,
+  va goc cua logo neu quan tri vien dat logo o CDN. Khong mo `https:` chung chung.
+
+**Vi sao `style-src` van con `'unsafe-inline'`:** giao dien dang dung 212 thuoc
+tinh `style="..."` trong 35 tep view. Chuan CSP khong cho dung nonce hay hash
+cho thuoc tinh style, nen chi co hai duong: giu `'unsafe-inline'`, hoac don sach
+ca 212 cho. Chung toi giu nguyen va siet `script-src` truoc, vi script moi la
+duong tan cong that. Muon siet not thi phai don giao dien - viec nay lam duoc
+nhung se dung vao hau het cac trang, nen de rieng.
+
+**Luu y khi sua giao dien:** tu nay **khong duoc** viet `onclick="..."` hay the
+`<script>` noi tuyen trong view - trinh duyet se chan. Dat xu ly su kien trong
+`public/js/app.js` va goi qua thuoc tinh `data-*` nhu cac cho san co. Bo kiem
+thu `test/csp.test.ts` quet lai toan bo view moi lan chay va se bao loi ngay
+neu co ai them script noi tuyen.
+
 ### Da ra soat va cung co
 
 | Muc | Ket qua |
@@ -396,6 +429,7 @@ duong: tat di nghia la mat khau bi lo la mat toan bo quyen quan tri.
 | Giao dien dien thoai | Da co menu thu gon; kiem tra o 360/390/768px khong tran ngang |
 | Truy cap (a11y) | 101/101 o nhap co nhan (nam trong `<label>`, hoac `for=`/`aria-label`) |
 | Xac thuc hai lop | Doi chieu voi vector kiem thu chinh thuc cua RFC 6238; ma QR duoc giai ma lai bang bo giai ma that (OpenCV) tren phien ban 1..15 |
+| Content-Security-Policy | 21 trang mo bang trinh duyet that qua giao thuc go loi: khong trang nao vi pham. Bo do da duoc thu bang mot vi pham co y de chac chan no bat duoc |
 
 ### Viec can lam ngay
 

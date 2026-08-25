@@ -29,6 +29,17 @@
     if (msg && !window.confirm(msg)) e.preventDefault();
   });
 
+  /* Nut in phieu. Dat o day thay vi onclick= tren the: CSP cam script noi tuyen. */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('[data-print]')) { e.preventDefault(); window.print(); }
+  });
+
+  /* O chon tu gui bieu mau khi doi gia tri (vd so nam trong gio hang) */
+  document.addEventListener('change', function (e) {
+    var el = e.target;
+    if (el.hasAttribute && el.hasAttribute('data-submit-on-change') && el.form) el.form.submit();
+  });
+
   /* Ban ghi MX moi can do uu tien - an/hien o nhap cho gon */
   document.querySelectorAll('[data-record-type]').forEach(function (select) {
     var sync = function () {

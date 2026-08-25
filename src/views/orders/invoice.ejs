@@ -4,7 +4,7 @@
 
   <div class="row-between no-print" style="margin-bottom:18px">
     <a class="btn btn-outline btn-sm" href="/don-hang/<%= order.code %>">&larr; Ve don hang</a>
-    <button class="btn btn-sm" type="button" onclick="window.print()">In phieu</button>
+    <button class="btn btn-sm" type="button" data-print>In phieu</button>
   </div>
 
   <div class="card invoice">
@@ -110,5 +110,8 @@
     .container { max-width: 100%; padding: 0; }
   }
 </style>
+<!-- Trang nay khong dung partials/footer nen phai tu nap app.js: nut "In phieu"
+     goi qua data-print (CSP cam onclick= noi tuyen). -->
+<script src="/js/app.js" defer></script>
 </body>
 </html>

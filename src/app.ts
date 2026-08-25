@@ -7,6 +7,7 @@ import { sessionMiddleware, takeFlash } from './middleware/session.js';
 import { csrfMiddleware } from './middleware/csrf.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import { settings } from './lib/settings.js';
+import { buildCsp } from './lib/csp.js';
 import { getCart } from './services/cart.js';
 import { formatVnd } from './lib/money.js';
 import { isVerified } from './services/verification.js';
@@ -51,6 +52,7 @@ export function createApp() {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Content-Security-Policy', buildCsp());
     if (config.isProd) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     next();
   });
