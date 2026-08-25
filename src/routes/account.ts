@@ -7,11 +7,18 @@ import { db, nowIso } from '../db/index.js';
 import { requireAuth } from '../middleware/auth.js';
 import { flash } from '../middleware/session.js';
 import { wrap } from '../middleware/error.js';
+import { rateLimit } from '../middleware/ratelimit.js';
 import { contactSchema, fieldErrors, passwordSchema } from '../lib/validate.js';
 import { hashPassword, randomToken, sha256, verifyPassword } from '../lib/crypto.js';
 import { daysUntilExpiry, listUserDomains } from '../services/domainRepo.js';
 import { listOrders } from '../services/orders.js';
 import { audit } from '../services/audit.js';
+import { qrSvg } from '../lib/qrcode.js';
+import { formatSecret } from '../lib/totp.js';
+import {
+  beginSetup, confirmSetup, disable as disable2FA, getPendingSetup, getState,
+  regenerateRecoveryCodes, requires2FA,
+} from '../services/twoFactor.js';
 
 const router = Router();
 
@@ -170,6 +177,101 @@ router.post(
     res.redirect('/tai-khoan');
   }),
 );
+
+/* ------------------------------------------------------------------ bao mat */
+
+/** Du lieu chung cua trang Bao mat; `them` de chen QR hoac ma du phong. */
+function trangBaoMat(req: import('express').Request, them: Record<string, unknown> = {}) {
+  const user = req.currentUser!;
+  return {
+    title: 'Bao mat tai khoan',
+    state: getState(user.id),
+    batBuoc: requires2FA(user.role),
+    setup: null as { uri: string; secret: string } | null,
+    /** Khoa chia nhom 4 ky tu cho nguoi dung nhap tay khi khong quet duoc QR. */
+    secretDeNhap: '',
+    qr: '',
+    recoveryCodes: null as string[] | null,
+    errors: {} as Record<string, string>,
+    ...them,
+  };
+}
+
+router.get('/tai-khoan/bao-mat', requireAuth, (req, res) => {
+  const user = req.currentUser!;
+  // Neu dang cai dat do (vd nguoi dung tai lai trang) thi hien lai dung ma QR do
+  const setup = getPendingSetup(user.id, user.email);
+  res.render('account/security', trangBaoMat(req, setup ? { setup, secretDeNhap: formatSecret(setup.secret), qr: qrSvg(setup.uri, { alt: 'Ma QR cai dat xac thuc hai lop' }) } : {}));
+});
+
+router.post('/tai-khoan/bao-mat/bat-dau', requireAuth, (req, res) => {
+  const user = req.currentUser!;
+  try {
+    const setup = beginSetup(user.id, user.email);
+    res.render('account/security', trangBaoMat(req, {
+      state: getState(user.id),
+      setup,
+      secretDeNhap: formatSecret(setup.secret),
+      qr: qrSvg(setup.uri, { alt: 'Ma QR cai dat xac thuc hai lop' }),
+    }));
+  } catch (err) {
+    flash(req, 'error', err instanceof Error ? err.message : 'Khong bat dau duoc.');
+    res.redirect('/tai-khoan/bao-mat');
+  }
+});
+
+router.post(
+  '/tai-khoan/bao-mat/xac-nhan',
+  requireAuth,
+  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Nhap sai qua nhieu lan. Vui long thu lai sau.' }),
+  (req, res) => {
+    const user = req.currentUser!;
+    const kq = confirmSetup(user.id, String(req.body?.code ?? ''), req.ip);
+
+    if (!kq.ok) {
+      const setup = getPendingSetup(user.id, user.email);
+      res.status(422).render('account/security', trangBaoMat(req, {
+        setup,
+        secretDeNhap: setup ? formatSecret(setup.secret) : '',
+        qr: setup ? qrSvg(setup.uri, { alt: 'Ma QR cai dat xac thuc hai lop' }) : '',
+        errors: { code: kq.loi ?? 'Ma khong dung' },
+      }));
+      return;
+    }
+
+    // Ma du phong chi hien MOT lan, ngay day - he thong khong luu ban goc
+    res.render('account/security', trangBaoMat(req, {
+      state: getState(user.id),
+      recoveryCodes: kq.recoveryCodes ?? null,
+    }));
+  },
+);
+
+router.post(
+  '/tai-khoan/bao-mat/tat',
+  requireAuth,
+  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Nhap sai qua nhieu lan. Vui long thu lai sau.' }),
+  (req, res) => {
+    const user = req.currentUser!;
+    if (requires2FA(user.role)) {
+      flash(req, 'error', 'Tai khoan quan tri bat buoc dung xac thuc hai lop, khong the tat.');
+      return res.redirect('/tai-khoan/bao-mat');
+    }
+
+    const kq = disable2FA(user.id, String(req.body?.code ?? ''), req.ip);
+    flash(req, kq.ok ? 'success' : 'error', kq.ok ? 'Da tat xac thuc hai lop.' : (kq.loi ?? 'Khong tat duoc.'));
+    res.redirect('/tai-khoan/bao-mat');
+  },
+);
+
+router.post('/tai-khoan/bao-mat/ma-du-phong', requireAuth, (req, res) => {
+  const user = req.currentUser!;
+  if (!getState(user.id).enabled) {
+    flash(req, 'error', 'Chua bat xac thuc hai lop.');
+    return res.redirect('/tai-khoan/bao-mat');
+  }
+  res.render('account/security', trangBaoMat(req, { recoveryCodes: regenerateRecoveryCodes(user.id, req.ip) }));
+});
 
 /* ------------------------------------------------------------------ API token */
 

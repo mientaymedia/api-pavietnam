@@ -160,6 +160,11 @@ export const settings = {
     alsoEmail: getSettingBool('zns.also_email', true),
   }),
 
+  security: () => ({
+    /** Tai khoan admin/staff bat buoc bat xac thuc hai lop moi vao khu quan tri. */
+    require2faAdmin: getSettingBool('security.require_2fa_admin', true),
+  }),
+
   smtp: () => ({
     host: getSetting('smtp.host', config.smtp.host),
     port: getSettingNumber('smtp.port', config.smtp.port),

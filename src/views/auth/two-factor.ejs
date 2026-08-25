@@ -1,0 +1,31 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-narrow">
+  <%- include('../partials/flash') %>
+  <div class="card">
+    <h1>Xac thuc hai lop</h1>
+    <p class="muted small">
+      Mo ung dung xac thuc tren dien thoai (Google Authenticator, Microsoft Authenticator, Authy...)
+      va nhap ma 6 so dang hien thi.
+    </p>
+    <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
+
+    <form method="post" action="/dang-nhap/hai-lop">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label for="code"><span class="field-name">Ma xac thuc</span>
+        <input id="code" type="text" name="code" required autofocus autocomplete="one-time-code"
+               inputmode="numeric" maxlength="20" placeholder="123456"
+               class="mono" style="font-size:20px; letter-spacing:3px; text-align:center"></label>
+      </div>
+
+      <button class="btn btn-block btn-lg" type="submit">Xac nhan</button>
+    </form>
+
+    <p class="small muted center" style="margin:16px 0 0">
+      Mat dien thoai? Nhap mot <strong>ma du phong</strong> vao o tren.
+      &middot; <a href="/dang-nhap">Dang nhap bang tai khoan khac</a>
+    </p>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -79,10 +79,10 @@
                             </select></label>
                           </div>
                           <div class="field"><label><span class="field-name">Ten</span><input type="text" name="name" value="<%= r.name %>"></label></div>
-                          <div class="field"><label><span class="field-name">Gia tri</span><input type="text" name="content" value="<%= r.content %></label>" required></div>
+                          <div class="field"><label><span class="field-name">Gia tri</span><input type="text" name="content" value="<%= r.content %>" required></label></div>
                           <div class="row">
-                            <div class="field" style="flex:1"><label><span class="field-name">TTL</span><input type="number" name="ttl" value="<%= r.ttl %></label>"></div>
-                            <div class="field" style="flex:1"><label><span class="field-name">Uu tien</span><input type="number" name="priority" value="<%= r.priority !== undefined ? r.priority : '' %></label>"></div>
+                            <div class="field" style="flex:1"><label><span class="field-name">TTL</span><input type="number" name="ttl" value="<%= r.ttl %>"></label></div>
+                            <div class="field" style="flex:1"><label><span class="field-name">Uu tien</span><input type="number" name="priority" value="<%= r.priority !== undefined ? r.priority : '' %>"></label></div>
                           </div>
                           <button class="btn btn-sm btn-block" type="submit" <%= dns.stale ? 'disabled' : '' %>>Luu</button>
                         </form>
@@ -105,7 +105,7 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:120px; margin:0">
-              <label>Loai</span>
+              <label><span class="field-name">Loai</span>
               <select name="type" data-record-type data-priority-target="#priority-wrap">
                 <% ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA'].forEach(function (t) { %>
                   <option value="<%= t %>"><%= t %></option>

@@ -126,6 +126,9 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'auth.require_email_verified', label: 'Bat buoc xac thuc email truoc khi dat hang', type: 'checkbox' },
   { key: 'auth.verify_resend_per_hour', label: 'So lan gui lai email xac thuc / gio', type: 'number' },
 
+  // Bao mat
+  { key: 'security.require_2fa_admin', label: 'Bat buoc xac thuc hai lop cho tai khoan quan tri', type: 'checkbox', hint: 'Tat khi khong con thiet bi xac thuc - nhung khi tat, mat khau bi lo la mat toan bo quyen quan tri' },
+
   // ZNS - Zalo Notification Service
   { key: 'zns.enabled', label: 'Bat gui tin qua Zalo (ZNS)', type: 'checkbox' },
   { key: 'zns.app_id', label: 'Zalo App ID' },
@@ -154,6 +157,7 @@ function currentSettingValues(): Record<string, string> {
     ...flatten('momo', settings.momo()),
     ...flatten('zalopay', settings.zalopay()),
     ...flatten('smtp', settings.smtp()),
+    ...flatten('security', settings.security()),
   };
   for (const key of SECRET_KEYS) {
     if (resolved[key]) resolved[key] = maskSecret(resolved[key]!);

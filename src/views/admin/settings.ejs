@@ -23,6 +23,7 @@
         { key: 'sepay.',   title: 'Thanh toan chuyen khoan (SePay)', note: '' },
         { key: 'momo.',    title: 'Vi MoMo', note: '' },
         { key: 'zalopay.', title: 'ZaloPay', note: '' },
+        { key: 'security.', title: 'Bao mat quan tri', note: 'Tai khoan quan tri nam API key P.A (tieu tien that), token cong thanh toan va du lieu ca nhan cua khach.' },
         { key: 'auth.',    title: 'Xac thuc tai khoan', note: 'Email la kenh giao thong tin quan tri ten mien - email sai dong nghia khach mat lien lac voi tai san cua ho.' },
         { key: 'smtp.',    title: 'Email (SMTP)', note: 'Dung de gui email xac thuc, thong tin quan tri ten mien, nhac gia han va canh bao noi bo.' },
         { key: 'zns.',     title: 'Zalo ZNS', note: 'Gui thong bao qua Zalo Official Account. Can duyet mau tin truoc khi gui duoc.' }
@@ -96,7 +97,7 @@
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:1; margin:0">
           <label><span class="field-name">Gui toi dia chi</span>
-          <input type="email" name="test_email" value="<%= currentUser.email %></label>" required>
+          <input type="email" name="test_email" value="<%= currentUser.email %>" required></label>
         </div>
         <button class="btn btn-outline" type="submit">Gui email thu</button>
       </div>
@@ -130,7 +131,7 @@
             <% znsEvents.forEach(function (e) { %>
               <tr>
                 <td><strong><%= e.label %></strong><div class="tiny muted mono"><%= e.event %></div></td>
-                <td><input type="text" name="<%= e.settingKey %>" value="<%= e.templateId %>" placeholder="vd 123456"></td>
+                <td><input type="text" name="<%= e.settingKey %>" value="<%= e.templateId %>" placeholder="vd 123456" aria-label="Template ID cho su kien <%= e.label %>"></td>
                 <td class="tiny mono"><%= e.params.join(', ') %></td>
                 <td class="tiny muted"><%= e.sample %></td>
               </tr>

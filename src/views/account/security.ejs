@@ -1,0 +1,116 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-mid">
+  <%- include('../partials/flash') %>
+  <h1>Bao mat tai khoan</h1>
+
+  <div class="tabs">
+    <a href="/tai-khoan">Thong tin</a>
+    <a href="/tai-khoan/bao-mat" class="active">Bao mat</a>
+    <a href="/tai-khoan/ho-so">Ho so chu the</a>
+    <a href="/control-panel">Ten mien</a>
+    <a href="/don-hang">Don hang</a>
+  </div>
+
+  <% if (recoveryCodes) { %>
+    <div class="alert alert-success">
+      <strong>Ma du phong cua ban.</strong> Hay in ra hoac cat vao noi an toan ngay bay gio -
+      day la <u>lan duy nhat</u> he thong hien chung. Moi ma chi dung duoc mot lan, va dung
+      khi ban khong con dien thoai.
+      <div class="grid grid-2 mono" style="margin-top:10px; background:#fff; padding:12px; border-radius:6px; gap:4px 16px">
+        <% recoveryCodes.forEach(function (c) { %><div><%= c %></div><% }); %>
+      </div>
+      <button class="btn-link tiny" data-copy="<%= recoveryCodes.join(' ') %>" style="margin-top:8px">chep tat ca</button>
+    </div>
+  <% } %>
+
+  <div class="card">
+    <div class="card-title">
+      <h2>Xac thuc hai lop</h2>
+      <% if (state.enabled) { %>
+        <span class="badge" style="background:var(--ok); color:#fff">Dang bat</span>
+      <% } else { %>
+        <span class="badge badge-muted">Dang tat</span>
+      <% } %>
+    </div>
+
+    <p class="muted small">
+      Khi bat, moi lan dang nhap ban se can them ma 6 so tu ung dung xac thuc tren dien thoai.
+      Mat khau bi lo van chua du de vao duoc tai khoan.
+    </p>
+
+    <% if (batBuoc && !state.enabled) { %>
+      <div class="alert alert-error">
+        Tai khoan quan tri <strong>bat buoc</strong> bat xac thuc hai lop moi vao duoc khu vuc quan tri.
+      </div>
+    <% } %>
+
+    <% if (state.enabled) { %>
+      <p class="small">
+        Da bat tu <strong><%= (state.enabledAt || '').replace('T', ' ').slice(0, 16) %></strong>.
+        Con <strong><%= state.recoveryLeft %></strong> ma du phong chua dung.
+        <% if (state.recoveryLeft <= 2) { %>
+          <span style="color:var(--danger)">Sap het - nen tao bo ma moi.</span>
+        <% } %>
+      </p>
+
+      <form method="post" action="/tai-khoan/bao-mat/ma-du-phong" data-confirm="Tao bo ma du phong moi? Bo ma cu se het hieu luc ngay.">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-ghost" type="submit">Tao bo ma du phong moi</button>
+      </form>
+
+      <% if (!batBuoc) { %>
+        <hr style="margin:18px 0; border:0; border-top:1px solid var(--line)">
+        <h3 style="margin:0 0 8px; font-size:15px">Tat xac thuc hai lop</h3>
+        <p class="muted small">Nhap ma hien tai (hoac mot ma du phong) de xac nhan chinh ban dang thao tac.</p>
+        <form method="post" action="/tai-khoan/bao-mat/tat">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="row" style="align-items:flex-end">
+            <div class="field" style="width:200px; margin:0">
+              <label><span class="field-name">Ma xac thuc</span>
+              <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" class="mono"></label>
+            </div>
+            <button class="btn" type="submit" style="background:var(--danger)">Tat</button>
+          </div>
+        </form>
+      <% } %>
+
+    <% } else if (setup) { %>
+      <ol class="small" style="padding-left:18px; line-height:1.9">
+        <li>Cai ung dung xac thuc: Google Authenticator, Microsoft Authenticator hoac Authy.</li>
+        <li>Quet ma QR ben duoi bang ung dung do.</li>
+        <li>Nhap ma 6 so ung dung hien ra de hoan tat.</li>
+      </ol>
+
+      <div class="row" style="align-items:flex-start; gap:22px; flex-wrap:wrap">
+        <div style="flex:0 0 auto"><%- qr %></div>
+        <div style="flex:1; min-width:240px">
+          <p class="small muted" style="margin-top:0">Khong quet duoc? Nhap tay khoa nay vao ung dung (chon loai "theo thoi gian"):</p>
+          <div class="mono" style="word-break:break-all; background:var(--bg-alt); padding:10px; border-radius:6px; letter-spacing:1px">
+            <%= secretDeNhap %>
+          </div>
+          <button class="btn-link tiny" data-copy="<%= setup.secret %>">chep khoa</button>
+
+          <form method="post" action="/tai-khoan/bao-mat/xac-nhan" style="margin-top:16px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label><span class="field-name">Ma 6 so tu ung dung</span>
+              <input type="text" name="code" required autofocus inputmode="numeric" maxlength="6"
+                     autocomplete="one-time-code" class="mono" placeholder="123456"
+                     style="font-size:18px; letter-spacing:3px"></label>
+            </div>
+            <% if (errors.code) { %><div class="alert alert-error"><%= errors.code %></div><% } %>
+            <button class="btn" type="submit">Bat xac thuc hai lop</button>
+          </form>
+        </div>
+      </div>
+
+    <% } else { %>
+      <form method="post" action="/tai-khoan/bao-mat/bat-dau">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn" type="submit">Bat xac thuc hai lop</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -11,19 +11,19 @@
 
       <div class="field <%= errors.full_name ? 'field-error' : '' %>">
         <label for="full_name"><span class="field-name">Ho va ten</span>
-        <input id="full_name" type="text" name="full_name" value="<%= values.full_name || '' %></label>" required autofocus>
+        <input id="full_name" type="text" name="full_name" value="<%= values.full_name || '' %>" required autofocus></label>
         <% if (errors.full_name) { %><div class="error-text"><%= errors.full_name %></div><% } %>
       </div>
 
       <div class="field <%= errors.email ? 'field-error' : '' %>">
         <label for="email"><span class="field-name">Email</span>
-        <input id="email" type="email" name="email" value="<%= values.email || '' %></label>" required autocomplete="email">
+        <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autocomplete="email"></label>
         <% if (errors.email) { %><div class="error-text"><%= errors.email %></div><% } %>
       </div>
 
       <div class="field <%= errors.phone ? 'field-error' : '' %>">
         <label for="phone"><span class="field-name">So dien thoai</span>
-        <input id="phone" type="text" name="phone" value="<%= values.phone || '' %></label>" required>
+        <input id="phone" type="text" name="phone" value="<%= values.phone || '' %>" required></label>
         <% if (errors.phone) { %><div class="error-text"><%= errors.phone %></div><% } %>
       </div>
 

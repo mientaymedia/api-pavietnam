@@ -11,6 +11,7 @@ import { sendEmailVerification, sendPasswordReset, sendWelcome } from '../servic
 import { canResend, consumeToken, isVerified, issueToken } from '../services/verification.js';
 import { requireAuth } from '../middleware/auth.js';
 import { audit } from '../services/audit.js';
+import { isEnabled as twoFactorEnabled, verifyLogin as verify2FA } from '../services/twoFactor.js';
 
 const router = Router();
 
@@ -152,12 +153,88 @@ router.post(
       return;
     }
 
+    // Mat khau dung nhung tai khoan co lop thu hai: CHUA cho vao. Ghi tam vao
+    // phien khach (phien nay chua co userId nen chua co quyen gi) roi doi ma.
+    if (twoFactorEnabled(user.id)) {
+      req.session.pending2fa = { userId: user.id, at: Date.now(), next: safeNext(req.body?.next) };
+      audit({ userId: user.id, action: 'user.login_2fa_required', entity: 'user', entityId: user.id, ip: req.ip });
+      return res.redirect('/dang-nhap/hai-lop');
+    }
+
     const guestCart = req.sessionId;
     loginSession(req, res, user.id);
     mergeCart(guestCart, `user:${user.id}`, user.id);
     audit({ userId: user.id, action: 'user.login', entity: 'user', entityId: user.id, ip: req.ip });
 
     res.redirect(safeNext(req.body?.next));
+  }),
+);
+
+/* ------------------------------------------------- buoc hai: ma xac thuc */
+
+/** Cho toi da 10 phut de nhap ma, sau do phai dang nhap lai tu dau. */
+const HAN_CHO_2FA_MS = 10 * 60_000;
+
+interface ChoXacThuc {
+  userId: number;
+  at: number;
+  next: string;
+}
+
+function layChoXacThuc(req: import('express').Request): ChoXacThuc | null {
+  const cho = req.session.pending2fa as ChoXacThuc | undefined;
+  if (!cho || typeof cho.userId !== 'number') return null;
+  if (Date.now() - cho.at > HAN_CHO_2FA_MS) {
+    delete req.session.pending2fa;
+    return null;
+  }
+  return cho;
+}
+
+router.get('/dang-nhap/hai-lop', (req, res) => {
+  if (req.currentUser) return res.redirect('/dashboard');
+  if (!layChoXacThuc(req)) {
+    flash(req, 'error', 'Phien xac thuc da het han. Vui long dang nhap lai.');
+    return res.redirect('/dang-nhap');
+  }
+  res.render('auth/two-factor', { title: 'Xac thuc hai lop', errors: {} });
+});
+
+router.post(
+  '/dang-nhap/hai-lop',
+  rateLimit({
+    windowMs: 15 * 60_000,
+    max: 10,
+    key: (req) => `${req.ip}:${String((req.session?.pending2fa as ChoXacThuc | undefined)?.userId ?? '')}`,
+    message: 'Nhap sai ma qua nhieu lan. Vui long thu lai sau 15 phut.',
+  }),
+  wrap(async (req, res) => {
+    const cho = layChoXacThuc(req);
+    if (!cho) {
+      flash(req, 'error', 'Phien xac thuc da het han. Vui long dang nhap lai.');
+      return res.redirect('/dang-nhap');
+    }
+
+    const kq = verify2FA(cho.userId, String(req.body?.code ?? ''));
+    if (!kq.ok) {
+      audit({ userId: cho.userId, action: 'user.2fa_failed', entity: 'user', entityId: cho.userId, ip: req.ip });
+      res.status(401).render('auth/two-factor', {
+        title: 'Xac thuc hai lop',
+        errors: { _: 'Ma khong dung hoac da het han. Hay lay ma moi nhat trong ung dung.' },
+      });
+      return;
+    }
+
+    delete req.session.pending2fa;
+    const guestCart = req.sessionId;
+    loginSession(req, res, cho.userId);
+    mergeCart(guestCart, `user:${cho.userId}`, cho.userId);
+    audit({ userId: cho.userId, action: 'user.login', entity: 'user', entityId: cho.userId, ip: req.ip, meta: { twoFactor: kq.duPhong ? 'ma_du_phong' : 'ung_dung' } });
+
+    if (kq.duPhong) {
+      flash(req, 'info', `Ban vua dung mot ma du phong, con lai ${kq.conLai ?? 0} ma. Nen tao bo ma moi trong muc Bao mat.`);
+    }
+    res.redirect(cho.next || '/dashboard');
   }),
 );
 

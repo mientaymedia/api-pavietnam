@@ -337,6 +337,7 @@ web de hai ben khong tranh cung mot job.
 
 ## 8. Bao mat
 
+- **Xac thuc hai lop (TOTP)** cho tai khoan quan tri - xem muc 8.1 ben duoi
 - Mat khau bam bang **scrypt** (co san trong Node, co salt rieng tung tai khoan)
 - Phien dang nhap luu trong CSDL, cookie chi chua id da ky HMAC, **xoay id khi dang nhap**
 - **CSRF token** cho moi form; webhook duoc mien tru vi da xac thuc bang chu ky/token rieng
@@ -345,6 +346,42 @@ web de hai ben khong tranh cung mot job.
 - Gioi han tan suat cho dang nhap, dang ky, tim kiem, API
 - **API Key khong bao gio ghi vao log** - luon che truoc khi luu `api_logs`
 - Quyen so huu duoc kiem tra o moi thao tac tren ten mien va don hang
+
+### 8.1. Xac thuc hai lop cho tai khoan quan tri
+
+Tai khoan quan tri nam **API Key P.A** (moi lan dang ky ten mien la tieu tien that),
+token SePay va thong tin ca nhan cua khach. Chi mot lop mat khau la khong du, nen
+tai khoan `admin` / `staff` **bat buoc** bat xac thuc hai lop moi vao duoc `/admin`.
+
+**Cach bat** (lam mot lan, mat khoang 1 phut):
+
+1. Dang nhap, vao **Tai khoan -> Bao mat**, bam *Bat xac thuc hai lop*.
+2. Mo Google Authenticator (hoac Microsoft Authenticator / Authy) tren dien thoai,
+   quet ma QR hien tren trang. Khong quet duoc thi nhap tay khoa ben canh, chon
+   loai *theo thoi gian (time-based)*.
+3. Nhap ma 6 so ung dung hien ra de hoan tat.
+4. **Luu ngay 10 ma du phong** he thong dua ra - day la lan duy nhat chung hien ra.
+   Moi ma dung duoc mot lan, dung khi mat dien thoai.
+
+**Chi tiet ky thuat:**
+
+| Muc | Cach lam |
+|---|---|
+| Thuat toan | TOTP theo RFC 6238: HMAC-SHA1, 6 chu so, chu ky 30 giay - moi ung dung xac thuc pho bien deu doc duoc |
+| Khoa bi mat | 160 bit, ma hoa **AES-256-GCM** truoc khi luu; CSDL khong co ban goc |
+| Ma du phong | 10 ma, luu dang bam SHA-256, moi ma dung **dung mot lan** |
+| Lech dong ho | Chap nhan chu ky truoc va sau (khoang 90 giay) |
+| Chong phat lai | Chu ky da dung duoc ghi lai; ma cu **khong dung lai duoc** |
+| Ma QR | Ve ngay tai may chu (khong goi dich vu QR ben ngoai - lam vay la gui khoa bi mat cho nguoi la) |
+| Han buoc hai | 10 phut; qua han phai dang nhap lai tu dau |
+| Gioi han thu | 10 lan sai / 15 phut cho moi cap IP + tai khoan |
+
+**Mat ca dien thoai lan ma du phong?** Quan tri he thong xoa ban ghi trong CSDL:
+`DELETE FROM two_factor WHERE user_id = <id>;` roi bat lai tu dau.
+
+**Muon tat bat buoc?** Control Panel -> *Bao mat quan tri* -> bo chon
+*Bat buoc xac thuc hai lop cho tai khoan quan tri*. Chi nen lam khi that su ket
+duong: tat di nghia la mat khau bi lo la mat toan bo quyen quan tri.
 
 ### Da ra soat va cung co
 
@@ -357,14 +394,16 @@ web de hai ben khong tranh cung mot job.
 | Chuyen huong ra ngoai | Da chan `/\evil.com` - kieu vuot rao bang dau gach nguoc |
 | Chi muc CSDL | Moi truy van nong deu dung index, khong quet bang |
 | Giao dien dien thoai | Da co menu thu gon; kiem tra o 360/390/768px khong tran ngang |
-| Truy cap (a11y) | 94/98 o nhap lien ket voi nhan; 4 cho con lai dung `aria-label` |
+| Truy cap (a11y) | 101/101 o nhap co nhan (nam trong `<label>`, hoac `for=`/`aria-label`) |
+| Xac thuc hai lop | Doi chieu voi vector kiem thu chinh thuc cua RFC 6238; ma QR duoc giai ma lai bang bo giai ma that (OpenCV) tren phien ban 1..15 |
 
 ### Viec can lam ngay
 
 1. **Doi mat khau tai khoan dai ly P.A** neu API Key da tung duoc chia se qua chat/email.
    API Key cua P.A **thay doi theo mat khau**, nen doi mat khau la cach thu hoi key cu.
 2. Khong bao gio commit file `.env` (da co trong `.gitignore`).
-3. Doi `ADMIN_PASSWORD` ngay sau lan dang nhap dau tien.
+3. Doi `ADMIN_PASSWORD` ngay sau lan dang nhap dau tien, roi **bat xac thuc hai lop**
+   (muc 8.1) - he thong se tu nhac khi ban vao `/admin` lan dau.
 4. Chay sau HTTPS va dat `TRUST_PROXY=1`.
 
 ---

@@ -45,6 +45,26 @@ CREATE TABLE IF NOT EXISTS password_resets (
   created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
 
+-- Xac thuc hai lop (TOTP). Moi nguoi dung nhieu nhat mot khoa bi mat.
+CREATE TABLE IF NOT EXISTS two_factor (
+  user_id      INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  secret_enc   TEXT NOT NULL,             -- khoa Base32, ma hoa AES-256-GCM truoc khi luu
+  confirmed_at TEXT,                      -- NULL = dang cai dat do, chua bat that
+  last_counter INTEGER,                   -- chu ky 30s da dung gan nhat (chong phat lai)
+  created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+  updated_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+
+-- Ma du phong: dung khi mat dien thoai. Moi ma chi dung duoc MOT lan.
+CREATE TABLE IF NOT EXISTS two_factor_recovery (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code_hash  TEXT NOT NULL,               -- SHA-256, khong luu ma goc
+  used_at    TEXT,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+CREATE INDEX IF NOT EXISTS idx_2fa_recovery_user ON two_factor_recovery(user_id);
+
 -- Token xac thuc dia chi email khi dang ky
 CREATE TABLE IF NOT EXISTS email_verifications (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
