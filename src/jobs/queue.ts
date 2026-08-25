@@ -73,7 +73,7 @@ export function claimNext(): JobRow | null {
       .run(nowIso(), nowIso(), row.id);
     return { ...row, attempts: row.attempts + 1, status: 'running' };
   });
-  return claim();
+  return claim.immediate();
 }
 
 export function completeJob(id: number): void {

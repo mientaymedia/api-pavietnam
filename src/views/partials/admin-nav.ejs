@@ -1,5 +1,6 @@
 <div class="tabs">
   <a href="/admin" class="<%= currentPath === '/admin' ? 'active' : '' %>">Tong quan</a>
+  <a href="/admin/bao-cao" class="<%= currentPath.startsWith('/admin/bao-cao') ? 'active' : '' %>">Bao cao</a>
   <a href="/admin/cau-hinh" class="<%= currentPath.startsWith('/admin/cau-hinh') ? 'active' : '' %>">Cau hinh Control Panel</a>
   <a href="/admin/bang-gia" class="<%= currentPath.startsWith('/admin/bang-gia') ? 'active' : '' %>">Bang gia</a>
   <a href="/admin/ma-giam-gia" class="<%= currentPath.startsWith('/admin/ma-giam-gia') ? 'active' : '' %>">Ma giam gia</a>

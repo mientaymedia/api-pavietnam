@@ -37,6 +37,10 @@ import {
   listOwnershipRequests, ownerSnapshot, pendingOwnershipCount, setOwnershipStatus,
 } from '../services/domainContact.js';
 import { formatVnd } from '../lib/money.js';
+import {
+  doanhThuTheoDuoi, doanhThuTheoThang, duBaoGiaHan, khachHangHangDau, theoPhuongThuc,
+  tongQuan, xuatDoanhThu, xuatDonHang, xuatTenMien,
+} from '../services/reports.js';
 import { config } from '../config.js';
 
 const router = Router();
@@ -325,6 +329,46 @@ router.post(
     res.redirect('/admin/cau-hinh');
   }),
 );
+
+/* ------------------------------------------------------------------ bao cao */
+
+router.get('/bao-cao', (_req, res) => {
+  const theoThang = doanhThuTheoThang(12);
+  res.render('admin/reports', {
+    title: 'Bao cao kinh doanh',
+    tongQuan: tongQuan(),
+    theoThang,
+    // Truc y dung chung cho ca 12 cot; 1 de tranh chia cho 0 khi chua co du lieu
+    dinhTruc: Math.max(1, ...theoThang.map((t) => t.doanhThu)),
+    theoDuoi: doanhThuTheoDuoi(),
+    phuongThuc: theoPhuongThuc(),
+    duBao: duBaoGiaHan(),
+    khachHang: khachHangHangDau(10),
+  });
+});
+
+/** Xuat du lieu ra CSV (mo duoc bang Excel). */
+router.get('/xuat/:loai', (req, res) => {
+  const loai = String(req.params.loai);
+  const ngay = new Date().toISOString().slice(0, 10);
+
+  const bang: Record<string, { csv: () => string; ten: string }> = {
+    'don-hang': { csv: xuatDonHang, ten: `don-hang-${ngay}.csv` },
+    'ten-mien': { csv: xuatTenMien, ten: `ten-mien-${ngay}.csv` },
+    'doanh-thu': { csv: () => xuatDoanhThu(24), ten: `doanh-thu-${ngay}.csv` },
+  };
+
+  const muc = bang[loai];
+  if (!muc) {
+    flash(req, 'error', 'Loai du lieu khong hop le.');
+    return res.redirect('/admin/bao-cao');
+  }
+
+  audit({ userId: req.currentUser!.id, action: 'report.export', entity: 'report', entityId: loai, ip: req.ip });
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="${muc.ten}"`);
+  res.send(muc.csv());
+});
 
 /* ------------------------------------------------------------------ bang gia */
 

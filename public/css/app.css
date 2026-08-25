@@ -225,3 +225,59 @@ pre.raw {
 }
 .section-heading { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); font-weight: 700; margin: 26px 0 10px; }
 .section-heading:first-child { margin-top: 0; }
+
+/* =========================================================================
+   Bieu do bao cao
+   Mau theo bang da qua kiem tra mu mau (validate_palette): cap #2a78d6 /
+   #1baf7a dat moi nguong, rieng tuong phan cua mau xanh la duoi 3:1 nen
+   BAT BUOC co nhan hien ro va bang so lieu kem theo - da lam o duoi.
+   ========================================================================= */
+.viz {
+  --series-von: #2a78d6;   /* gia von  */
+  --series-lai: #1baf7a;   /* lai      */
+  --viz-grid: #eef2f6;
+  --viz-axis: #94a3b8;
+}
+
+.viz-bars {
+  display: flex; align-items: flex-end; gap: 10px;
+  height: 250px; padding: 0 0 4px;
+  border-bottom: 1px solid var(--viz-grid);
+  overflow-x: auto;
+}
+.viz-col { flex: 1 1 0; min-width: 34px; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+/* Cot chong: gia von duoi, lai tren; khe 2px giua hai mieng de phan biet */
+.viz-stack { width: 100%; max-width: 46px; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+.viz-seg { width: 100%; }
+.viz-seg-lai { background: var(--series-lai); border-radius: 4px 4px 0 0; margin-bottom: 2px; }
+.viz-seg-von { background: var(--series-von); border-radius: 0 0 2px 2px; }
+.viz-col:only-child .viz-seg-lai { border-radius: 4px 4px 0 0; }
+.viz-col:hover .viz-seg { filter: brightness(1.08); }
+.viz-xlabel { font-size: .68rem; color: var(--ink-muted); margin-top: 6px; white-space: nowrap; }
+.viz-vlabel {
+  font-size: .68rem; font-weight: 700; color: var(--ink-soft);
+  margin-bottom: 4px; white-space: nowrap;
+  /* Luon chiem cho du khong co chu: neu khong, cot co nhan se thap hon cot khac */
+  min-height: 1em;
+}
+
+.viz-legend { display: flex; gap: 16px; flex-wrap: wrap; margin: 0 0 14px; font-size: .82rem; color: var(--ink-soft); }
+.viz-key { display: inline-flex; align-items: center; gap: 6px; }
+.viz-swatch { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+
+/* Thanh ngang cho bang xep hang - mot mau vi cung mot dai luong */
+.viz-rowbar { height: 7px; border-radius: 4px; background: var(--series-von); min-width: 3px; }
+.viz-rowbar-track { background: var(--viz-grid); border-radius: 4px; overflow: hidden; }
+
+/* Chu thich noi khi ro chuot - tuong tac mac dinh cua bieu do */
+.viz-col { position: relative; }
+.viz-tip {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: #fff; padding: 8px 10px; border-radius: 8px;
+  font-size: .75rem; line-height: 1.5; white-space: nowrap; z-index: 5;
+  opacity: 0; pointer-events: none; transition: opacity .12s; box-shadow: var(--shadow-lg);
+}
+.viz-col:hover .viz-tip, .viz-col:focus-within .viz-tip { opacity: 1; }
+.viz-tip b { font-weight: 700; }
+/* Thang khong co doanh thu: vach mo de van nhin thay vi tri tren truc */
+.viz-seg-trong { height: 2px; background: var(--viz-axis); opacity: .35; border-radius: 2px; }

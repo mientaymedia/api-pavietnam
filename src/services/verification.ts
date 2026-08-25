@@ -52,7 +52,7 @@ export function issueToken(user: { id: number; email: string }): string {
       `INSERT INTO email_verifications (user_id, email, token_hash, expires_at, created_at)
        VALUES (?, ?, ?, ?, ?)`,
     ).run(user.id, user.email.toLowerCase(), sha256(token), isoIn(TOKEN_TTL_MS), nowIso());
-  })();
+  }).immediate();
   return token;
 }
 
@@ -95,7 +95,7 @@ export function consumeToken(token: string): VerifyOutcome {
     db.prepare('UPDATE email_verifications SET used_at = ? WHERE id = ?').run(nowIso(), row.id);
     db.prepare('UPDATE users SET email_verified_at = ?, updated_at = ? WHERE id = ?')
       .run(nowIso(), nowIso(), row.user_id);
-  })();
+  }).immediate();
 
   log.info('email_verified', { userId: row.user_id });
   return { status: 'ok', userId: row.user_id, email: current.email };

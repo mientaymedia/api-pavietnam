@@ -105,7 +105,7 @@ export function mergeCart(fromKey: string, toKey: string, userId: number): void 
     }
     db.prepare('DELETE FROM cart_items WHERE cart_key = ?').run(fromKey);
   });
-  move();
+  move.immediate();
 }
 
 export function getCart(cartKey: string): CartSummary {

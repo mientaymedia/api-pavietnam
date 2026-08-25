@@ -148,11 +148,30 @@ sua file `.env` va khong can khoi dong lai server:
 Gia tri bi mat (API Key, webhook token, khoa cong thanh toan) duoc **ma hoa AES-256-GCM**
 truoc khi luu vao CSDL va luon hien thi dang che (`abcd****wxyz`).
 
-Cac trang quan tri khac: Bang gia, **Ma giam gia**, Don hang, Ten mien, Khach hang,
-Doi soat ngan hang, Hang doi xu ly, Nhat ky goi API.
+Cac trang quan tri khac: **Bao cao**, Bang gia, **Ma giam gia**, Don hang, **Doi chu the**,
+Ten mien, Khach hang, Doi soat ngan hang, Hang doi xu ly, Nhat ky ZNS, Nhat ky goi API.
 
 **Ma giam gia** ho tro giam theo phan tram hoac so tien co dinh, tran giam toi da,
 gioi han theo duoi ten mien, don toi thieu, so luot dung va khoang thoi gian hieu luc.
+
+### Bao cao kinh doanh
+
+He thong luu gia von (`cost_register`, `cost_renew`) tu dau, nen bao cao tinh duoc
+**lai gop that**, khong chi doanh thu:
+
+- Doanh thu / gia von / lai theo **12 thang** (bieu do cot chong)
+- Doanh thu va **ty le lai theo tung duoi** ten mien - biet duoi nao thuc su co lai
+- **Du kien doanh thu gia han** 30/60/90 ngay toi
+- Tien thuc nhan theo tung phuong thuc thanh toan, tru di phan da hoan
+- Khach hang dong gop nhieu nhat
+
+**Cach tinh doanh thu:** chi tinh ten mien **da kich hoat** thuoc don **da thanh toan**.
+Dong that bai hoac da hoan tien khong duoc tinh - neu tinh ca chung thi bao cao se cao
+hon tien thuc nhan. Gia von lay tu bang gia **tai thoi diem xem**, nen sua gia von se
+lam doi so lai cua ky cu.
+
+**Xuat du lieu:** don hang, ten mien va doanh thu deu xuat duoc ra CSV mo bang Excel
+(co BOM UTF-8 nen tieng Viet khong bi loi font).
 
 ---
 

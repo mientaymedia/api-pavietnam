@@ -1,0 +1,207 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <div class="row-between">
+    <h1>Bao cao kinh doanh</h1>
+    <div class="row">
+      <a class="btn btn-sm btn-outline" href="/admin/xuat/doanh-thu">Xuat doanh thu</a>
+      <a class="btn btn-sm btn-outline" href="/admin/xuat/don-hang">Xuat don hang</a>
+      <a class="btn btn-sm btn-outline" href="/admin/xuat/ten-mien">Xuat ten mien</a>
+    </div>
+  </div>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="alert alert-info tiny">
+    Doanh thu chi tinh cac ten mien <strong>da kich hoat</strong> thuoc don da thanh toan -
+    dong that bai hoac da hoan tien khong duoc tinh. Gia von lay tu bang gia <strong>tai thoi diem xem</strong>,
+    nen neu ban sua gia von thi so lai cua ky cu se thay doi theo.
+  </div>
+
+  <!-- ---------------------------------------------------------- tong quan -->
+  <div class="grid grid-4">
+    <div class="stat">
+      <div class="stat-value"><%= formatVnd(tongQuan.doanhThu) %></div>
+      <div class="stat-label">Doanh thu</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" style="color:var(--ok)"><%= formatVnd(tongQuan.lai) %></div>
+      <div class="stat-label">Lai gop &middot; <%= tongQuan.tyLeLai %>%</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value"><%= tongQuan.soTenMien %></div>
+      <div class="stat-label">Ten mien da ban &middot; <%= tongQuan.soKhachHang %> khach</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value"><%= formatVnd(tongQuan.giaTriDonTrungBinh) %></div>
+      <div class="stat-label">Gia tri don trung binh</div>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------- doanh thu theo thang -->
+  <div class="card viz" style="margin-top:18px">
+    <div class="card-title">
+      <h2>Doanh thu 12 thang gan nhat</h2>
+      <a class="small" href="/admin/xuat/doanh-thu">Tai CSV</a>
+    </div>
+
+    <% if (!theoThang.length) { %>
+      <p class="muted center" style="padding:32px 0">Chua co doanh thu nao duoc ghi nhan.</p>
+    <% } else { %>
+      <div class="viz-legend">
+        <span class="viz-key"><span class="viz-swatch" style="background:var(--series-lai)"></span> Lai gop</span>
+        <span class="viz-key"><span class="viz-swatch" style="background:var(--series-von)"></span> Gia von</span>
+      </div>
+
+      <div class="viz-bars">
+        <% theoThang.forEach(function (t, idx) { %>
+          <%
+            // Khung cao 250px: tru cho nhan so (18) + nhan thang (20) + le
+            var caoNhat = 200;
+            var caoCot  = Math.round((t.doanhThu / dinhTruc) * caoNhat);
+            var caoLai  = t.doanhThu > 0 ? Math.round(caoCot * (Math.max(0, t.lai) / t.doanhThu)) : 0;
+            var caoVon  = Math.max(0, caoCot - caoLai);
+            var laThangCuoi = idx === theoThang.length - 1;
+            var trieu = (t.doanhThu / 1e6);
+          %>
+          <div class="viz-col" tabindex="0">
+            <div class="viz-tip">
+              <b><%= t.thang %></b><br>
+              Doanh thu: <b><%= formatVnd(t.doanhThu) %></b><br>
+              Gia von: <%= formatVnd(t.giaVon) %><br>
+              Lai gop: <b><%= formatVnd(t.lai) %></b><br>
+              <%= t.doanhThu === 0 ? 'Khong co doanh thu' : t.soDon + ' don &middot; ' + t.soTenMien + ' ten mien' %>
+            </div>
+
+            <!-- Chi ghi so tren cot thang cuoi: dat so tren moi cot se roi mat -->
+            <% if (laThangCuoi && t.doanhThu > 0) { %>
+              <div class="viz-vlabel"><%= trieu >= 1 ? trieu.toFixed(1) + 'tr' : Math.round(t.doanhThu / 1000) + 'k' %></div>
+            <% } %>
+
+            <div class="viz-stack" style="height:<%= Math.max(caoCot, 2) %>px">
+              <% if (caoLai > 0) { %><div class="viz-seg viz-seg-lai" style="height:<%= caoLai %>px"></div><% } %>
+              <% if (caoVon > 0) { %><div class="viz-seg viz-seg-von" style="height:<%= caoVon %>px"></div><% } %>
+              <% if (t.doanhThu === 0) { %><div class="viz-seg viz-seg-trong"></div><% } %>
+            </div>
+            <div class="viz-xlabel"><%= t.thang.slice(5) %>/<%= t.thang.slice(2, 4) %></div>
+          </div>
+        <% }); %>
+      </div>
+
+      <details style="margin-top:16px">
+        <summary class="small muted" style="cursor:pointer">Xem dang bang so lieu</summary>
+        <div class="table-wrap" style="margin-top:10px">
+          <table>
+            <thead><tr><th>Thang</th><th class="right">Doanh thu</th><th class="right">Gia von</th><th class="right">Lai gop</th><th class="right">Ty le lai</th><th class="right">Don</th></tr></thead>
+            <tbody>
+              <% theoThang.slice().reverse().forEach(function (t) { %>
+                <tr>
+                  <td class="mono small"><%= t.thang %></td>
+                  <td class="right"><%= formatVnd(t.doanhThu) %></td>
+                  <td class="right muted"><%= formatVnd(t.giaVon) %></td>
+                  <td class="right" style="color:var(--ok)"><%= formatVnd(t.lai) %></td>
+                  <td class="right small"><%= t.doanhThu > 0 ? Math.round(t.lai / t.doanhThu * 100) : 0 %>%</td>
+                  <td class="right small"><%= t.soDon %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    <% } %>
+  </div>
+
+  <div class="grid grid-2" style="align-items:start">
+    <!-- ------------------------------------------------ doanh thu theo duoi -->
+    <div class="card viz">
+      <div class="card-title"><h2>Theo duoi ten mien</h2></div>
+      <% if (!theoDuoi.length) { %>
+        <p class="muted small">Chua co du lieu.</p>
+      <% } else { %>
+        <% var dinhDuoi = Math.max(1, ...theoDuoi.map(function (d) { return d.doanhThu; })); %>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Duoi</th><th class="right">SL</th><th class="right">Doanh thu</th><th class="right">Lai</th><th style="width:110px"></th></tr></thead>
+            <tbody>
+              <% theoDuoi.forEach(function (d) { %>
+                <tr>
+                  <td><strong>.<%= d.tld %></strong></td>
+                  <td class="right small"><%= d.soLuong %></td>
+                  <td class="right"><%= formatVnd(d.doanhThu) %></td>
+                  <td class="right" style="color:<%= d.lai >= 0 ? 'var(--ok)' : 'var(--danger)' %>">
+                    <%= formatVnd(d.lai) %>
+                    <div class="tiny muted"><%= d.tyLeLai %>%</div>
+                  </td>
+                  <td>
+                    <div class="viz-rowbar-track">
+                      <div class="viz-rowbar" style="width:<%= Math.round(d.doanhThu / dinhDuoi * 100) %>%"></div>
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- ----------------------------------------------------- du bao gia han -->
+    <div class="card">
+      <div class="card-title"><h2>Du kien doanh thu gia han</h2></div>
+      <p class="muted small" style="margin-top:-6px">Neu toan bo ten mien sap het han deu duoc gia han 1 nam.</p>
+      <% duBao.forEach(function (m) { %>
+        <div class="copy-row">
+          <span class="label">Trong <%= m.soNgay %> ngay toi
+            <div class="tiny muted"><%= m.soTenMien %> ten mien</div>
+          </span>
+          <span class="value"><%= formatVnd(m.duKienDoanhThu) %></span>
+        </div>
+      <% }); %>
+
+      <h3 class="section-heading">Tien thuc nhan theo phuong thuc</h3>
+      <% if (!phuongThuc.length) { %>
+        <p class="muted small">Chua co giao dich nao.</p>
+      <% } else { %>
+        <% phuongThuc.forEach(function (p) { %>
+          <div class="copy-row">
+            <span class="label"><%= p.provider === 'sepay' ? 'Chuyen khoan (SePay)' : p.provider === 'balance' ? 'So du tai khoan' : p.provider === 'manual' ? 'Xac nhan thu cong' : p.provider %>
+              <div class="tiny muted"><%= p.soGiaoDich %> giao dich</div>
+            </span>
+            <span class="value"><%= formatVnd(p.tongTien) %></span>
+          </div>
+        <% }); %>
+      <% } %>
+
+      <% if (tongQuan.daHoanTien) { %>
+        <div class="copy-row" style="border-top:1px solid var(--line); margin-top:6px; padding-top:12px">
+          <span class="label">Da hoan cho khach</span>
+          <span class="value" style="color:var(--danger)">-<%= formatVnd(tongQuan.daHoanTien) %></span>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- ------------------------------------------------------- khach hang -->
+  <div class="card">
+    <div class="card-title"><h2>Khach hang dong gop nhieu nhat</h2></div>
+    <% if (!khachHang.length) { %>
+      <p class="muted small">Chua co du lieu.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Khach hang</th><th class="right">Ten mien</th><th class="right">Doanh thu</th></tr></thead>
+          <tbody>
+            <% khachHang.forEach(function (k) { %>
+              <tr>
+                <td><strong><%= k.hoTen || '(chua dat ten)' %></strong><div class="tiny muted"><%= k.email %></div></td>
+                <td class="right"><%= k.soTenMien %></td>
+                <td class="right"><%= formatVnd(k.doanhThu) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

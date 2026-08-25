@@ -137,7 +137,7 @@ function cacheRecords(domainId: number, records: DnsRecord[]): void {
       ).run(domainId, r.id ?? '', r.type, r.name, r.content, r.ttl, r.priority ?? null, nowIso());
     }
   });
-  write();
+  write.immediate();
 }
 
 function readCache(domainId: number): { records: DnsRecord[]; syncedAt?: string } {

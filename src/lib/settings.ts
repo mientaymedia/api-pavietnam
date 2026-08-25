@@ -74,7 +74,7 @@ export function setSettings(entries: Record<string, string>, secretKeys: string[
       ).run(k, stored, isSecret ? 1 : 0, nowIso());
     }
   });
-  run(Object.entries(entries));
+  run.immediate(Object.entries(entries));
   invalidateSettingsCache();
 }
 
