@@ -108,6 +108,29 @@ server {
 `TRUST_PROXY=1` la bat buoc khi chay sau nginx - neu khong, gioi han tan suat va nhat ky
 se ghi nham IP cua proxy thay vi IP that cua khach.
 
+## 4b. Kiem tra truoc khi mo cho khach vao
+
+Truoc khi tro ten mien that va nhan don dau tien, chay tren chinh may chu:
+
+```bash
+cd /opt/tenmien        # thu muc cai dat
+npm run kiem-tra
+```
+
+Cong cu kiem tra: khoa bi mat, HTTPS, CSDL, ket noi that toi API P.A (goi thu
+mot lenh chi doc), bang gia, cong thanh toan, ket noi may chu thu, tai khoan
+quan tri (ke ca mat khau de doan va xac thuc hai lop), worker, ZNS.
+
+Ma thoat khac 0 neu con muc `CHAN`, nen co the dat trong kich ban trien khai:
+
+```bash
+npm ci --omit=dev && npm run build && npm run kiem-tra && systemctl restart tenmien
+```
+
+Chay lai lenh nay moi lan doi cau hinh hoac nang cap phien ban.
+
+---
+
 ## 5. Dang ky IP voi P.A Viet Nam
 
 ```bash

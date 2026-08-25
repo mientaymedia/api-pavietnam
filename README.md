@@ -42,6 +42,39 @@ npm run build && npm start
 
 ---
 
+## 1b. Kiem tra truoc khi mo ban
+
+Chay tren **chinh may chu se phuc vu khach**:
+
+```bash
+npm run kiem-tra
+```
+
+Cong cu di qua tung dieu kien can (khoa bi mat, CSDL, ket noi API P.A, bang gia,
+cong thanh toan, email, tai khoan quan tri, worker) va noi ro cho nao con thieu,
+thieu cai gi, sua o dau. No **chi doc, khong sua gi**.
+
+- `CHAN` - chua chay that duoc, phai xu ly
+- `LUU Y` - chay duoc nhung nen xem lai
+- `DAT` - da on
+
+Lenh tra ma thoat khac 0 khi con muc `CHAN`, nen dung duoc trong kich ban trien khai:
+
+```bash
+npm run kiem-tra && systemctl restart tenmien
+```
+
+Hai muc dang chu y nhat vi phai lam ben ngoai he thong:
+
+- **IP di ra ngoai** - cong cu in dia chi IP that ma may chu dung khi goi API.
+  Dia chi nay phai nam trong danh sach IP duoc phep ben P.A, neu khong moi lenh
+  goi API deu that bai.
+- **Goi thu action `balance`** - goi that mot lenh chi doc len API P.A. Neu muc
+  nay `DAT` nghia la IP da duoc cho phep va ten action dung. Neu `CHAN` thi chay
+  `npm run pa:probe -- --domain tenmien-cua-ban.com` de tim ten action that.
+
+---
+
 ## 2. Ba viec phai lam truoc khi mo ban
 
 ### 2.1. Dang ky IP cua **may chu** voi P.A
@@ -450,6 +483,7 @@ neu co ai them script noi tuyen.
 | `npm run build && npm start` | Chay production |
 | `npm run migrate` | Tao/cap nhat cau truc CSDL |
 | `npm run seed` | Tao admin + bang gia mau + cau hinh mac dinh |
+| **`npm run kiem-tra`** | **Kiem tra truoc khi mo ban - bao chinh xac con thieu gi** |
 | `npm run pa:probe -- --domain abc.com` | Do ten action cua API P.A |
 | `node dist/jobs/worker.js` | Chay worker rieng (dat `WORKER_DISABLED=1` cho web) |
 | `npm test` | Chay bo kiem thu |

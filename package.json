@@ -15,7 +15,8 @@
     "seed": "tsx src/db/seed.ts",
     "pa:probe": "tsx src/pavietnam/probe.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "DATABASE_FILE=./data/test.sqlite node --test --import tsx test/*.test.ts"
+    "test": "DATABASE_FILE=./data/test.sqlite node --test --import tsx test/*.test.ts",
+    "kiem-tra": "tsx src/preflight.ts"
   },
   "dependencies": {
     "better-sqlite3": "^11.7.0",
