@@ -8,7 +8,7 @@
   <div class="card">
     <form method="get" action="/admin/nguoi-dung" style="margin-bottom:14px">
       <div class="row">
-        <div style="flex:1"><input type="search" name="q" value="<%= q %>" placeholder="Tim theo email hoac ten"></div>
+        <div style="flex:1"><input type="search" name="q" value="<%= q %>" aria-label="Tim khach hang" placeholder="Tim theo email hoac ten"></div>
         <button class="btn btn-outline" type="submit">Tim</button>
       </div>
     </form>
@@ -29,8 +29,8 @@
               <td>
                 <form method="post" action="/admin/nguoi-dung/<%= u.id %>/nap-vi" class="row" style="gap:6px; margin-bottom:6px">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                  <input type="number" name="amount" placeholder="So tien" style="width:110px" required>
-                  <input type="text" name="note" placeholder="Ghi chu" style="width:100px">
+                  <input type="number" name="amount" aria-label="So tien cong hoac tru" placeholder="So tien" style="width:110px" required>
+                  <input type="text" name="note" aria-label="Ghi chu bien dong so du" placeholder="Ghi chu" style="width:100px">
                   <button class="btn btn-sm" type="submit">Cong/Tru</button>
                 </form>
                 <form method="post" action="/admin/nguoi-dung/<%= u.id %>/trang-thai"

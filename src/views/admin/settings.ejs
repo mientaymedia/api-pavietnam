@@ -95,8 +95,8 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:1; margin:0">
-          <label>Gui toi dia chi</label>
-          <input type="email" name="test_email" value="<%= currentUser.email %>" required>
+          <label><span class="field-name">Gui toi dia chi</span>
+          <input type="email" name="test_email" value="<%= currentUser.email %></label>" required>
         </div>
         <button class="btn btn-outline" type="submit">Gui email thu</button>
       </div>
@@ -151,12 +151,12 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="width:200px; margin:0">
-          <label>So dien thoai</label>
-          <input type="text" name="test_phone" placeholder="0901234567" required>
+          <label><span class="field-name">So dien thoai</span>
+          <input type="text" name="test_phone" placeholder="0901234567" required></label>
         </div>
         <div class="field" style="flex:1; margin:0">
-          <label>Dung mau cua su kien</label>
-          <select name="test_event">
+          <label><span class="field-name">Dung mau cua su kien</span>
+          <select name="test_event"></label>
             <% znsEvents.forEach(function (e) { %>
               <option value="<%= e.event %>" <%= e.event === 'domain_activated' ? 'selected' : '' %>><%= e.label %></option>
             <% }); %>
@@ -175,8 +175,8 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:1; margin:0">
-          <label>Ten mien de thu</label>
-          <input type="text" name="test_domain" value="pavietnam.vn">
+          <label><span class="field-name">Ten mien de thu</span>
+          <input type="text" name="test_domain" value="pavietnam.vn"></label>
         </div>
         <button class="btn btn-outline" type="submit">Kiem tra ngay</button>
       </div>

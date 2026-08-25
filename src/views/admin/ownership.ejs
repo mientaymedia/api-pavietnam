@@ -74,16 +74,16 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:190px; margin:0">
-              <label>Chuyen trang thai</label>
+              <label><span class="field-name">Chuyen trang thai</span>
               <select name="status">
                 <% ['in_review','need_documents','approved','completed','rejected','cancelled'].forEach(function (s) { %>
                   <option value="<%= s %>"><%= s %></option>
                 <% }); %>
-              </select>
+              </select></label>
             </div>
             <div class="field" style="flex:1; min-width:220px; margin:0">
-              <label>Ghi chu gui cho khach</label>
-              <input type="text" name="note" placeholder="VD: vui long nop ban khai co dau va giay DKKD">
+              <label><span class="field-name">Ghi chu gui cho khach</span>
+              <input type="text" name="note" placeholder="VD: vui long nop ban khai co dau va giay DKKD"></label>
             </div>
             <button class="btn btn-sm" type="submit">Cap nhat</button>
           </div>

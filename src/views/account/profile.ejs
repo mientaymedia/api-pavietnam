@@ -26,10 +26,10 @@
     <form method="post" action="/tai-khoan/thong-tin">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="grid grid-2" style="gap:0 14px">
-        <div class="field"><label>Ho va ten</label><input type="text" name="full_name" value="<%= user.full_name %>"></div>
-        <div class="field"><label>So dien thoai</label><input type="text" name="phone" value="<%= user.phone %>"></div>
+        <div class="field"><label><span class="field-name">Ho va ten</span><input type="text" name="full_name" value="<%= user.full_name %>"></label></div>
+        <div class="field"><label><span class="field-name">So dien thoai</span><input type="text" name="phone" value="<%= user.phone %></label>"></div>
       </div>
-      <div class="field"><label>Email</label><input type="email" value="<%= user.email %>" disabled></div>
+      <div class="field"><label><span class="field-name">Email</span><input type="email" value="<%= user.email %></label>" disabled></div>
       <button class="btn" type="submit">Luu thay doi</button>
     </form>
   </div>
@@ -38,10 +38,10 @@
     <div class="card-title"><h2>Doi mat khau</h2></div>
     <form method="post" action="/tai-khoan/doi-mat-khau">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div class="field"><label>Mat khau hien tai</label><input type="password" name="current_password" required autocomplete="current-password"></div>
+      <div class="field"><label><span class="field-name">Mat khau hien tai</span><input type="password" name="current_password" required autocomplete="current-password"></label></div>
       <div class="grid grid-2" style="gap:0 14px">
-        <div class="field"><label>Mat khau moi</label><input type="password" name="password" required autocomplete="new-password"></div>
-        <div class="field"><label>Nhap lai mat khau moi</label><input type="password" name="password_confirm" required autocomplete="new-password"></div>
+        <div class="field"><label><span class="field-name">Mat khau moi</span><input type="password" name="password" required autocomplete="new-password"></label></div>
+        <div class="field"><label><span class="field-name">Nhap lai mat khau moi</span><input type="password" name="password_confirm" required autocomplete="new-password"></label></div>
       </div>
       <button class="btn" type="submit">Doi mat khau</button>
     </form>
@@ -81,10 +81,10 @@
     <form method="post" action="/tai-khoan/api-token" style="margin-top:14px">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
-        <div class="field" style="flex:1; margin:0"><label>Ten token</label><input type="text" name="name" placeholder="Website ban hang" required></div>
+        <div class="field" style="flex:1; margin:0"><label><span class="field-name">Ten token</span><input type="text" name="name" placeholder="Website ban hang" required></label></div>
         <div class="field" style="width:160px; margin:0">
-          <label>Quyen</label>
-          <select name="scopes"><option value="read">Chi doc</option><option value="write">Doc va ghi</option></select>
+          <label>Quyen</span>
+          <select name="scopes"><option value="read">Chi doc</option><option value="write">Doc va ghi</option></select></label>
         </div>
         <button class="btn" type="submit">Tao token</button>
       </div>

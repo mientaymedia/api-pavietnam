@@ -52,7 +52,7 @@
 
         <div class="card">
           <div class="card-title"><h2>Ghi chu don hang</h2></div>
-          <textarea name="note" placeholder="Yeu cau them (khong bat buoc)"><%= values.note || '' %></textarea>
+          <textarea name="note" aria-label="Ghi chu don hang" placeholder="Yeu cau them (khong bat buoc)"><%= values.note || '' %></textarea>
         </div>
       </div>
 
@@ -92,7 +92,7 @@
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label>Ma giam gia</label>
     <div class="row">
-      <div style="flex:1"><input type="text" name="coupon" value="<%= coupon %>" placeholder="Nhap ma"></div>
+      <div style="flex:1"><input type="text" name="coupon" value="<%= coupon %>" aria-label="Ma giam gia" placeholder="Nhap ma"></div>
       <button class="btn btn-outline" type="submit">Ap dung</button>
     </div>
     <% if (couponError) { %><div class="error-text"><%= couponError %></div><% } %>

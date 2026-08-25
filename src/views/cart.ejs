@@ -28,7 +28,7 @@
                 <td>
                   <form method="post" action="/gio-hang/cap-nhat/<%= line.id %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <select name="years" onchange="this.form.submit()">
+                    <select name="years" aria-label="So nam cho <%= line.domain %>" onchange="this.form.submit()">
                       <% for (var y = 1; y <= 10; y++) { %>
                         <option value="<%= y %>" <%= line.years === y ? 'selected' : '' %>><%= y %> nam</option>
                       <% } %>

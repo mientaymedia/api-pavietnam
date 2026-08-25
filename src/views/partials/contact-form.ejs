@@ -4,8 +4,8 @@
   var e = typeof errors !== 'undefined' && errors ? errors : {};
 %>
 <div class="field">
-  <label>Doi tuong dang ky</label>
-  <div class="row">
+  <span class="field-name" id="nhan-doi-tuong">Doi tuong dang ky</span>
+  <div class="row" role="radiogroup" aria-labelledby="nhan-doi-tuong">
     <label class="check" style="margin:0">
       <input type="radio" name="kind" value="individual" <%= v.kind === 'organization' ? '' : 'checked' %>>
       <span>Ca nhan</span>
@@ -19,61 +19,61 @@
 
 <div class="grid grid-2" style="gap:0 14px">
   <div class="field <%= e.full_name ? 'field-error' : '' %>">
-    <label>Ho va ten nguoi dai dien</label>
-    <input type="text" name="full_name" value="<%= v.full_name || '' %>" required>
+    <label>Ho va ten nguoi dai dien</span>
+    <input type="text" name="full_name" value="<%= v.full_name || '' %></label>" required>
     <% if (e.full_name) { %><div class="error-text"><%= e.full_name %></div><% } %>
   </div>
 
   <div class="field <%= e.org_name ? 'field-error' : '' %>">
-    <label>Ten to chuc <span class="muted">(neu la doanh nghiep)</span></label>
-    <input type="text" name="org_name" value="<%= v.org_name || '' %>">
+    <label><span class="field-name">Ten to chuc <span class="muted">(neu la doanh nghiep)</span></span>
+    <input type="text" name="org_name" value="<%= v.org_name || '' %></label>">
     <% if (e.org_name) { %><div class="error-text"><%= e.org_name %></div><% } %>
   </div>
 
   <div class="field <%= e.id_number ? 'field-error' : '' %>">
-    <label>So CMND / CCCD / Ho chieu</label>
-    <input type="text" name="id_number" value="<%= v.id_number || '' %>">
+    <label><span class="field-name">So CMND / CCCD / Ho chieu</span>
+    <input type="text" name="id_number" value="<%= v.id_number || '' %></label>">
     <div class="hint">Bat buoc voi ca nhan dang ky ten mien .vn</div>
     <% if (e.id_number) { %><div class="error-text"><%= e.id_number %></div><% } %>
   </div>
 
   <div class="field <%= e.tax_code ? 'field-error' : '' %>">
-    <label>Ma so thue</label>
-    <input type="text" name="tax_code" value="<%= v.tax_code || '' %>">
+    <label><span class="field-name">Ma so thue</span>
+    <input type="text" name="tax_code" value="<%= v.tax_code || '' %></label>">
     <div class="hint">Bat buoc voi to chuc dang ky ten mien .vn</div>
     <% if (e.tax_code) { %><div class="error-text"><%= e.tax_code %></div><% } %>
   </div>
 
   <div class="field <%= e.email ? 'field-error' : '' %>">
-    <label>Email chu the</label>
-    <input type="email" name="email" value="<%= v.email || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '') %>" required>
+    <label><span class="field-name">Email chu the</span>
+    <input type="email" name="email" value="<%= v.email || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '') %></label>" required>
     <% if (e.email) { %><div class="error-text"><%= e.email %></div><% } %>
   </div>
 
   <div class="field <%= e.phone ? 'field-error' : '' %>">
-    <label>So dien thoai</label>
-    <input type="text" name="phone" value="<%= v.phone || '' %>" required>
+    <label><span class="field-name">So dien thoai</span>
+    <input type="text" name="phone" value="<%= v.phone || '' %></label>" required>
     <% if (e.phone) { %><div class="error-text"><%= e.phone %></div><% } %>
   </div>
 </div>
 
 <div class="field <%= e.address ? 'field-error' : '' %>">
-  <label>Dia chi</label>
-  <input type="text" name="address" value="<%= v.address || '' %>">
+  <label><span class="field-name">Dia chi</span>
+  <input type="text" name="address" value="<%= v.address || '' %></label>">
   <% if (e.address) { %><div class="error-text"><%= e.address %></div><% } %>
 </div>
 
 <div class="grid grid-3" style="gap:0 14px">
   <div class="field">
-    <label>Quan / Huyen</label>
-    <input type="text" name="city" value="<%= v.city || '' %>">
+    <label><span class="field-name">Quan / Huyen</span>
+    <input type="text" name="city" value="<%= v.city || '' %></label>">
   </div>
   <div class="field">
-    <label>Tinh / Thanh pho</label>
-    <input type="text" name="province" value="<%= v.province || '' %>">
+    <label><span class="field-name">Tinh / Thanh pho</span>
+    <input type="text" name="province" value="<%= v.province || '' %></label>">
   </div>
   <div class="field">
-    <label>Quoc gia</label>
-    <input type="text" name="country" value="<%= v.country || 'VN' %>" maxlength="2">
+    <label><span class="field-name">Quoc gia</span>
+    <input type="text" name="country" value="<%= v.country || 'VN' %></label>" maxlength="2">
   </div>
 </div>

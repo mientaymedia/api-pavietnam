@@ -89,7 +89,7 @@
           <form method="post" action="/admin/don-hang/<%= order.id %>/xac-nhan-thanh-toan"
                 data-confirm="Xac nhan da nhan du <%= formatVnd(order.total) %> cho don nay? He thong se dang ky ten mien ngay.">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <div class="field"><label>Ghi chu doi soat</label><input type="text" name="note" placeholder="VD: CK Techcombank luc 10:23"></div>
+            <div class="field"><label><span class="field-name">Ghi chu doi soat</span><input type="text" name="note" placeholder="VD: CK Techcombank luc 10:23"></label></div>
             <button class="btn btn-block" type="submit">Xac nhan da thanh toan</button>
           </form>
           <p class="tiny muted" style="margin-top:8px">Dung khi khach da chuyen khoan nhung webhook khong doi soat duoc.</p>
@@ -100,7 +100,7 @@
           <form method="post" action="/admin/don-hang/<%= order.id %>/hoan-tien-tat-ca"
                 data-confirm="Hoan tien <%= soDongThatBai %> dong da that bai?" style="margin-top:12px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <div class="field"><label>Ly do hoan tien</label><input type="text" name="reason" placeholder="VD: ten mien da co nguoi dang ky"></div>
+            <div class="field"><label><span class="field-name">Ly do hoan tien</span><input type="text" name="reason" placeholder="VD: ten mien da co nguoi dang ky"></label></div>
             <button class="btn btn-outline btn-block" type="submit">Hoan tien tat ca (<%= soDongThatBai %> dong)</button>
           </form>
         <% } %>

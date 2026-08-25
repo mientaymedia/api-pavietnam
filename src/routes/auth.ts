@@ -27,10 +27,34 @@ const registerSchema = z
     message: 'Mat khau nhap lai khong khop',
   });
 
-/** Chi cho phep chuyen huong noi bo, chan open redirect. */
+/**
+ * Chi cho phep chuyen huong NOI BO.
+ *
+ * Kiem tra "bat dau bang / va khong bat dau bang //" la KHONG DU:
+ * `/\\evil.com` lot qua duoc, va trinh duyet doi dau gach nguoc thanh gach
+ * xuoi nen no thanh `//evil.com` - tuc la chuyen thang sang trang cua ke tan
+ * cong. Ke gian dung dung dieu nay de lua: nan nhan dang nhap that o site cua
+ * ta roi bi day sang trang gia y het.
+ *
+ * Cach chac chan: dung URL parser voi mot goc gia, roi chi lay lai duong dan.
+ * Bat ky dia chi tuyet doi hay giao thuc tuong doi nao cung bi loai.
+ */
 function safeNext(value: unknown): string {
-  const s = String(value ?? '');
-  return s.startsWith('/') && !s.startsWith('//') ? s : '/dashboard';
+  const macDinh = '/dashboard';
+  const raw = String(value ?? '').trim();
+  if (!raw || raw[0] !== '/') return macDinh;
+
+  // Loai truc tiep cac dang dua sang host khac: // hoac /\ (ke ca sau khi giai ma)
+  if (/^[/\\]{2}/.test(raw) || /^\/[\\]/.test(raw)) return macDinh;
+
+  try {
+    const goc = 'http://noi-bo.invalid';
+    const u = new URL(raw, goc);
+    if (u.origin !== goc) return macDinh;         // da bi day sang host khac
+    return `${u.pathname}${u.search}${u.hash}`;
+  } catch {
+    return macDinh;
+  }
 }
 
 router.get('/dang-ky', (req, res) => {

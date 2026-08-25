@@ -8,7 +8,7 @@
   <form class="card" action="/whois" method="get">
     <div class="row">
       <div style="flex:1; min-width:240px">
-        <input type="search" name="domain" value="<%= domain %>" placeholder="vidu.com hoac vidu.vn" required>
+        <input type="search" name="domain" value="<%= domain %>" aria-label="Ten mien can tra cuu" placeholder="vidu.com hoac vidu.vn" required>
       </div>
       <button class="btn" type="submit">Tra cuu</button>
     </div>
@@ -26,6 +26,7 @@
           </span>
         </div>
 
+        <div class="table-wrap">
         <table>
           <tbody>
             <% if (result.registrar) { %><tr><th>Nha dang ky</th><td><%= result.registrar %></td></tr><% } %>
@@ -36,6 +37,7 @@
             <% } %>
           </tbody>
         </table>
+        </div>
 
         <% if (!result.registered) { %>
           <form method="post" action="/gio-hang/them" style="margin-top:16px">

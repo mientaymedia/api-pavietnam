@@ -346,6 +346,19 @@ web de hai ben khong tranh cung mot job.
 - **API Key khong bao gio ghi vao log** - luon che truoc khi luu `api_logs`
 - Quyen so huu duoc kiem tra o moi thao tac tren ten mien va don hang
 
+### Da ra soat va cung co
+
+| Muc | Ket qua |
+|---|---|
+| Phan quyen 68 endpoint | Moi route dung du lieu khach deu kiem tra chu so huu; admin tach rieng |
+| CSRF | 52/52 bieu mau POST co token; webhook mien tru vi da xac thuc bang chu ky rieng |
+| XSS | Khong co cho nao xuat du lieu tho ra HTML (EJS `<%=` tu escape) |
+| SQL injection | Moi truy van dung tham so; cac cho noi chuoi chi ghep hang so trong ma nguon |
+| Chuyen huong ra ngoai | Da chan `/\evil.com` - kieu vuot rao bang dau gach nguoc |
+| Chi muc CSDL | Moi truy van nong deu dung index, khong quet bang |
+| Giao dien dien thoai | Da co menu thu gon; kiem tra o 360/390/768px khong tran ngang |
+| Truy cap (a11y) | 94/98 o nhap lien ket voi nhan; 4 cho con lai dung `aria-label` |
+
 ### Viec can lam ngay
 
 1. **Doi mat khau tai khoan dai ly P.A** neu API Key da tung duoc chia se qua chat/email.

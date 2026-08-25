@@ -14,50 +14,50 @@
 
       <div class="grid grid-4" style="gap:0 14px">
         <div class="field">
-          <label>Ma giam gia</label>
+          <label><span class="field-name">Ma giam gia</span>
           <input type="text" name="code" placeholder="TETVUI2027" required style="text-transform:uppercase">
           <div class="hint">Chu, so, gach ngang - 3 den 30 ky tu</div>
         </div>
         <div class="field">
-          <label>Kieu giam</label>
-          <select name="discount_type">
+          <label><span class="field-name">Kieu giam</span>
+          <select name="discount_type"></label>
             <option value="percent">Theo phan tram (%)</option>
             <option value="fixed">So tien co dinh (VND)</option>
-          </select>
+          </select></label>
         </div>
         <div class="field">
-          <label>Muc giam</label>
-          <input type="number" name="value" placeholder="10" required>
+          <label><span class="field-name">Muc giam</span>
+          <input type="number" name="value" placeholder="10" required></label>
           <div class="hint">10 = giam 10% hoac 10 VND tuy kieu tren</div>
         </div>
         <div class="field">
-          <label>Giam toi da (VND)</label>
-          <input type="number" name="max_discount" value="0">
+          <label><span class="field-name">Giam toi da (VND)</span>
+          <input type="number" name="max_discount" value="0"></label>
           <div class="hint">0 = khong gioi han</div>
         </div>
 
         <div class="field">
-          <label>Don toi thieu (VND)</label>
-          <input type="number" name="min_amount" value="0">
+          <label><span class="field-name">Don toi thieu (VND)</span>
+          <input type="number" name="min_amount" value="0"></label>
         </div>
         <div class="field">
-          <label>Gioi han luot dung</label>
-          <input type="number" name="max_uses" value="0">
+          <label><span class="field-name">Gioi han luot dung</span>
+          <input type="number" name="max_uses" value="0"></label>
           <div class="hint">0 = khong gioi han</div>
         </div>
         <div class="field">
-          <label>Bat dau</label>
-          <input type="date" name="starts_at">
+          <label><span class="field-name">Bat dau</span>
+          <input type="date" name="starts_at"></label>
         </div>
         <div class="field">
-          <label>Ket thuc</label>
-          <input type="date" name="expires_at">
+          <label><span class="field-name">Ket thuc</span>
+          <input type="date" name="expires_at"></label>
         </div>
       </div>
 
       <div class="field">
-        <label>Chi ap dung cho duoi (de trong = tat ca)</label>
-        <input type="text" name="tld_filter" placeholder="vn,com.vn">
+        <label><span class="field-name">Chi ap dung cho duoi (de trong = tat ca)</span>
+        <input type="text" name="tld_filter" placeholder="vn,com.vn"></label>
         <div class="hint">
           Cach nhau bang dau phay. Duoi dang ban:
           <%= tlds.filter(function (t) { return t.is_active; }).map(function (t) { return t.tld; }).join(', ') %>

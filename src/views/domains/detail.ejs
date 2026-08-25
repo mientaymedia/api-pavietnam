@@ -71,18 +71,18 @@
                         <form method="post" action="/control-panel/<%= domain.domain %>/dns/sua/<%= idx %>" style="margin-top:8px; text-align:left; min-width:260px">
                           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                           <div class="field">
-                            <label>Loai</label>
+                            <label><span class="field-name">Loai</span>
                             <select name="type">
                               <% ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA'].forEach(function (t) { %>
                                 <option value="<%= t %>" <%= r.type === t ? 'selected' : '' %>><%= t %></option>
                               <% }); %>
-                            </select>
+                            </select></label>
                           </div>
-                          <div class="field"><label>Ten</label><input type="text" name="name" value="<%= r.name %>"></div>
-                          <div class="field"><label>Gia tri</label><input type="text" name="content" value="<%= r.content %>" required></div>
+                          <div class="field"><label><span class="field-name">Ten</span><input type="text" name="name" value="<%= r.name %>"></label></div>
+                          <div class="field"><label><span class="field-name">Gia tri</span><input type="text" name="content" value="<%= r.content %></label>" required></div>
                           <div class="row">
-                            <div class="field" style="flex:1"><label>TTL</label><input type="number" name="ttl" value="<%= r.ttl %>"></div>
-                            <div class="field" style="flex:1"><label>Uu tien</label><input type="number" name="priority" value="<%= r.priority !== undefined ? r.priority : '' %>"></div>
+                            <div class="field" style="flex:1"><label><span class="field-name">TTL</span><input type="number" name="ttl" value="<%= r.ttl %></label>"></div>
+                            <div class="field" style="flex:1"><label><span class="field-name">Uu tien</span><input type="number" name="priority" value="<%= r.priority !== undefined ? r.priority : '' %></label>"></div>
                           </div>
                           <button class="btn btn-sm btn-block" type="submit" <%= dns.stale ? 'disabled' : '' %>>Luu</button>
                         </form>
@@ -105,28 +105,28 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:120px; margin:0">
-              <label>Loai</label>
+              <label>Loai</span>
               <select name="type" data-record-type data-priority-target="#priority-wrap">
                 <% ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA'].forEach(function (t) { %>
                   <option value="<%= t %>"><%= t %></option>
                 <% }); %>
-              </select>
+              </select></label>
             </div>
             <div class="field" style="width:150px; margin:0">
-              <label>Ten</label>
-              <input type="text" name="name" value="@" placeholder="@ hoac www">
+              <label><span class="field-name">Ten</span>
+              <input type="text" name="name" value="@" aria-label="Ten ban ghi" placeholder="@ hoac www">
             </div>
             <div class="field" style="flex:1; min-width:200px; margin:0">
-              <label>Gia tri</label>
-              <input type="text" name="content" placeholder="103.28.36.1" required>
+              <label><span class="field-name">Gia tri</span>
+              <input type="text" name="content" placeholder="103.28.36.1" required></label>
             </div>
             <div class="field" style="width:100px; margin:0">
-              <label>TTL</label>
-              <input type="number" name="ttl" value="3600">
+              <label><span class="field-name">TTL</span>
+              <input type="number" name="ttl" value="3600"></label>
             </div>
             <div class="field" style="width:100px; margin:0; display:none" id="priority-wrap">
-              <label>Uu tien</label>
-              <input type="number" name="priority" value="10">
+              <label><span class="field-name">Uu tien</span>
+              <input type="number" name="priority" value="10"></label>
             </div>
             <button class="btn" type="submit" <%= dns.stale ? 'disabled' : '' %>>Them</button>
           </div>
@@ -142,8 +142,8 @@
         <form method="post" action="/control-panel/<%= domain.domain %>/nameservers">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
-            <label>Danh sach nameserver (moi dong mot ten)</label>
-            <textarea name="nameservers" rows="4" class="mono"><%= (ns.length ? ns : defaultNs).join('\n') %></textarea>
+            <label><span class="field-name">Danh sach nameserver (moi dong mot ten)</span>
+            <textarea name="nameservers" rows="4" class="mono"><%= (ns.length ? ns : defaultNs).join('\n') %></textarea></label></label>
             <div class="hint">Toi thieu 2 nameserver. De trong ve mac dinh cua he thong: <%= defaultNs.join(', ') %></div>
           </div>
           <button class="btn btn-block" type="submit" data-confirm="Doi nameserver se lam website/email gian doan neu cau hinh sai. Tiep tuc?">Cap nhat nameserver</button>
@@ -162,10 +162,10 @@
         <form method="post" action="/control-panel/<%= domain.domain %>/gia-han" style="margin-top:12px">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
-            <label>So nam gia han</label>
+            <label><span class="field-name">So nam gia han</span>
             <select name="years">
               <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> nam</option><% } %>
-            </select>
+            </select></label>
           </div>
           <button class="btn btn-block" type="submit">Them vao gio hang</button>
         </form>
@@ -203,14 +203,14 @@
           <form method="post" action="/control-panel/<%= domain.domain %>/chu-the">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field">
-              <label>Ap dung ho so</label>
+              <label><span class="field-name">Ap dung ho so</span>
               <select name="contact_id">
                 <% hoSoChuThe.forEach(function (c) { %>
                   <option value="<%= c.id %>" <%= domain.contact_id === c.id ? 'selected' : '' %>>
                     <%= c.org_name || c.full_name %> - <%= c.email %>
                   </option>
                 <% }); %>
-              </select>
+              </select></label>
               <div class="hint"><a href="/tai-khoan/ho-so">Sua noi dung ho so</a> roi quay lai day de day len nha dang ky.</div>
             </div>
             <button class="btn btn-block" type="submit">Cap nhat len nha dang ky</button>
@@ -251,16 +251,16 @@
                   data-confirm="Nop ho so doi chu the cho <%= domain.domain %>?">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <div class="field">
-                <label>Chu the moi</label>
+                <label><span class="field-name">Chu the moi</span>
                 <select name="new_contact_id">
                   <% hoSoChuThe.forEach(function (c) { %>
                     <option value="<%= c.id %>"><%= c.org_name || c.full_name %> - <%= c.email %></option>
                   <% }); %>
-                </select>
+                </select></label>
               </div>
               <div class="field">
-                <label>Ly do doi chu the</label>
-                <textarea name="reason" rows="2" placeholder="VD: doi ten doanh nghiep, sap nhap, chuyen nhuong..."></textarea>
+                <label><span class="field-name">Ly do doi chu the</span>
+                <textarea name="reason" rows="2" placeholder="VD: doi ten doanh nghiep, sap nhap, chuyen nhuong..."></textarea></label>
               </div>
               <button class="btn btn-outline btn-block" type="submit">Nop ho so doi chu the</button>
             </form>

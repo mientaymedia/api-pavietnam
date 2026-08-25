@@ -11,23 +11,23 @@
     <form method="post" action="/admin/bang-gia">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="grid grid-4" style="gap:0 14px">
-        <div class="field"><label>Duoi (khong dau cham)</label><input type="text" name="tld" placeholder="com.vn" required></div>
-        <div class="field"><label>Loai</label><select name="kind"><option value="intl">Quoc te</option><option value="vn">Viet Nam</option></select></div>
-        <div class="field"><label>Ten hien thi</label><input type="text" name="label" placeholder="Doanh nghiep Viet Nam"></div>
-        <div class="field"><label>Thu tu sap xep</label><input type="number" name="sort_order" value="100"></div>
+        <div class="field"><label><span class="field-name">Duoi (khong dau cham)</span><input type="text" name="tld" placeholder="com.vn" required></label></div>
+        <div class="field"><label><span class="field-name">Loai</span><select name="kind"></label><option value="intl">Quoc te</option><option value="vn">Viet Nam</option></select></div>
+        <div class="field"><label><span class="field-name">Ten hien thi</span><input type="text" name="label" placeholder="Doanh nghiep Viet Nam"></label></div>
+        <div class="field"><label><span class="field-name">Thu tu sap xep</span><input type="number" name="sort_order" value="100"></label></div>
 
-        <div class="field"><label>Gia von dang ky</label><input type="number" name="cost_register" value="0"></div>
-        <div class="field"><label>Gia von gia han</label><input type="number" name="cost_renew" value="0"></div>
-        <div class="field"><label>Gia ban dang ky</label><input type="number" name="price_register" value="0" required></div>
-        <div class="field"><label>Gia ban gia han</label><input type="number" name="price_renew" value="0" required></div>
+        <div class="field"><label><span class="field-name">Gia von dang ky</span><input type="number" name="cost_register" value="0"></label></div>
+        <div class="field"><label><span class="field-name">Gia von gia han</span><input type="number" name="cost_renew" value="0"></label></div>
+        <div class="field"><label><span class="field-name">Gia ban dang ky</span><input type="number" name="price_register" value="0" required></label></div>
+        <div class="field"><label><span class="field-name">Gia ban gia han</span><input type="number" name="price_renew" value="0" required></label></div>
 
-        <div class="field"><label>Gia chuyen ve</label><input type="number" name="price_transfer" value="0"></div>
-        <div class="field"><label>Phi khoi tao</label><input type="number" name="setup_fee" value="0"></div>
-        <div class="field"><label>VAT (%)</label><input type="number" name="vat_percent" value="0"></div>
+        <div class="field"><label><span class="field-name">Gia chuyen ve</span><input type="number" name="price_transfer" value="0"></label></div>
+        <div class="field"><label><span class="field-name">Phi khoi tao</span><input type="number" name="setup_fee" value="0"></label></div>
+        <div class="field"><label><span class="field-name">VAT (%)</span><input type="number" name="vat_percent" value="0"></label></div>
         <div class="field"><label>Nam toi thieu / toi da</label>
           <div class="row" style="gap:6px">
-            <input type="number" name="min_years" value="1" style="width:70px">
-            <input type="number" name="max_years" value="10" style="width:70px">
+            <input type="number" name="min_years" value="1" aria-label="So nam toi thieu" style="width:70px">
+            <input type="number" name="max_years" value="10" aria-label="So nam toi da" style="width:70px">
           </div>
         </div>
       </div>

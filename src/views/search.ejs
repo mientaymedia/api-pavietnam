@@ -7,10 +7,10 @@
   <form class="card" action="/tim-kiem" method="get" style="margin-bottom:18px">
     <div class="row">
       <div style="flex:1; min-width:240px">
-        <input type="search" name="q" value="<%= q %>" placeholder="Nhap ten mien" required>
+        <input type="search" name="q" value="<%= q %>" aria-label="Ten mien can tim" placeholder="Nhap ten mien" required>
       </div>
       <div style="width:110px">
-        <select name="years">
+        <select name="years" aria-label="So nam dang ky">
           <% for (var y = 1; y <= 10; y++) { %>
             <option value="<%= y %>" <%= years === y ? 'selected' : '' %>><%= y %> nam</option>
           <% } %>

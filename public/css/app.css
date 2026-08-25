@@ -60,8 +60,9 @@ code, kbd, .mono { font-family: var(--mono); font-size: .9em; }
   border-bottom: 1px solid var(--line);
   position: sticky; top: 0; z-index: 50;
 }
-.site-header .container { display: flex; align-items: center; gap: 24px; height: 62px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; color: var(--ink); }
+.site-header .container { display: flex; align-items: center; gap: 16px; min-height: 62px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; color: var(--ink); flex: none; }
+.brand-text { white-space: nowrap; }
 .brand:hover { text-decoration: none; }
 .brand-mark {
   width: 30px; height: 30px; border-radius: 8px; flex: none;
@@ -69,6 +70,7 @@ code, kbd, .mono { font-family: var(--mono); font-size: .9em; }
   display: grid; place-items: center; font-size: 15px; font-weight: 700;
 }
 .nav { display: flex; gap: 4px; margin-left: auto; align-items: center; flex-wrap: wrap; }
+.nav-toggle { display: none; margin-left: auto; }
 .nav a, .nav button {
   padding: 7px 12px; border-radius: var(--r-sm); color: var(--ink-soft);
   font-size: .9rem; font-weight: 500; background: none; border: 0; cursor: pointer; font-family: inherit;
@@ -126,6 +128,12 @@ main { padding: 28px 0 64px; }
 
 /* ------------------------------------------------------------------- form */
 label { display: block; font-size: .85rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 5px; }
+/* Nhan boc quanh o nhap (de trinh doc man hinh lien ket duoc): phan CHU phai
+   xuong dong rieng, neu khong chu se dinh sat o nhap. */
+.field-name { display: block; margin-bottom: 5px; }
+label > .field-name + input,
+label > .field-name + select,
+label > .field-name + textarea { font-weight: 400; }
 input[type=text], input[type=email], input[type=password], input[type=number], input[type=search],
 input[type=url], input[type=date], select, textarea {
   width: 100%; padding: 10px 12px; font-size: .92rem; font-family: inherit; color: var(--ink);
@@ -225,6 +233,67 @@ pre.raw {
 }
 .section-heading { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); font-weight: 700; margin: 26px 0 10px; }
 .section-heading:first-child { margin-top: 0; }
+
+/* =========================================================================
+   Man hinh hep (dien thoai, may tinh bang)
+   Duoi 900px thanh dieu huong doi thanh nut mo menu: neu de nguyen, cac muc
+   tran ra ngoai va keo ca trang bi tran ngang.
+   ========================================================================= */
+@media (max-width: 900px) {
+  .nav-desktop { display: none; }
+  .nav-toggle { display: block; }
+
+  .nav-toggle > summary {
+    list-style: none; cursor: pointer; padding: 8px;
+    border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface);
+    display: flex; align-items: center; justify-content: center; width: 40px; height: 38px;
+  }
+  .nav-toggle > summary::-webkit-details-marker { display: none; }
+  .nav-toggle > summary::marker { content: ''; }
+
+  /* Bieu tuong ba gach ke bang CSS - khong can anh, khong can font ngoai */
+  .nav-icon, .nav-icon::before, .nav-icon::after {
+    display: block; width: 18px; height: 2px; background: var(--ink); border-radius: 2px;
+  }
+  .nav-icon { position: relative; }
+  .nav-icon::before, .nav-icon::after { content: ''; position: absolute; left: 0; }
+  .nav-icon::before { top: -6px; }
+  .nav-icon::after { top: 6px; }
+  .nav-toggle[open] > summary { border-color: var(--brand); }
+
+  .nav-mobile {
+    position: absolute; right: 20px; left: 20px; top: 58px; z-index: 60;
+    flex-direction: column; align-items: stretch; gap: 0; margin: 0;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--r); box-shadow: var(--shadow-lg); padding: 6px;
+  }
+  .nav-mobile a, .nav-mobile button {
+    display: block; width: 100%; text-align: left; padding: 11px 12px; border-radius: var(--r-sm);
+  }
+  .nav-mobile form { width: 100%; }
+
+  .site-header .container { position: relative; }
+  .container { padding: 0 16px; }
+  main { padding: 20px 0 48px; }
+  h1 { font-size: 1.45rem; }
+  .card { padding: 16px; }
+  .table-wrap { margin: 0 -16px; padding: 0 16px; }
+  .sidebar-layout { grid-template-columns: 1fr; }
+  .hero { padding: 36px 0 42px; }
+  .hero h1 { font-size: 1.7rem; }
+  /* Nut tren dien thoai: du rong de bam bang ngon tay */
+  .row > form > .btn, .row > .btn { min-height: 42px; }
+}
+
+@media (max-width: 480px) {
+  /* Van du cho cho ten thuong hieu o be ngang dien thoai pho bien (360-430px):
+     logo 30 + ten ~130 + nut menu 40 = 200px. Chi thu nho chu lai mot chut. */
+  .brand { font-size: .95rem; gap: 8px; }
+  .brand-text { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .result { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .result-meta { margin-left: 0; width: 100%; text-align: left; }
+}
 
 /* =========================================================================
    Bieu do bao cao

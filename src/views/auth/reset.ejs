@@ -9,13 +9,13 @@
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="token" value="<%= token %>">
       <div class="field">
-        <label for="password">Mat khau moi</label>
-        <input id="password" type="password" name="password" required autofocus autocomplete="new-password">
+        <label for="password"><span class="field-name">Mat khau moi</span>
+        <input id="password" type="password" name="password" required autofocus autocomplete="new-password"></label>
         <div class="hint">Toi thieu 8 ky tu.</div>
       </div>
       <div class="field">
-        <label for="password_confirm">Nhap lai mat khau moi</label>
-        <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password">
+        <label for="password_confirm"><span class="field-name">Nhap lai mat khau moi</span>
+        <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password"></label>
       </div>
       <button class="btn btn-block" type="submit">Doi mat khau</button>
     </form>

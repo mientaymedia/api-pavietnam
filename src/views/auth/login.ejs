@@ -11,12 +11,12 @@
       <input type="hidden" name="next" value="<%= next %>">
 
       <div class="field">
-        <label for="email">Email</label>
-        <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autofocus autocomplete="email">
+        <label for="email"><span class="field-name">Email</span>
+        <input id="email" type="email" name="email" value="<%= values.email || '' %></label>" required autofocus autocomplete="email">
       </div>
       <div class="field">
-        <label for="password">Mat khau</label>
-        <input id="password" type="password" name="password" required autocomplete="current-password">
+        <label for="password"><span class="field-name">Mat khau</span>
+        <input id="password" type="password" name="password" required autocomplete="current-password"></label>
       </div>
 
       <button class="btn btn-block btn-lg" type="submit">Dang nhap</button>

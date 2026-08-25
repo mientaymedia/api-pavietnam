@@ -13,21 +13,21 @@
       <input type="hidden" name="action" value="transfer">
 
       <div class="field">
-        <label for="domain">Ten mien can chuyen</label>
+        <label for="domain"><span class="field-name">Ten mien can chuyen</span>
         <input id="domain" type="text" name="domain" value="<%= values.domain || '' %>" placeholder="tenmien-cua-ban.com" required autofocus>
       </div>
 
       <div class="field">
-        <label for="auth_code">Ma xac thuc (EPP / Auth Code)</label>
-        <input id="auth_code" type="text" name="auth_code" class="mono" required>
+        <label for="auth_code"><span class="field-name">Ma xac thuc (EPP / Auth Code)</span>
+        <input id="auth_code" type="text" name="auth_code" class="mono" required></label>
         <div class="hint">Lay tai trang quan ly cua nha dang ky <strong>hien tai</strong>. Moi noi goi mot ten: EPP Code, Auth Code, Transfer Key hoac Ma chuyen doi.</div>
       </div>
 
       <div class="field" style="max-width:200px">
-        <label for="years">Gia han them</label>
-        <select id="years" name="years">
+        <label for="years"><span class="field-name">Gia han them</span>
+        <select id="years" name="years"></label>
           <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> nam</option><% } %>
-        </select>
+        </select></label>
       </div>
 
       <button class="btn btn-lg" type="submit">Them vao gio hang</button>

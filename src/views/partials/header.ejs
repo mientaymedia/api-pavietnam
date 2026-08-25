@@ -6,29 +6,61 @@
       <% } else { %>
         <span class="brand-mark"><%= site.name.trim().charAt(0).toUpperCase() %></span>
       <% } %>
-      <span><%= site.name %></span>
+      <span class="brand-text"><%= site.name %></span>
     </a>
 
-    <nav class="nav">
-      <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Tim ten mien</a>
-      <a href="/bang-gia" class="<%= currentPath === '/bang-gia' ? 'active' : '' %>">Bang gia</a>
-      <a href="/whois" class="<%= currentPath === '/whois' ? 'active' : '' %>">WHOIS</a>
-      <a href="/chuyen-ten-mien" class="<%= currentPath === '/chuyen-ten-mien' ? 'active' : '' %>">Chuyen ve</a>
+    <%
+      // Menu dung chung cho ca man hinh rong lan hep - khai bao mot lan de hai
+      // ban khong bi lech nhau khi them muc moi.
+      var menu = [
+        { url: '/', nhan: 'Tim ten mien', khop: currentPath === '/' },
+        { url: '/bang-gia', nhan: 'Bang gia', khop: currentPath === '/bang-gia' },
+        { url: '/whois', nhan: 'WHOIS', khop: currentPath === '/whois' },
+        { url: '/chuyen-ten-mien', nhan: 'Chuyen ve', khop: currentPath === '/chuyen-ten-mien' }
+      ];
+      if (currentUser) {
+        menu.push({ url: '/control-panel', nhan: 'Control Panel', khop: currentPath.indexOf('/control-panel') === 0 });
+        menu.push({ url: '/don-hang', nhan: 'Don hang', khop: currentPath.indexOf('/don-hang') === 0 });
+        if (currentUser.role === 'admin' || currentUser.role === 'staff') {
+          menu.push({ url: '/admin', nhan: 'Quan tri', khop: currentPath.indexOf('/admin') === 0 });
+        }
+      }
+    %>
 
-      <% if (currentUser) { %>
-        <a href="/control-panel" class="<%= currentPath.startsWith('/control-panel') ? 'active' : '' %>">Control Panel</a>
-        <a href="/don-hang" class="<%= currentPath.startsWith('/don-hang') ? 'active' : '' %>">Don hang</a>
+    <!-- Nut mo menu: chi hien tren man hinh hep. Dung <details> nen khong can
+         JavaScript - menu van mo duoc ke ca khi script loi. -->
+    <details class="nav-toggle">
+      <summary aria-label="Mo menu"><span class="nav-icon"></span></summary>
+      <nav class="nav nav-mobile">
+        <% menu.forEach(function (m) { %>
+          <a href="<%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
+        <% }); %>
         <a href="/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
-        <% if (currentUser.role === 'admin' || currentUser.role === 'staff') { %>
-          <a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Quan tri</a>
+        <% if (currentUser) { %>
+          <a href="/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
+          <form method="post" action="/dang-xuat">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit">Thoat</button>
+          </form>
+        <% } else { %>
+          <a href="/dang-nhap">Dang nhap</a>
+          <a href="/dang-ky">Dang ky</a>
         <% } %>
+      </nav>
+    </details>
+
+    <nav class="nav nav-desktop">
+      <% menu.forEach(function (m) { %>
+        <a href="<%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
+      <% }); %>
+      <a href="/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+      <% if (currentUser) { %>
         <a href="/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
         <form method="post" action="/dang-xuat" style="display:inline">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit">Thoat</button>
         </form>
       <% } else { %>
-        <a href="/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
         <a href="/dang-nhap">Dang nhap</a>
         <a href="/dang-ky" class="btn btn-sm">Dang ky</a>
       <% } %>
