@@ -19,7 +19,7 @@
     "kiem-tra": "tsx src/preflight.ts"
   },
   "dependencies": {
-    "better-sqlite3": "^11.7.0",
+    "better-sqlite3": "^13.0.3",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
