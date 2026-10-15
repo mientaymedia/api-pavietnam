@@ -56,7 +56,7 @@ test('.vn: ca nhan thieu CMND/CCCD bi tu choi', () => {
 
 test('.vn: to chuc thieu ma so thue bi tu choi', () => {
   const c = hoSo({ kind: 'organization', org_name: 'CTY ABC', tax_code: '' });
-  assert.match(validateForTld(c, 'vn') ?? '', /ma so thue/i);
+  assert.match(validateForTld(c, 'vn') ?? '', /mã số thuế/i);
 });
 
 test('.vn: ho so day du thi hop le', () => {
@@ -85,7 +85,7 @@ test('khong nop duoc ho so thu hai khi ho so cu chua xong', () => {
 
   const lan2 = submitOwnershipRequest({ domain: d, newContactId: c.id, reason: 'Lan 2', userId: c.user_id });
   assert.equal(lan2.ok, false);
-  if (!lan2.ok) assert.match(lan2.error, /chua xu ly xong/i);
+  if (!lan2.ok) assert.match(lan2.error, /chưa xử lý xong/i);
 });
 
 test('khong dung duoc ho so chu the cua nguoi khac', () => {
@@ -104,7 +104,7 @@ test('.vn: ho so chu the moi thieu giay to thi khong nop duoc', () => {
 
   const r = submitOwnershipRequest({ domain: d, newContactId: chuMoi.id, reason: 'x', userId: chuCu.user_id });
   assert.equal(r.ok, false);
-  if (!r.ok) assert.match(r.error, /ma so thue/i);
+  if (!r.ok) assert.match(r.error, /mã số thuế/i);
 });
 
 test('hoan tat ho so thi ten mien doi sang chu the moi', async () => {

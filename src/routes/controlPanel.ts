@@ -38,7 +38,7 @@ function load(req: Parameters<typeof requireAuth>[0]) {
 router.get('/', (req, res) => {
   const domains = listUserDomains(req.currentUser!.id);
   res.render('domains/list', {
-    title: 'Control Panel - Ten mien cua toi',
+    title: 'Control Panel - Tên miền của tôi',
     domains: domains.map((d) => ({ ...d, ns: nameserversOf(d), daysLeft: daysUntilExpiry(d) })),
   });
 });
@@ -48,7 +48,7 @@ router.get(
   wrap(async (req, res) => {
     const domain = load(req);
     if (!domain) {
-      flash(req, 'error', 'Khong tim thay ten mien trong tai khoan cua ban.');
+      flash(req, 'error', 'Không tìm thấy tên miền trong tài khoản của bạn.');
       return res.redirect('/control-panel');
     }
 
@@ -87,19 +87,19 @@ router.post(
 
     const invalid = raw.filter((ns) => !nameserverSchema.safeParse(ns).success);
     if (invalid.length) {
-      flash(req, 'error', `Nameserver khong hop le: ${invalid.join(', ')}`);
+      flash(req, 'error', `Nameserver không hợp lệ: ${invalid.join(', ')}`);
       return res.redirect(`/control-panel/${domain.domain}`);
     }
     if (raw.length < 2) {
-      flash(req, 'error', 'Can toi thieu 2 nameserver.');
+      flash(req, 'error', 'Cần tối thiểu 2 nameserver.');
       return res.redirect(`/control-panel/${domain.domain}`);
     }
 
     try {
       await changeNameservers(domain, raw, req.currentUser!.id);
-      flash(req, 'success', 'Da cap nhat nameserver. Thay doi co the mat 5 phut den 24 gio de co hieu luc toan cau.');
+      flash(req, 'success', 'Đã cập nhật nameserver. Thay đổi có thể mất 5 phút đến 24 giờ để có hiệu lực toàn cầu.');
     } catch (err) {
-      flash(req, 'error', err instanceof Error ? err.message : 'Khong doi duoc nameserver.');
+      flash(req, 'error', err instanceof Error ? err.message : 'Không đổi được nameserver.');
     }
     res.redirect(`/control-panel/${domain.domain}`);
   }),
@@ -114,15 +114,15 @@ router.post(
 
     const parsed = dnsRecordSchema.safeParse(req.body);
     if (!parsed.success) {
-      flash(req, 'error', Object.values(fieldErrors(parsed.error))[0] ?? 'Ban ghi khong hop le');
+      flash(req, 'error', Object.values(fieldErrors(parsed.error))[0] ?? 'Bản ghi không hợp lệ');
       return res.redirect(`/control-panel/${domain.domain}`);
     }
 
     try {
       await addRecord(domain, parsed.data, req.currentUser!.id);
-      flash(req, 'success', 'Da them ban ghi DNS.');
+      flash(req, 'success', 'Đã thêm bản ghi DNS.');
     } catch (err) {
-      flash(req, 'error', err instanceof Error ? err.message : 'Khong them duoc ban ghi.');
+      flash(req, 'error', err instanceof Error ? err.message : 'Không thêm được bản ghi.');
     }
     res.redirect(`/control-panel/${domain.domain}`);
   }),
@@ -137,15 +137,15 @@ router.post(
 
     const parsed = dnsRecordSchema.safeParse(req.body);
     if (!parsed.success) {
-      flash(req, 'error', Object.values(fieldErrors(parsed.error))[0] ?? 'Ban ghi khong hop le');
+      flash(req, 'error', Object.values(fieldErrors(parsed.error))[0] ?? 'Bản ghi không hợp lệ');
       return res.redirect(`/control-panel/${domain.domain}`);
     }
 
     try {
       await updateRecord(domain, Number(req.params.index), parsed.data, req.currentUser!.id);
-      flash(req, 'success', 'Da cap nhat ban ghi DNS.');
+      flash(req, 'success', 'Đã cập nhật bản ghi DNS.');
     } catch (err) {
-      flash(req, 'error', err instanceof Error ? err.message : 'Khong sua duoc ban ghi.');
+      flash(req, 'error', err instanceof Error ? err.message : 'Không sửa được bản ghi.');
     }
     res.redirect(`/control-panel/${domain.domain}`);
   }),
@@ -159,9 +159,9 @@ router.post(
 
     try {
       await deleteRecord(domain, Number(req.params.index), req.currentUser!.id);
-      flash(req, 'success', 'Da xoa ban ghi DNS.');
+      flash(req, 'success', 'Đã xóa bản ghi DNS.');
     } catch (err) {
-      flash(req, 'error', err instanceof Error ? err.message : 'Khong xoa duoc ban ghi.');
+      flash(req, 'error', err instanceof Error ? err.message : 'Không xóa được bản ghi.');
     }
     res.redirect(`/control-panel/${domain.domain}`);
   }),
@@ -172,7 +172,7 @@ router.post('/:domain/tu-dong-gia-han', (req, res) => {
   if (!domain) return res.redirect('/control-panel');
   const enabled = String(req.body?.auto_renew ?? '') === '1';
   setAutoRenew(domain.id, enabled);
-  flash(req, 'success', enabled ? 'Da bat gia han tu dong.' : 'Da tat gia han tu dong.');
+  flash(req, 'success', enabled ? 'Đã bật gia hạn tự động.' : 'Đã tắt gia hạn tự động.');
   res.redirect(`/control-panel/${domain.domain}`);
 });
 
@@ -194,7 +194,7 @@ router.post('/:domain/gia-han', (req, res) => {
     flash(req, 'error', result.error);
     return res.redirect(`/control-panel/${domain.domain}`);
   }
-  flash(req, 'success', `Da them lenh gia han ${domain.domain} (${years} nam) vao gio hang.`);
+  flash(req, 'success', `Đã thêm lệnh gia hạn ${domain.domain} (${years} năm) vào giỏ hàng.`);
   res.redirect('/gio-hang');
 });
 
@@ -212,13 +212,13 @@ router.post(
       .get(contactId, req.currentUser!.id) as ContactRow | undefined;
 
     if (!contact) {
-      flash(req, 'error', 'Ho so chu the khong hop le.');
+      flash(req, 'error', 'Hồ sơ chủ thể không hợp lệ.');
       return res.redirect(`/control-panel/${domain.domain}#chu-the`);
     }
 
     const outcome = await updateContact(domain, contact, { userId: req.currentUser!.id, ip: req.ip ?? '' });
     if (outcome.status === 'ok') {
-      flash(req, 'success', 'Da cap nhat thong tin lien he chu the tai nha dang ky.');
+      flash(req, 'success', 'Đã cập nhật thông tin liên hệ chủ thể tại nhà đăng ký.');
     } else {
       flash(req, 'error', outcome.message);
     }
@@ -243,7 +243,7 @@ router.post(
     });
 
     if (result.ok) {
-      flash(req, 'success', `Da nhan ho so doi chu the (ma #${result.id}). Bo phan nghiep vu se lien he huong dan giay to can nop.`);
+      flash(req, 'success', `Đã nhận hồ sơ đổi chủ thể (mã #${result.id}). Bộ phận nghiệp vụ sẽ liên hệ hướng dẫn giấy tờ cần nộp.`);
     } else {
       flash(req, 'error', result.error);
     }
@@ -270,8 +270,8 @@ router.post(
         req,
         'success',
         khoa
-          ? 'Da khoa chuyen doi. Ten mien khong the bi chuyen sang nha dang ky khac.'
-          : 'Da mo khoa chuyen doi. Nen khoa lai ngay sau khi xong viec.',
+          ? 'Đã khóa chuyển đổi. Tên miền không thể bị chuyển sang nhà đăng ký khác.'
+          : 'Đã mở khóa chuyển đổi. Nên khóa lại ngay sau khi xong việc.',
       );
     }
     res.redirect(`/control-panel/${domain.domain}#chuyen-di`);
@@ -280,7 +280,7 @@ router.post(
 
 router.post(
   '/:domain/ma-chuyen-doi',
-  rateLimit({ windowMs: 15 * 60_000, max: 5, message: 'Ban lay ma chuyen doi qua nhieu lan. Vui long thu lai sau.' }),
+  rateLimit({ windowMs: 15 * 60_000, max: 5, message: 'Bạn lấy mã chuyển đổi quá nhiều lần. Vui lòng thử lại sau.' }),
   wrap(async (req, res) => {
     const domain = load(req);
     if (!domain) return res.redirect('/control-panel');
@@ -289,8 +289,8 @@ router.post(
 
     if (outcome.status === 'ok') {
       // Ma chi hien MOT lan qua flash, khong luu vao CSDL cua he thong
-      flash(req, 'success', `Ma chuyen doi (EPP) cua ${domain.domain}: ${outcome.authCode}`);
-      flash(req, 'info', 'Sao chep ngay - ma nay chi hien mot lan. Chung toi da gui email canh bao ve tai khoan cua ban.');
+      flash(req, 'success', `Mã chuyển đổi (EPP) của ${domain.domain}: ${outcome.authCode}`);
+      flash(req, 'info', 'Sao chép ngay - mã này chỉ hiện một lần. Chúng tôi đã gửi email cảnh báo về tài khoản của bạn.');
     } else {
       flash(req, 'error', outcome.message);
     }
@@ -314,7 +314,7 @@ router.post('/:domain/dong-bo', (req, res) => {
   const domain = load(req);
   if (!domain) return res.redirect('/control-panel');
   enqueue('sync_domain', { domain: domain.domain }, { dedupeKey: `sync:${domain.domain}` });
-  flash(req, 'info', 'Dang dong bo thong tin tu nha dang ky, vui long tai lai trang sau vai giay.');
+  flash(req, 'info', 'Đang đồng bộ thông tin từ nhà đăng ký, vui lòng tải lại trang sau vài giây.');
   res.redirect(`/control-panel/${domain.domain}`);
 });
 

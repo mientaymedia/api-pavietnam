@@ -53,7 +53,7 @@ export async function updateRecord(
   userId: number,
 ): Promise<DnsRecord[]> {
   const current = await currentRecords(domain);
-  if (index < 0 || index >= current.length) throw new Error('Khong tim thay ban ghi can sua');
+  if (index < 0 || index >= current.length) throw new Error('Không tìm thấy bản ghi cần sửa');
   const next = current.map((r, i) => (i === index ? normalize(record, domain.domain) : r));
   await commit(domain, next, userId, 'dns.update', { before: current[index], after: record });
   return next;
@@ -61,7 +61,7 @@ export async function updateRecord(
 
 export async function deleteRecord(domain: DomainRow, index: number, userId: number): Promise<DnsRecord[]> {
   const current = await currentRecords(domain);
-  if (index < 0 || index >= current.length) throw new Error('Khong tim thay ban ghi can xoa');
+  if (index < 0 || index >= current.length) throw new Error('Không tìm thấy bản ghi cần xóa');
   const removed = current[index];
   const next = current.filter((_, i) => i !== index);
   await commit(domain, next, userId, 'dns.delete', removed);
@@ -94,8 +94,8 @@ async function currentRecords(domain: DomainRow): Promise<DnsRecord[]> {
   const view = await listRecords(domain);
   if (view.stale) {
     throw new Error(
-      `Khong doc duoc ban ghi DNS hien tai tu P.A (${view.error ?? 'loi khong xac dinh'}). ` +
-        'De tranh mat ban ghi, he thong khong cap nhat khi chua doc duoc du lieu goc.',
+      `Không đọc được bản ghi DNS hiện tại từ P.A (${view.error ?? 'lỗi không xác định'}). ` +
+        'Để tránh mất bản ghi, hệ thống không cập nhật khi chưa đọc được dữ liệu gốc.',
     );
   }
   return view.records;
@@ -158,8 +158,8 @@ function readCache(domainId: number): { records: DnsRecord[]; syncedAt?: string 
 
 /** Goi y ban ghi thuong dung khi khach vua co ten mien moi. */
 export const RECORD_PRESETS: { label: string; record: DnsRecord }[] = [
-  { label: 'Tro web ve IP may chu', record: { type: 'A', name: '@', content: '', ttl: 3600 } },
-  { label: 'www tro ve ten mien chinh', record: { type: 'CNAME', name: 'www', content: '', ttl: 3600 } },
+  { label: 'Trỏ web về IP máy chủ', record: { type: 'A', name: '@', content: '', ttl: 3600 } },
+  { label: 'www trỏ về tên miền chính', record: { type: 'CNAME', name: 'www', content: '', ttl: 3600 } },
   { label: 'Email Google Workspace', record: { type: 'MX', name: '@', content: 'aspmx.l.google.com', ttl: 3600, priority: 1 } },
-  { label: 'Xac thuc SPF co ban', record: { type: 'TXT', name: '@', content: 'v=spf1 -all', ttl: 3600 } },
+  { label: 'Xác thực SPF cơ bản', record: { type: 'TXT', name: '@', content: 'v=spf1 -all', ttl: 3600 } },
 ];

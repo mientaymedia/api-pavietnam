@@ -2,105 +2,105 @@
 <%- include('../partials/header') %>
 <div class="container container-mid">
   <%- include('../partials/flash') %>
-  <h1>Bao mat tai khoan</h1>
+  <h1>Bảo mật tài khoản</h1>
 
   <div class="tabs">
-    <a href="<%= base %>/tai-khoan">Thong tin</a>
-    <a href="<%= base %>/tai-khoan/bao-mat" class="active">Bao mat</a>
-    <a href="<%= base %>/tai-khoan/ho-so">Ho so chu the</a>
-    <a href="<%= base %>/control-panel">Ten mien</a>
-    <a href="<%= base %>/don-hang">Don hang</a>
+    <a href="<%= base %>/tai-khoan">Thông tin</a>
+    <a href="<%= base %>/tai-khoan/bao-mat" class="active">Bảo mật</a>
+    <a href="<%= base %>/tai-khoan/ho-so">Hồ sơ chủ thể</a>
+    <a href="<%= base %>/control-panel">Tên miền</a>
+    <a href="<%= base %>/don-hang">Đơn hàng</a>
   </div>
 
   <% if (recoveryCodes) { %>
     <div class="alert alert-success">
-      <strong>Ma du phong cua ban.</strong> Hay in ra hoac cat vao noi an toan ngay bay gio -
-      day la <u>lan duy nhat</u> he thong hien chung. Moi ma chi dung duoc mot lan, va dung
-      khi ban khong con dien thoai.
+      <strong>Mã dự phòng của bạn.</strong> Hãy in ra hoặc cất vào nơi an toàn ngay bây giờ -
+      đây là <u>lần duy nhất</u> hệ thống hiện chúng. Mỗi mã chỉ dùng được một lần, và dùng
+      khi bạn không còn điện thoại.
       <div class="grid grid-2 mono" style="margin-top:10px; background:#fff; padding:12px; border-radius:6px; gap:4px 16px">
         <% recoveryCodes.forEach(function (c) { %><div><%= c %></div><% }); %>
       </div>
-      <button class="btn-link tiny" data-copy="<%= recoveryCodes.join(' ') %>" style="margin-top:8px">chep tat ca</button>
+      <button class="btn-link tiny" data-copy="<%= recoveryCodes.join(' ') %>" style="margin-top:8px">chép tất cả</button>
     </div>
   <% } %>
 
   <div class="card">
     <div class="card-title">
-      <h2>Xac thuc hai lop</h2>
+      <h2>Xác thực hai lớp</h2>
       <% if (state.enabled) { %>
-        <span class="badge" style="background:var(--ok); color:#fff">Dang bat</span>
+        <span class="badge" style="background:var(--ok); color:#fff">Đang bật</span>
       <% } else { %>
-        <span class="badge badge-muted">Dang tat</span>
+        <span class="badge badge-muted">Đang tắt</span>
       <% } %>
     </div>
 
     <p class="muted small">
-      Khi bat, moi lan dang nhap ban se can them ma 6 so tu ung dung xac thuc tren dien thoai.
-      Mat khau bi lo van chua du de vao duoc tai khoan.
+      Khi bật, mỗi lần đăng nhập bạn sẽ cần thêm mã 6 số từ ứng dụng xác thực trên điện thoại.
+      Mật khẩu bị lộ vẫn chưa đủ để vào được tài khoản.
     </p>
 
     <% if (batBuoc && !state.enabled) { %>
       <div class="alert alert-error">
-        Tai khoan quan tri <strong>bat buoc</strong> bat xac thuc hai lop moi vao duoc khu vuc quan tri.
+        Tài khoản quản trị <strong>bắt buộc</strong> bật xác thực hai lớp mới vào được khu vực quản trị.
       </div>
     <% } %>
 
     <% if (state.enabled) { %>
       <p class="small">
-        Da bat tu <strong><%= (state.enabledAt || '').replace('T', ' ').slice(0, 16) %></strong>.
-        Con <strong><%= state.recoveryLeft %></strong> ma du phong chua dung.
+        Đã bật từ <strong><%= (state.enabledAt || '').replace('T', ' ').slice(0, 16) %></strong>.
+        Còn <strong><%= state.recoveryLeft %></strong> mã dự phòng chưa dùng.
         <% if (state.recoveryLeft <= 2) { %>
-          <span style="color:var(--danger)">Sap het - nen tao bo ma moi.</span>
+          <span style="color:var(--danger)">Sắp hết - nên tạo bộ mã mới.</span>
         <% } %>
       </p>
 
-      <form method="post" action="<%= base %>/tai-khoan/bao-mat/ma-du-phong" data-confirm="Tao bo ma du phong moi? Bo ma cu se het hieu luc ngay.">
+      <form method="post" action="<%= base %>/tai-khoan/bao-mat/ma-du-phong" data-confirm="Tạo bộ mã dự phòng mới? Bộ mã cũ sẽ hết hiệu lực ngay.">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button class="btn btn-ghost" type="submit">Tao bo ma du phong moi</button>
+        <button class="btn btn-ghost" type="submit">Tạo bộ mã dự phòng mới</button>
       </form>
 
       <% if (!batBuoc) { %>
         <hr style="margin:18px 0; border:0; border-top:1px solid var(--line)">
-        <h3 style="margin:0 0 8px; font-size:15px">Tat xac thuc hai lop</h3>
-        <p class="muted small">Nhap ma hien tai (hoac mot ma du phong) de xac nhan chinh ban dang thao tac.</p>
+        <h3 style="margin:0 0 8px; font-size:15px">Tắt xác thực hai lớp</h3>
+        <p class="muted small">Nhập mã hiện tại (hoặc một mã dự phòng) để xác nhận chính bạn đang thao tác.</p>
         <form method="post" action="<%= base %>/tai-khoan/bao-mat/tat">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:200px; margin:0">
-              <label><span class="field-name">Ma xac thuc</span>
+              <label><span class="field-name">Mã xác thực</span>
               <input type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" class="mono"></label>
             </div>
-            <button class="btn" type="submit" style="background:var(--danger)">Tat</button>
+            <button class="btn" type="submit" style="background:var(--danger)">Tắt</button>
           </div>
         </form>
       <% } %>
 
     <% } else if (setup) { %>
       <ol class="small" style="padding-left:18px; line-height:1.9">
-        <li>Cai ung dung xac thuc: Google Authenticator, Microsoft Authenticator hoac Authy.</li>
-        <li>Quet ma QR ben duoi bang ung dung do.</li>
-        <li>Nhap ma 6 so ung dung hien ra de hoan tat.</li>
+        <li>Cài ứng dụng xác thực: Google Authenticator, Microsoft Authenticator hoặc Authy.</li>
+        <li>Quét mã QR bên dưới bằng ứng dụng đó.</li>
+        <li>Nhập mã 6 số ứng dụng hiện ra để hoàn tất.</li>
       </ol>
 
       <div class="row" style="align-items:flex-start; gap:22px; flex-wrap:wrap">
         <div style="flex:0 0 auto"><%- qr %></div>
         <div style="flex:1; min-width:240px">
-          <p class="small muted" style="margin-top:0">Khong quet duoc? Nhap tay khoa nay vao ung dung (chon loai "theo thoi gian"):</p>
+          <p class="small muted" style="margin-top:0">Không quét được? Nhập tay khóa này vào ứng dụng (chọn loại "theo thời gian"):</p>
           <div class="mono" style="word-break:break-all; background:var(--bg-alt); padding:10px; border-radius:6px; letter-spacing:1px">
             <%= secretDeNhap %>
           </div>
-          <button class="btn-link tiny" data-copy="<%= setup.secret %>">chep khoa</button>
+          <button class="btn-link tiny" data-copy="<%= setup.secret %>">chép khóa</button>
 
           <form method="post" action="<%= base %>/tai-khoan/bao-mat/xac-nhan" style="margin-top:16px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field">
-              <label><span class="field-name">Ma 6 so tu ung dung</span>
+              <label><span class="field-name">Mã 6 số từ ứng dụng</span>
               <input type="text" name="code" required autofocus inputmode="numeric" maxlength="6"
                      autocomplete="one-time-code" class="mono" placeholder="123456"
                      style="font-size:18px; letter-spacing:3px"></label>
             </div>
             <% if (errors.code) { %><div class="alert alert-error"><%= errors.code %></div><% } %>
-            <button class="btn" type="submit">Bat xac thuc hai lop</button>
+            <button class="btn" type="submit">Bật xác thực hai lớp</button>
           </form>
         </div>
       </div>
@@ -108,7 +108,7 @@
     <% } else { %>
       <form method="post" action="<%= base %>/tai-khoan/bao-mat/bat-dau">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button class="btn" type="submit">Bat xac thuc hai lop</button>
+        <button class="btn" type="submit">Bật xác thực hai lớp</button>
       </form>
     <% } %>
   </div>

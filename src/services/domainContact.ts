@@ -68,12 +68,12 @@ export function validateForTld(contact: ContactRow, tld: string): string | null 
   if (!t?.requires_vn_contact) return null;
 
   if (contact.kind === 'organization') {
-    if (!contact.org_name.trim()) return 'To chuc: bat buoc co ten don vi';
-    if (!contact.tax_code.trim()) return 'To chuc: bat buoc co ma so thue';
+    if (!contact.org_name.trim()) return 'Tổ chức: bắt buộc có tên đơn vị';
+    if (!contact.tax_code.trim()) return 'Tổ chức: bắt buộc có mã số thuế';
   } else if (!contact.id_number.trim()) {
-    return 'Ca nhan: bat buoc co so CMND/CCCD';
+    return 'Cá nhân: bắt buộc có số CMND/CCCD';
   }
-  if (!contact.address.trim()) return 'Bat buoc co dia chi';
+  if (!contact.address.trim()) return 'Bắt buộc có địa chỉ';
   return null;
 }
 
@@ -159,12 +159,12 @@ export function submitOwnershipRequest(input: {
     .prepare(`SELECT id FROM ownership_requests WHERE domain_id = ? AND status IN ('pending','in_review','need_documents','approved')`)
     .get(input.domain.id);
   if (dangCho) {
-    return { ok: false, error: 'Ten mien nay dang co ho so doi chu the chua xu ly xong.' };
+    return { ok: false, error: 'Tên miền này đang có hồ sơ đổi chủ thể chưa xử lý xong.' };
   }
 
   const moi = db.prepare('SELECT * FROM contacts WHERE id = ? AND user_id = ?')
     .get(input.newContactId, input.userId) as ContactRow | undefined;
-  if (!moi) return { ok: false, error: 'Ho so chu the moi khong hop le.' };
+  if (!moi) return { ok: false, error: 'Hồ sơ chủ thể mới không hợp lệ.' };
 
   const loi = validateForTld(moi, input.domain.tld);
   if (loi) return { ok: false, error: loi };

@@ -73,7 +73,7 @@ export async function searchDomains(
         writeCache(r.domain, r.available, r.raw);
       } else {
         failed.add(r.domain);
-        messages.set(r.domain, r.message || 'Khong kiem tra duoc');
+        messages.set(r.domain, r.message || 'Không kiểm tra được');
         log.warn('domain_check_failed', { domain: r.domain, message: r.message });
       }
     }
@@ -91,7 +91,7 @@ export async function searchDomains(
       kind: tld.kind,
       available,
       unknown,
-      message: unknown ? (messages.get(domain) ?? '') : available ? 'Con trong' : 'Da co nguoi dang ky',
+      message: unknown ? (messages.get(domain) ?? '') : available ? 'Còn trống' : 'Đã có người đăng ký',
       price: available ? priceFor(tld, 'register', years) : null,
       requiresVnContact: tld.requires_vn_contact === 1,
     };

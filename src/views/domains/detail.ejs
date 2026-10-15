@@ -10,8 +10,8 @@
       <div>
         <span class="badge <%= domain.status === 'active' ? 'badge-ok' : domain.status === 'expired' ? 'badge-danger' : 'badge-muted' %>"><%= domain.status %></span>
         <% if (domain.expires_at) { %>
-          <span class="muted small">Het han: <%= domain.expires_at.slice(0, 10) %>
-            <% if (daysLeft !== null) { %>(<%= daysLeft >= 0 ? 'con ' + daysLeft + ' ngay' : 'da het han' %>)<% } %>
+          <span class="muted small">Hết hạn: <%= domain.expires_at.slice(0, 10) %>
+            <% if (daysLeft !== null) { %>(<%= daysLeft >= 0 ? 'còn ' + daysLeft + ' ngày' : 'đã hết hạn' %>)<% } %>
           </span>
         <% } %>
       </div>
@@ -20,16 +20,16 @@
       <a class="btn btn-outline btn-sm" href="<%= base %>/control-panel/<%= domain.domain %>/whois">WHOIS</a>
       <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dong-bo">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-        <button class="btn btn-outline btn-sm" type="submit">Dong bo</button>
+        <button class="btn btn-outline btn-sm" type="submit">Đồng bộ</button>
       </form>
-      <a class="btn btn-outline btn-sm" href="<%= base %>/control-panel">Danh sach</a>
+      <a class="btn btn-outline btn-sm" href="<%= base %>/control-panel">Danh sách</a>
     </div>
   </div>
 
   <% if (daysLeft !== null && daysLeft <= 30) { %>
     <div class="alert alert-warn" style="margin-top:16px">
-      Ten mien <%= daysLeft >= 0 ? 'se het han sau ' + daysLeft + ' ngay' : 'da het han' %>.
-      Gia han ngay de tranh gian doan website va email.
+      Tên miền <%= daysLeft >= 0 ? 'sẽ hết hạn sau ' + daysLeft + ' ngày' : 'đã hết hạn' %>.
+      Gia hạn ngay để tránh gián đoạn website và email.
     </div>
   <% } %>
 
@@ -38,23 +38,23 @@
       <!-- ------------------------------------------------ ban ghi DNS -->
       <div class="card">
         <div class="card-title">
-          <h2>Ban ghi DNS</h2>
-          <% if (dns.syncedAt) { %><span class="tiny muted">Dong bo: <%= dns.syncedAt.replace('T', ' ').slice(0, 16) %></span><% } %>
+          <h2>Bản ghi DNS</h2>
+          <% if (dns.syncedAt) { %><span class="tiny muted">Đồng bộ: <%= dns.syncedAt.replace('T', ' ').slice(0, 16) %></span><% } %>
         </div>
 
         <% if (dns.stale) { %>
           <div class="alert alert-error">
-            Khong doc duoc DNS tu nha dang ky: <%= dns.error %><br>
-            <span class="tiny">Dang hien thi ban luu gan nhat. He thong tam khoa thao tac sua/xoa de tranh mat ban ghi.</span>
+            Không đọc được DNS từ nhà đăng ký: <%= dns.error %><br>
+            <span class="tiny">Đang hiển thị bản lưu gần nhất. Hệ thống tạm khóa thao tác sửa/xóa để tránh mất bản ghi.</span>
           </div>
         <% } %>
 
         <% if (!dns.records.length) { %>
-          <p class="muted small">Chua co ban ghi nao.</p>
+          <p class="muted small">Chưa có bản ghi nào.</p>
         <% } else { %>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Loai</th><th>Ten</th><th>Gia tri</th><th>TTL</th><th></th></tr></thead>
+              <thead><tr><th>Loại</th><th>Tên</th><th>Giá trị</th><th>TTL</th><th></th></tr></thead>
               <tbody>
                 <% dns.records.forEach(function (r, idx) { %>
                   <tr>
@@ -62,35 +62,35 @@
                     <td class="mono small"><%= r.name %></td>
                     <td class="mono small" style="word-break:break-all">
                       <%= r.content %>
-                      <% if (r.priority !== undefined) { %><span class="tiny muted"> (uu tien <%= r.priority %>)</span><% } %>
+                      <% if (r.priority !== undefined) { %><span class="tiny muted"> (ưu tiên <%= r.priority %>)</span><% } %>
                     </td>
                     <td class="small"><%= r.ttl %></td>
                     <td class="right nowrap">
                       <details>
-                        <summary class="btn-link tiny" style="cursor:pointer">Sua</summary>
+                        <summary class="btn-link tiny" style="cursor:pointer">Sửa</summary>
                         <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dns/sua/<%= idx %>" style="margin-top:8px; text-align:left; min-width:260px">
                           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                           <div class="field">
-                            <label><span class="field-name">Loai</span>
+                            <label><span class="field-name">Loại</span>
                             <select name="type">
                               <% ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA'].forEach(function (t) { %>
                                 <option value="<%= t %>" <%= r.type === t ? 'selected' : '' %>><%= t %></option>
                               <% }); %>
                             </select></label>
                           </div>
-                          <div class="field"><label><span class="field-name">Ten</span><input type="text" name="name" value="<%= r.name %>"></label></div>
-                          <div class="field"><label><span class="field-name">Gia tri</span><input type="text" name="content" value="<%= r.content %>" required></label></div>
+                          <div class="field"><label><span class="field-name">Tên</span><input type="text" name="name" value="<%= r.name %>"></label></div>
+                          <div class="field"><label><span class="field-name">Giá trị</span><input type="text" name="content" value="<%= r.content %>" required></label></div>
                           <div class="row">
                             <div class="field" style="flex:1"><label><span class="field-name">TTL</span><input type="number" name="ttl" value="<%= r.ttl %>"></label></div>
-                            <div class="field" style="flex:1"><label><span class="field-name">Uu tien</span><input type="number" name="priority" value="<%= r.priority !== undefined ? r.priority : '' %>"></label></div>
+                            <div class="field" style="flex:1"><label><span class="field-name">Ưu tiên</span><input type="number" name="priority" value="<%= r.priority !== undefined ? r.priority : '' %>"></label></div>
                           </div>
-                          <button class="btn btn-sm btn-block" type="submit" <%= dns.stale ? 'disabled' : '' %>>Luu</button>
+                          <button class="btn btn-sm btn-block" type="submit" <%= dns.stale ? 'disabled' : '' %>>Lưu</button>
                         </form>
                       </details>
                       <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dns/xoa/<%= idx %>"
-                            data-confirm="Xoa ban ghi <%= r.type %> <%= r.name %>?" style="display:inline">
+                            data-confirm="Xóa bản ghi <%= r.type %> <%= r.name %>?" style="display:inline">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <button class="btn-link tiny" type="submit" style="color:var(--danger)" <%= dns.stale ? 'disabled' : '' %>>Xoa</button>
+                        <button class="btn-link tiny" type="submit" style="color:var(--danger)" <%= dns.stale ? 'disabled' : '' %>>Xóa</button>
                       </form>
                     </td>
                   </tr>
@@ -100,12 +100,12 @@
           </div>
         <% } %>
 
-        <h3 class="section-heading">Them ban ghi moi</h3>
+        <h3 class="section-heading">Thêm bản ghi mới</h3>
         <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dns/them">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:120px; margin:0">
-              <label><span class="field-name">Loai</span>
+              <label><span class="field-name">Loại</span>
               <select name="type" data-record-type data-priority-target="#priority-wrap">
                 <% ['A','AAAA','CNAME','MX','TXT','NS','SRV','CAA'].forEach(function (t) { %>
                   <option value="<%= t %>"><%= t %></option>
@@ -113,11 +113,11 @@
               </select></label>
             </div>
             <div class="field" style="width:150px; margin:0">
-              <label><span class="field-name">Ten</span>
-              <input type="text" name="name" value="@" aria-label="Ten ban ghi" placeholder="@ hoac www">
+              <label><span class="field-name">Tên</span>
+              <input type="text" name="name" value="@" aria-label="Tên bản ghi" placeholder="@ hoặc www">
             </div>
             <div class="field" style="flex:1; min-width:200px; margin:0">
-              <label><span class="field-name">Gia tri</span>
+              <label><span class="field-name">Giá trị</span>
               <input type="text" name="content" placeholder="103.28.36.1" required></label>
             </div>
             <div class="field" style="width:100px; margin:0">
@@ -125,12 +125,12 @@
               <input type="number" name="ttl" value="3600"></label>
             </div>
             <div class="field" style="width:100px; margin:0; display:none" id="priority-wrap">
-              <label><span class="field-name">Uu tien</span>
+              <label><span class="field-name">Ưu tiên</span>
               <input type="number" name="priority" value="10"></label>
             </div>
-            <button class="btn" type="submit" <%= dns.stale ? 'disabled' : '' %>>Them</button>
+            <button class="btn" type="submit" <%= dns.stale ? 'disabled' : '' %>>Thêm</button>
           </div>
-          <p class="hint">Dung <code>@</code> cho chinh ten mien. Thay doi DNS thuong co hieu luc sau 5 phut den 24 gio.</p>
+          <p class="hint">Dùng <code>@</code> cho chính tên miền. Thay đổi DNS thường có hiệu lực sau 5 phút đến 24 giờ.</p>
         </form>
       </div>
     </div>
@@ -142,68 +142,68 @@
         <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/nameservers">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
-            <label><span class="field-name">Danh sach nameserver (moi dong mot ten)</span>
+            <label><span class="field-name">Danh sách nameserver (mỗi dòng một tên)</span>
             <textarea name="nameservers" rows="4" class="mono"><%= (ns.length ? ns : defaultNs).join('\n') %></textarea></label></label>
-            <div class="hint">Toi thieu 2 nameserver. De trong ve mac dinh cua he thong: <%= defaultNs.join(', ') %></div>
+            <div class="hint">Tối thiểu 2 nameserver. Để trống về mặc định của hệ thống: <%= defaultNs.join(', ') %></div>
           </div>
-          <button class="btn btn-block" type="submit" data-confirm="Doi nameserver se lam website/email gian doan neu cau hinh sai. Tiep tuc?">Cap nhat nameserver</button>
+          <button class="btn btn-block" type="submit" data-confirm="Đổi nameserver sẽ làm website/email gián đoạn nếu cấu hình sai. Tiếp tục?">Cập nhật nameserver</button>
         </form>
       </div>
 
       <!-- ------------------------------------------------ gia han -->
       <div class="card">
-        <div class="card-title"><h2>Gia han</h2></div>
+        <div class="card-title"><h2>Gia hạn</h2></div>
         <% if (renewPrice) { %>
           <div class="copy-row">
-            <span class="label">Phi gia han / nam</span>
+            <span class="label">Phí gia hạn / năm</span>
             <span class="value"><%= formatVnd(renewPrice.total) %></span>
           </div>
         <% } %>
         <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/gia-han" style="margin-top:12px">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
-            <label><span class="field-name">So nam gia han</span>
+            <label><span class="field-name">Số năm gia hạn</span>
             <select name="years">
-              <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> nam</option><% } %>
+              <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> năm</option><% } %>
             </select></label>
           </div>
-          <button class="btn btn-block" type="submit">Them vao gio hang</button>
+          <button class="btn btn-block" type="submit">Thêm vào giỏ hàng</button>
         </form>
 
         <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/tu-dong-gia-han" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line)">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="auto_renew" value="<%= domain.auto_renew ? '0' : '1' %>">
           <div class="row-between">
-            <span class="small">Gia han tu dong: <strong><%= domain.auto_renew ? 'Dang bat' : 'Dang tat' %></strong></span>
-            <button class="btn btn-sm btn-outline" type="submit"><%= domain.auto_renew ? 'Tat' : 'Bat' %></button>
+            <span class="small">Gia hạn tự động: <strong><%= domain.auto_renew ? 'Đang bật' : 'Đang tắt' %></strong></span>
+            <button class="btn btn-sm btn-outline" type="submit"><%= domain.auto_renew ? 'Tắt' : 'Bật' %></button>
           </div>
-          <p class="tiny muted" style="margin:8px 0 0">Khi bat, he thong se nhac gia han truoc han va uu tien xu ly cho ten mien nay.</p>
+          <p class="tiny muted" style="margin:8px 0 0">Khi bật, hệ thống sẽ nhắc gia hạn trước hạn và ưu tiên xử lý cho tên miền này.</p>
         </form>
       </div>
 
       <!-- ------------------------------------------ thong tin chu the -->
       <div class="card" id="chu-the">
-        <div class="card-title"><h2>Chu the ten mien</h2></div>
+        <div class="card-title"><h2>Chủ thể tên miền</h2></div>
 
         <% if (chuThe.error) { %>
-          <div class="alert alert-warn tiny">Khong doc duoc thong tin tu nha dang ky: <%= chuThe.error %></div>
+          <div class="alert alert-warn tiny">Không đọc được thông tin từ nhà đăng ký: <%= chuThe.error %></div>
         <% } else if (chuThe.contact && chuThe.contact.fullName) { %>
-          <div class="copy-row"><span class="label">Chu the</span><span class="value small"><%= chuThe.contact.orgName || chuThe.contact.fullName %></span></div>
+          <div class="copy-row"><span class="label">Chủ thể</span><span class="value small"><%= chuThe.contact.orgName || chuThe.contact.fullName %></span></div>
           <div class="copy-row"><span class="label">Email</span><span class="value small"><%= chuThe.contact.email || '-' %></span></div>
-          <div class="copy-row"><span class="label">Dien thoai</span><span class="value small"><%= chuThe.contact.phone || '-' %></span></div>
+          <div class="copy-row"><span class="label">Điện thoại</span><span class="value small"><%= chuThe.contact.phone || '-' %></span></div>
         <% } %>
 
-        <h3 class="section-heading">Sua thong tin lien he</h3>
+        <h3 class="section-heading">Sửa thông tin liên hệ</h3>
         <p class="tiny muted" style="margin-top:-4px">
-          Doi email, dien thoai, dia chi cua <strong>cung mot chu the</strong>. Co hieu luc ngay.
+          Đổi email, điện thoại, địa chỉ của <strong>cùng một chủ thể</strong>. Có hiệu lực ngay.
         </p>
         <% if (!hoSoChuThe.length) { %>
-          <p class="small muted">Ban chua co ho so chu the nao. <a href="<%= base %>/tai-khoan/ho-so">Tao ho so</a> truoc.</p>
+          <p class="small muted">Bạn chưa có hồ sơ chủ thể nào. <a href="<%= base %>/tai-khoan/ho-so">Tạo hồ sơ</a> trước.</p>
         <% } else { %>
           <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/chu-the">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field">
-              <label><span class="field-name">Ap dung ho so</span>
+              <label><span class="field-name">Áp dụng hồ sơ</span>
               <select name="contact_id">
                 <% hoSoChuThe.forEach(function (c) { %>
                   <option value="<%= c.id %>" <%= domain.contact_id === c.id ? 'selected' : '' %>>
@@ -211,47 +211,47 @@
                   </option>
                 <% }); %>
               </select></label>
-              <div class="hint"><a href="<%= base %>/tai-khoan/ho-so">Sua noi dung ho so</a> roi quay lai day de day len nha dang ky.</div>
+              <div class="hint"><a href="<%= base %>/tai-khoan/ho-so">Sửa nội dung hồ sơ</a> rồi quay lại đây để đẩy lên nhà đăng ký.</div>
             </div>
-            <button class="btn btn-block" type="submit">Cap nhat len nha dang ky</button>
+            <button class="btn btn-block" type="submit">Cập nhật lên nhà đăng ký</button>
           </form>
         <% } %>
 
-        <h3 class="section-heading">Doi sang chu the khac</h3>
+        <h3 class="section-heading">Đổi sang chủ thể khác</h3>
         <% if (hoSoDoiChuThe && ['pending','in_review','need_documents','approved'].indexOf(hoSoDoiChuThe.status) >= 0) { %>
           <%
             var nhan = {
-              pending: ['badge-warn', 'Cho tiep nhan'],
-              in_review: ['badge-info', 'Dang xem xet'],
-              need_documents: ['badge-warn', 'Can bo sung giay to'],
-              approved: ['badge-info', 'Da duyet, dang xu ly']
+              pending: ['badge-warn', 'Chờ tiếp nhận'],
+              in_review: ['badge-info', 'Đang xem xét'],
+              need_documents: ['badge-warn', 'Cần bổ sung giấy tờ'],
+              approved: ['badge-info', 'Đã duyệt, đang xử lý']
             }[hoSoDoiChuThe.status];
           %>
           <p class="small">
-            Ho so <strong>#<%= hoSoDoiChuThe.id %></strong>
+            Hồ sơ <strong>#<%= hoSoDoiChuThe.id %></strong>
             <span class="badge <%= nhan[0] %>"><%= nhan[1] %></span>
           </p>
           <% if (hoSoDoiChuThe.admin_note) { %>
-            <div class="alert alert-info tiny"><strong>Ghi chu tu bo phan xu ly:</strong><br><%= hoSoDoiChuThe.admin_note %></div>
+            <div class="alert alert-info tiny"><strong>Ghi chú từ bộ phận xử lý:</strong><br><%= hoSoDoiChuThe.admin_note %></div>
           <% } %>
-          <p class="tiny muted">Chung toi se lien he qua email de huong dan giay to can nop.</p>
+          <p class="tiny muted">Chúng tôi sẽ liên hệ qua email để hướng dẫn giấy tờ cần nộp.</p>
         <% } else { %>
           <div class="alert alert-warn tiny">
             <% if (canHoSoDayDu) { %>
-              Doi chu the ten mien <strong>.vn</strong> la <strong>thu tuc phap ly</strong> theo quy dinh VNNIC:
-              can ban khai co chu ky/con dau va giay to phap nhan cua ca hai ben. Khong thuc hien tu dong duoc.
+              Đổi chủ thể tên miền <strong>.vn</strong> là <strong>thủ tục pháp lý</strong> theo quy định VNNIC:
+              cần bản khai có chữ ký/con dấu và giấy tờ pháp nhân của cả hai bên. Không thực hiện tự động được.
             <% } else { %>
-              Doi chu the ten mien quoc te thuong keo theo <strong>khoa chuyen doi 60 ngay</strong> va can xac nhan
-              tu ca chu cu lan chu moi theo quy dinh ICANN.
+              Đổi chủ thể tên miền quốc tế thường kéo theo <strong>khóa chuyển đổi 60 ngày</strong> và cần xác nhận
+              từ cả chủ cũ lẫn chủ mới theo quy định ICANN.
             <% } %>
-            Nop ho so ben duoi, bo phan nghiep vu se huong dan cu the.
+            Nộp hồ sơ bên dưới, bộ phận nghiệp vụ sẽ hướng dẫn cụ thể.
           </div>
           <% if (hoSoChuThe.length) { %>
             <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/doi-chu-the"
-                  data-confirm="Nop ho so doi chu the cho <%= domain.domain %>?">
+                  data-confirm="Nộp hồ sơ đổi chủ thể cho <%= domain.domain %>?">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <div class="field">
-                <label><span class="field-name">Chu the moi</span>
+                <label><span class="field-name">Chủ thể mới</span>
                 <select name="new_contact_id">
                   <% hoSoChuThe.forEach(function (c) { %>
                     <option value="<%= c.id %>"><%= c.org_name || c.full_name %> - <%= c.email %></option>
@@ -259,10 +259,10 @@
                 </select></label>
               </div>
               <div class="field">
-                <label><span class="field-name">Ly do doi chu the</span>
-                <textarea name="reason" rows="2" placeholder="VD: doi ten doanh nghiep, sap nhap, chuyen nhuong..."></textarea></label>
+                <label><span class="field-name">Lý do đổi chủ thể</span>
+                <textarea name="reason" rows="2" placeholder="VD: đổi tên doanh nghiệp, sáp nhập, chuyển nhượng..."></textarea></label>
               </div>
-              <button class="btn btn-outline btn-block" type="submit">Nop ho so doi chu the</button>
+              <button class="btn btn-outline btn-block" type="submit">Nộp hồ sơ đổi chủ thể</button>
             </form>
           <% } %>
         <% } %>
@@ -271,56 +271,56 @@
       <!-- ------------------------------------------ chuyen ten mien di -->
       <div class="card" id="chuyen-di">
         <div class="card-title">
-          <h2>Chuyen ten mien di</h2>
+          <h2>Chuyển tên miền đi</h2>
           <span class="badge <%= domain.transfer_lock ? 'badge-ok' : 'badge-warn' %>">
-            <%= domain.transfer_lock ? 'Dang khoa' : 'Dang mo khoa' %>
+            <%= domain.transfer_lock ? 'Đang khóa' : 'Đang mở khóa' %>
           </span>
         </div>
 
         <p class="muted small">
-          Ten mien la tai san cua ban - ban co quyen chuyen no sang nha dang ky khac bat cu luc nao.
-          Can hai buoc: <strong>mo khoa</strong> roi <strong>lay ma EPP</strong>.
+          Tên miền là tài sản của bạn - bạn có quyền chuyển nó sang nhà đăng ký khác bất cứ lúc nào.
+          Cần hai bước: <strong>mở khóa</strong> rồi <strong>lấy mã EPP</strong>.
         </p>
 
         <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/khoa-chuyen-doi"
-              <% if (domain.transfer_lock) { %>data-confirm="Mo khoa se cho phep chuyen ten mien di neu ai do co ma EPP. Tiep tuc?"<% } %>>
+              <% if (domain.transfer_lock) { %>data-confirm="Mở khóa sẽ cho phép chuyển tên miền đi nếu ai đó có mã EPP. Tiếp tục?"<% } %>>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="locked" value="<%= domain.transfer_lock ? '0' : '1' %>">
           <button class="btn btn-outline btn-block" type="submit">
-            <%= domain.transfer_lock ? 'Mo khoa chuyen doi' : 'Khoa lai (khuyen nghi)' %>
+            <%= domain.transfer_lock ? 'Mở khóa chuyển đổi' : 'Khóa lại (khuyến nghị)' %>
           </button>
         </form>
 
         <% if (!domain.transfer_lock) { %>
           <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/ma-chuyen-doi"
-                data-confirm="Lay ma EPP? Chung toi se gui email canh bao ve tai khoan cua ban."
+                data-confirm="Lấy mã EPP? Chúng tôi sẽ gửi email cảnh báo về tài khoản của bạn."
                 style="margin-top:10px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn btn-block" type="submit">Lay ma chuyen doi (EPP)</button>
+            <button class="btn btn-block" type="submit">Lấy mã chuyển đổi (EPP)</button>
           </form>
           <p class="tiny muted" style="margin:8px 0 0">
-            Ma chi hien <strong>mot lan</strong> tren man hinh, khong luu lai. Moi lan lay deu co
-            email canh bao gui ve - de ban phat hien ngay neu tai khoan bi nguoi khac dung.
+            Mã chỉ hiện <strong>một lần</strong> trên màn hình, không lưu lại. Mỗi lần lấy đều có
+            email cảnh báo gửi về - để bạn phát hiện ngay nếu tài khoản bị người khác dùng.
           </p>
         <% } else { %>
           <p class="tiny muted" style="margin:10px 0 0">
-            Ten mien dang duoc bao ve. Mo khoa truoc neu ban muon lay ma EPP.
+            Tên miền đang được bảo vệ. Mở khóa trước nếu bạn muốn lấy mã EPP.
           </p>
         <% } %>
 
         <p class="tiny muted" style="margin:12px 0 0; padding-top:12px; border-top:1px solid var(--line)">
-          Luu y: ten mien chi chuyen duoc sau <strong>60 ngay</strong> ke tu lan dang ky moi hoac
-          lan chuyen gan nhat - day la quy dinh chung, khong nha dang ky nao bo qua duoc.
+          Lưu ý: tên miền chỉ chuyển được sau <strong>60 ngày</strong> kể từ lần đăng ký mới hoặc
+          lần chuyển gần nhất - đây là quy định chung, không nhà đăng ký nào bỏ qua được.
         </p>
       </div>
 
       <div class="card">
-        <div class="card-title"><h3>Thong tin</h3></div>
-        <div class="copy-row"><span class="label">Ngay dang ky</span><span class="value small"><%= domain.registered_at ? domain.registered_at.slice(0, 10) : '-' %></span></div>
-        <div class="copy-row"><span class="label">Ngay het han</span><span class="value small"><%= domain.expires_at ? domain.expires_at.slice(0, 10) : '-' %></span></div>
-        <div class="copy-row"><span class="label">Nha dang ky</span><span class="value small">P.A Viet Nam</span></div>
+        <div class="card-title"><h3>Thông tin</h3></div>
+        <div class="copy-row"><span class="label">Ngày đăng ký</span><span class="value small"><%= domain.registered_at ? domain.registered_at.slice(0, 10) : '-' %></span></div>
+        <div class="copy-row"><span class="label">Ngày hết hạn</span><span class="value small"><%= domain.expires_at ? domain.expires_at.slice(0, 10) : '-' %></span></div>
+        <div class="copy-row"><span class="label">Nhà đăng ký</span><span class="value small">P.A Việt Nam</span></div>
         <% if (domain.provider_ref) { %>
-          <div class="copy-row"><span class="label">Ma tham chieu</span><span class="value small"><%= domain.provider_ref %></span></div>
+          <div class="copy-row"><span class="label">Mã tham chiếu</span><span class="value small"><%= domain.provider_ref %></span></div>
         <% } %>
       </div>
     </aside>

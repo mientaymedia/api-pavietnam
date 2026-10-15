@@ -4,17 +4,17 @@
   <%- include('../partials/flash') %>
   <div class="row-between">
     <h1>Control Panel</h1>
-    <a class="btn" href="<%= base %>/">Dang ky ten mien moi</a>
+    <a class="btn" href="<%= base %>/">Đăng ký tên miền mới</a>
   </div>
 
   <div class="card" style="margin-top:14px">
     <% if (!domains.length) { %>
-      <p class="muted">Ban chua co ten mien nao trong tai khoan.</p>
+      <p class="muted">Bạn chưa có tên miền nào trong tài khoản.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Ten mien</th><th>Trang thai</th><th>Nameserver</th><th>Het han</th><th>Tu gia han</th><th></th></tr>
+            <tr><th>Tên miền</th><th>Trạng thái</th><th>Nameserver</th><th>Hết hạn</th><th>Tự gia hạn</th><th></th></tr>
           </thead>
           <tbody>
             <% domains.forEach(function (d) { %>
@@ -28,12 +28,12 @@
                   <%= d.expires_at ? d.expires_at.slice(0, 10) : '-' %>
                   <% if (d.daysLeft !== null && d.daysLeft <= 30) { %>
                     <div class="tiny" style="color:<%= d.daysLeft < 0 ? 'var(--danger)' : 'var(--warn)' %>">
-                      <%= d.daysLeft >= 0 ? 'Con ' + d.daysLeft + ' ngay' : 'Da het han' %>
+                      <%= d.daysLeft >= 0 ? 'Còn ' + d.daysLeft + ' ngày' : 'Đã hết hạn' %>
                     </div>
                   <% } %>
                 </td>
-                <td><span class="badge <%= d.auto_renew ? 'badge-ok' : 'badge-muted' %>"><%= d.auto_renew ? 'Bat' : 'Tat' %></span></td>
-                <td class="right"><a class="btn btn-sm" href="<%= base %>/control-panel/<%= d.domain %>">Quan ly</a></td>
+                <td><span class="badge <%= d.auto_renew ? 'badge-ok' : 'badge-muted' %>"><%= d.auto_renew ? 'Bật' : 'Tắt' %></span></td>
+                <td class="right"><a class="btn btn-sm" href="<%= base %>/control-panel/<%= d.domain %>">Quản lý</a></td>
               </tr>
             <% }); %>
           </tbody>

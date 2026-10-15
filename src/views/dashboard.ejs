@@ -4,25 +4,25 @@
 <div class="container">
   <%- include('partials/flash') %>
   <div class="row-between">
-    <h1>Xin chao, <%= currentUser.full_name || currentUser.email %></h1>
-    <a class="btn" href="<%= base %>/">Dang ky ten mien moi</a>
+    <h1>Xin chào, <%= currentUser.full_name || currentUser.email %></h1>
+    <a class="btn" href="<%= base %>/">Đăng ký tên miền mới</a>
   </div>
 
   <div class="grid grid-4" style="margin:18px 0">
-    <div class="stat"><div class="stat-value"><%= stats.domains %></div><div class="stat-label">Ten mien</div></div>
-    <div class="stat"><div class="stat-value"><%= stats.active %></div><div class="stat-label">Dang hoat dong</div></div>
-    <div class="stat"><div class="stat-value" style="color:var(--warn)"><%= stats.expiringSoon %></div><div class="stat-label">Sap het han (30 ngay)</div></div>
-    <div class="stat"><div class="stat-value"><%= formatVnd(currentUser.balance) %></div><div class="stat-label">So du tai khoan</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.domains %></div><div class="stat-label">Tên miền</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.active %></div><div class="stat-label">Đang hoạt động</div></div>
+    <div class="stat"><div class="stat-value" style="color:var(--warn)"><%= stats.expiringSoon %></div><div class="stat-label">Sắp hết hạn (30 ngày)</div></div>
+    <div class="stat"><div class="stat-value"><%= formatVnd(currentUser.balance) %></div><div class="stat-label">Số dư tài khoản</div></div>
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Ten mien cua ban</h2><a class="small" href="<%= base %>/control-panel">Xem tat ca</a></div>
+    <div class="card-title"><h2>Tên miền của bạn</h2><a class="small" href="<%= base %>/control-panel">Xem tất cả</a></div>
     <% if (!domains.length) { %>
-      <p class="muted">Ban chua co ten mien nao. <a href="<%= base %>/">Tim va dang ky ngay</a>.</p>
+      <p class="muted">Bạn chưa có tên miền nào. <a href="<%= base %>/">Tìm và đăng ký ngay</a>.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Ten mien</th><th>Trang thai</th><th>Het han</th><th></th></tr></thead>
+          <thead><tr><th>Tên miền</th><th>Trạng thái</th><th>Hết hạn</th><th></th></tr></thead>
           <tbody>
             <% domains.slice(0, 8).forEach(function (d) { %>
               <tr>
@@ -33,10 +33,10 @@
                 <td>
                   <%= d.expires_at ? d.expires_at.slice(0, 10) : '-' %>
                   <% if (d.daysLeft !== null && d.daysLeft <= 30) { %>
-                    <div class="tiny" style="color:var(--warn)"><%= d.daysLeft >= 0 ? 'Con ' + d.daysLeft + ' ngay' : 'Da het han' %></div>
+                    <div class="tiny" style="color:var(--warn)"><%= d.daysLeft >= 0 ? 'Còn ' + d.daysLeft + ' ngày' : 'Đã hết hạn' %></div>
                   <% } %>
                 </td>
-                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/control-panel/<%= d.domain %>">Quan ly</a></td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/control-panel/<%= d.domain %>">Quản lý</a></td>
               </tr>
             <% }); %>
           </tbody>
@@ -46,13 +46,13 @@
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Don hang gan day</h2><a class="small" href="<%= base %>/don-hang">Xem tat ca</a></div>
+    <div class="card-title"><h2>Đơn hàng gần đây</h2><a class="small" href="<%= base %>/don-hang">Xem tất cả</a></div>
     <% if (!orders.length) { %>
-      <p class="muted">Chua co don hang nao.</p>
+      <p class="muted">Chưa có đơn hàng nào.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Ma don</th><th>Ngay</th><th>Trang thai</th><th class="right">Tong tien</th><th></th></tr></thead>
+          <thead><tr><th>Mã đơn</th><th>Ngày</th><th>Trạng thái</th><th class="right">Tổng tiền</th><th></th></tr></thead>
           <tbody>
             <% orders.forEach(function (o) { %>
               <tr>
@@ -60,7 +60,7 @@
                 <td class="small"><%= o.created_at.slice(0, 10) %></td>
                 <td><%- include('partials/order-status', { status: o.status }) %></td>
                 <td class="right"><%= formatVnd(o.total) %></td>
-                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/don-hang/<%= o.code %>">Chi tiet</a></td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/don-hang/<%= o.code %>">Chi tiết</a></td>
               </tr>
             <% }); %>
           </tbody>

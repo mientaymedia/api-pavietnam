@@ -25,7 +25,7 @@ test('dang khoa thi khong lay duoc ma EPP', async () => {
   const r = await requestAuthCode(d, { userId: d.user_id });
 
   assert.equal(r.status, 'locked');
-  if (r.status === 'locked') assert.match(r.message, /mo khoa/i);
+  if (r.status === 'locked') assert.match(r.message, /mở khóa/i);
 });
 
 test('da mo khoa thi lay duoc ma EPP', async () => {

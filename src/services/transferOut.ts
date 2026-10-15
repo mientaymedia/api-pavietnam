@@ -36,7 +36,7 @@ export async function requestAuthCode(
   if (domain.transfer_lock) {
     return {
       status: 'locked',
-      message: 'Ten mien dang khoa chuyen doi. Vui long mo khoa truoc khi lay ma EPP.',
+      message: 'Tên miền đang khóa chuyển đổi. Vui lòng mở khóa trước khi lấy mã EPP.',
     };
   }
 
@@ -44,7 +44,7 @@ export async function requestAuthCode(
   if (domain.auth_code_last_at && domain.auth_code_last_at > isoIn(-AUTH_CODE_COOLDOWN_MS)) {
     return {
       status: 'too_soon',
-      message: 'Ban vua lay ma EPP cach day it phut. Vui long kiem tra email truoc khi lay lai.',
+      message: 'Bạn vừa lấy mã EPP cách đây ít phút. Vui lòng kiểm tra email trước khi lấy lại.',
     };
   }
 

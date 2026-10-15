@@ -37,7 +37,7 @@ Chạy trong Git Bash tại `D:\api-pavietnam`. Từ B1 trở đi phải đạt 
 - [x] B5. Trang công khai: `home`, `pricing`, `search`, `whois`, `transfer` + `routes/home.ts`. Kết quả: 193/193 đạt.
 - [x] B6. Đăng nhập/đăng ký/2FA: `views/auth/*`, `routes/auth.ts`, `lib/validate.ts`, middleware, `twoFactor.ts`, `verification.ts`, `test/two-factor.test.ts`. Kết quả: 193/193 đạt.
 - [x] B7. Giỏ, thanh toán, đơn: views, `routes/cart.ts`, `checkout.ts`, `orders.ts`, services, phần hiển thị `payments/*` (trừ vùng khoá), `test/cart-orders.test.ts`. Kiểm thêm spec 6.2. Kết quả: 193/193 đạt; momo.ts chỉ đổi dòng 16-17, 64, 110; zalopay.ts dòng 26, 69; webhooks.ts không diff.
-- [ ] B8. Khách và tên miền: `dashboard`, `account/*`, `domains/*` (detail có thể commit riêng), `account.ts`, `controlPanel.ts`, services liên quan, `test/domain-contact.test.ts`, `test/transfer-out.test.ts` (`/mở khóa/i`).
+- [x] B8. Khách và tên miền: `dashboard`, `account/*`, `domains/*` (detail có thể commit riêng), `account.ts`, `controlPanel.ts`, services liên quan, `test/domain-contact.test.ts`, `test/transfer-out.test.ts` (`/mở khóa/i`). Kết quả: 193/193 đạt.
 - [ ] B9. Quản trị: `views/admin/*`, `routes/admin.ts` (gồm giá trị mẫu ZNS), `reports.ts`, `audit.ts`, `jobs/*`, thông điệp hiển thị trong `client.ts`. Có thể tách commit.
 - [ ] B10. API JSON: `routes/api.ts` (chỉ giá trị `error`/`message`).
 - [ ] B11. Email và ZNS: `notifications.ts`, `znsEvents.ts`, `lib/zns.ts`, `mailer.ts`, `test/zns.test.ts`, `test/email-encoding.test.ts`.

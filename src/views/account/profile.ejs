@@ -2,74 +2,74 @@
 <%- include('../partials/header') %>
 <div class="container container-mid">
   <%- include('../partials/flash') %>
-  <h1>Tai khoan cua toi</h1>
+  <h1>Tài khoản của tôi</h1>
 
   <div class="tabs">
-    <a href="<%= base %>/tai-khoan" class="active">Thong tin</a>
-    <a href="<%= base %>/tai-khoan/bao-mat">Bao mat</a>
-    <a href="<%= base %>/tai-khoan/ho-so">Ho so chu the</a>
-    <a href="<%= base %>/control-panel">Ten mien</a>
-    <a href="<%= base %>/don-hang">Don hang</a>
+    <a href="<%= base %>/tai-khoan" class="active">Thông tin</a>
+    <a href="<%= base %>/tai-khoan/bao-mat">Bảo mật</a>
+    <a href="<%= base %>/tai-khoan/ho-so">Hồ sơ chủ thể</a>
+    <a href="<%= base %>/control-panel">Tên miền</a>
+    <a href="<%= base %>/don-hang">Đơn hàng</a>
   </div>
 
   <% if (newToken) { %>
     <div class="alert alert-success">
-      <strong>API token moi da duoc tao.</strong> Hay sao chep ngay - token chi hien thi <u>mot lan duy nhat</u>.
+      <strong>API token mới đã được tạo.</strong> Hãy sao chép ngay - token chỉ hiển thị <u>một lần duy nhất</u>.
       <div class="mono" style="margin-top:8px; word-break:break-all; background:#fff; padding:10px; border-radius:6px">
         <%= newToken %>
-        <button class="btn-link tiny" data-copy="<%= newToken %>">chep</button>
+        <button class="btn-link tiny" data-copy="<%= newToken %>">chép</button>
       </div>
     </div>
   <% } %>
 
   <div class="card">
-    <div class="card-title"><h2>Thong tin ca nhan</h2></div>
+    <div class="card-title"><h2>Thông tin cá nhân</h2></div>
     <form method="post" action="<%= base %>/tai-khoan/thong-tin">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="grid grid-2" style="gap:0 14px">
-        <div class="field"><label><span class="field-name">Ho va ten</span><input type="text" name="full_name" value="<%= user.full_name %>"></label></div>
-        <div class="field"><label><span class="field-name">So dien thoai</span><input type="text" name="phone" value="<%= user.phone %>"></label></div>
+        <div class="field"><label><span class="field-name">Họ và tên</span><input type="text" name="full_name" value="<%= user.full_name %>"></label></div>
+        <div class="field"><label><span class="field-name">Số điện thoại</span><input type="text" name="phone" value="<%= user.phone %>"></label></div>
       </div>
       <div class="field"><label><span class="field-name">Email</span><input type="email" value="<%= user.email %>" disabled></label></div>
-      <button class="btn" type="submit">Luu thay doi</button>
+      <button class="btn" type="submit">Lưu thay đổi</button>
     </form>
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Doi mat khau</h2></div>
+    <div class="card-title"><h2>Đổi mật khẩu</h2></div>
     <form method="post" action="<%= base %>/tai-khoan/doi-mat-khau">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <div class="field"><label><span class="field-name">Mat khau hien tai</span><input type="password" name="current_password" required autocomplete="current-password"></label></div>
+      <div class="field"><label><span class="field-name">Mật khẩu hiện tại</span><input type="password" name="current_password" required autocomplete="current-password"></label></div>
       <div class="grid grid-2" style="gap:0 14px">
-        <div class="field"><label><span class="field-name">Mat khau moi</span><input type="password" name="password" required autocomplete="new-password"></label></div>
-        <div class="field"><label><span class="field-name">Nhap lai mat khau moi</span><input type="password" name="password_confirm" required autocomplete="new-password"></label></div>
+        <div class="field"><label><span class="field-name">Mật khẩu mới</span><input type="password" name="password" required autocomplete="new-password"></label></div>
+        <div class="field"><label><span class="field-name">Nhập lại mật khẩu mới</span><input type="password" name="password_confirm" required autocomplete="new-password"></label></div>
       </div>
-      <button class="btn" type="submit">Doi mat khau</button>
+      <button class="btn" type="submit">Đổi mật khẩu</button>
     </form>
   </div>
 
   <div class="card">
     <div class="card-title"><h2>API token</h2></div>
     <p class="muted small">
-      Dung de tu xay giao dien rieng. Goi API voi header <code>Authorization: Bearer &lt;token&gt;</code>.
-      Tai lieu: <code><%= appUrl %>/api/v1</code>
+      Dùng để tự xây giao diện riêng. Gọi API với header <code>Authorization: Bearer &lt;token&gt;</code>.
+      Tài liệu: <code><%= appUrl %>/api/v1</code>
     </p>
 
     <% if (tokens.length) { %>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Ten</th><th>Tien to</th><th>Quyen</th><th>Dung lan cuoi</th><th></th></tr></thead>
+          <thead><tr><th>Tên</th><th>Tiền tố</th><th>Quyền</th><th>Dùng lần cuối</th><th></th></tr></thead>
           <tbody>
             <% tokens.forEach(function (t) { %>
               <tr>
                 <td><%= t.name %></td>
                 <td class="mono small"><%= t.token_prefix %>...</td>
                 <td><span class="badge badge-muted"><%= t.scopes %></span></td>
-                <td class="small muted"><%= t.last_used_at ? t.last_used_at.replace('T', ' ').slice(0, 16) : 'Chua dung' %></td>
+                <td class="small muted"><%= t.last_used_at ? t.last_used_at.replace('T', ' ').slice(0, 16) : 'Chưa dùng' %></td>
                 <td class="right">
-                  <form method="post" action="<%= base %>/tai-khoan/api-token/<%= t.id %>/thu-hoi" data-confirm="Thu hoi token nay?">
+                  <form method="post" action="<%= base %>/tai-khoan/api-token/<%= t.id %>/thu-hoi" data-confirm="Thu hồi token này?">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <button class="btn-link tiny" type="submit" style="color:var(--danger)">Thu hoi</button>
+                    <button class="btn-link tiny" type="submit" style="color:var(--danger)">Thu hồi</button>
                   </form>
                 </td>
               </tr>
@@ -82,24 +82,24 @@
     <form method="post" action="<%= base %>/tai-khoan/api-token" style="margin-top:14px">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
-        <div class="field" style="flex:1; margin:0"><label><span class="field-name">Ten token</span><input type="text" name="name" placeholder="Website ban hang" required></label></div>
+        <div class="field" style="flex:1; margin:0"><label><span class="field-name">Tên token</span><input type="text" name="name" placeholder="Website bán hàng" required></label></div>
         <div class="field" style="width:160px; margin:0">
-          <label><span class="field-name">Quyen</span>
-          <select name="scopes"><option value="read">Chi doc</option><option value="write">Doc va ghi</option></select></label>
+          <label><span class="field-name">Quyền</span>
+          <select name="scopes"><option value="read">Chỉ đọc</option><option value="write">Đọc và ghi</option></select></label>
         </div>
-        <button class="btn" type="submit">Tao token</button>
+        <button class="btn" type="submit">Tạo token</button>
       </div>
     </form>
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>So du: <%= formatVnd(user.balance) %></h2></div>
+    <div class="card-title"><h2>Số dư: <%= formatVnd(user.balance) %></h2></div>
     <% if (!wallet.length) { %>
-      <p class="muted small">Chua co bien dong so du.</p>
+      <p class="muted small">Chưa có biến động số dư.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Thoi gian</th><th>Noi dung</th><th class="right">So tien</th><th class="right">So du sau</th></tr></thead>
+          <thead><tr><th>Thời gian</th><th>Nội dung</th><th class="right">Số tiền</th><th class="right">Số dư sau</th></tr></thead>
           <tbody>
             <% wallet.forEach(function (w) { %>
               <tr>

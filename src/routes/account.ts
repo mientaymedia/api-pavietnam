@@ -32,7 +32,7 @@ router.get('/dashboard', requireAuth, (req, res) => {
   const orders = listOrders(userId, 5);
 
   res.render('dashboard', {
-    title: 'Bang dieu khien',
+    title: 'Bảng điều khiển',
     domains: domains.map((d) => ({ ...d, daysLeft: daysUntilExpiry(d) })),
     orders,
     stats: {
@@ -51,7 +51,7 @@ router.get('/dashboard', requireAuth, (req, res) => {
 
 router.get('/tai-khoan/ho-so', requireAuth, (req, res) => {
   res.render('account/contacts', {
-    title: 'Ho so chu the ten mien',
+    title: 'Hồ sơ chủ thể tên miền',
     contacts: db.prepare('SELECT * FROM contacts WHERE user_id = ? ORDER BY is_default DESC, id')
       .all(req.currentUser!.id),
     values: {},
@@ -64,7 +64,7 @@ router.post('/tai-khoan/ho-so', requireAuth, (req, res) => {
   const parsed = contactSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(422).render('account/contacts', {
-      title: 'Ho so chu the ten mien',
+      title: 'Hồ sơ chủ thể tên miền',
       contacts: db.prepare('SELECT * FROM contacts WHERE user_id = ? ORDER BY is_default DESC, id').all(userId),
       values: req.body ?? {},
       errors: fieldErrors(parsed.error),
@@ -84,7 +84,7 @@ router.post('/tai-khoan/ho-so', requireAuth, (req, res) => {
       c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address,
       c.city, c.province, c.postal_code, c.country, c.birth_date, c.gender, nowIso(), id, userId,
     );
-    flash(req, 'success', 'Da cap nhat ho so chu the.');
+    flash(req, 'success', 'Đã cập nhật hồ sơ chủ thể.');
   } else {
     const isFirst = (db.prepare('SELECT COUNT(*) AS n FROM contacts WHERE user_id = ?').get(userId) as { n: number }).n === 0;
     db.prepare(
@@ -95,7 +95,7 @@ router.post('/tai-khoan/ho-so', requireAuth, (req, res) => {
       userId, c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address,
       c.city, c.province, c.postal_code, c.country, c.birth_date, c.gender, isFirst ? 1 : 0, nowIso(), nowIso(),
     );
-    flash(req, 'success', 'Da them ho so chu the.');
+    flash(req, 'success', 'Đã thêm hồ sơ chủ thể.');
   }
   res.redirect('/tai-khoan/ho-so');
 });
@@ -107,7 +107,7 @@ router.post('/tai-khoan/ho-so/:id/mac-dinh', requireAuth, (req, res) => {
   if (owned) {
     db.prepare('UPDATE contacts SET is_default = 0 WHERE user_id = ?').run(userId);
     db.prepare('UPDATE contacts SET is_default = 1 WHERE id = ?').run(id);
-    flash(req, 'success', 'Da dat lam ho so mac dinh.');
+    flash(req, 'success', 'Đã đặt làm hồ sơ mặc định.');
   }
   res.redirect('/tai-khoan/ho-so');
 });
@@ -117,10 +117,10 @@ router.post('/tai-khoan/ho-so/:id/xoa', requireAuth, (req, res) => {
   const id = Number(req.params.id);
   const used = db.prepare('SELECT 1 FROM domains WHERE contact_id = ?').get(id);
   if (used) {
-    flash(req, 'error', 'Khong the xoa: ho so nay dang gan voi ten mien dang hoat dong.');
+    flash(req, 'error', 'Không thể xóa: hồ sơ này đang gắn với tên miền đang hoạt động.');
   } else {
     db.prepare('DELETE FROM contacts WHERE id = ? AND user_id = ?').run(id, userId);
-    flash(req, 'info', 'Da xoa ho so.');
+    flash(req, 'info', 'Đã xóa hồ sơ.');
   }
   res.redirect('/tai-khoan/ho-so');
 });
@@ -130,7 +130,7 @@ router.post('/tai-khoan/ho-so/:id/xoa', requireAuth, (req, res) => {
 router.get('/tai-khoan', requireAuth, (req, res) => {
   const userId = req.currentUser!.id;
   res.render('account/profile', {
-    title: 'Tai khoan cua toi',
+    title: 'Tài khoản của tôi',
     user: db.prepare('SELECT id, email, full_name, phone, balance, created_at FROM users WHERE id = ?').get(userId),
     tokens: db.prepare('SELECT id, name, token_prefix, scopes, last_used_at, created_at FROM api_tokens WHERE user_id = ? AND revoked_at IS NULL ORDER BY id DESC').all(userId),
     wallet: db.prepare('SELECT * FROM wallet_transactions WHERE user_id = ? ORDER BY id DESC LIMIT 20').all(userId),
@@ -143,7 +143,7 @@ router.post('/tai-khoan/thong-tin', requireAuth, (req, res) => {
   const userId = req.currentUser!.id;
   db.prepare('UPDATE users SET full_name = ?, phone = ?, updated_at = ? WHERE id = ?')
     .run(String(req.body?.full_name ?? '').slice(0, 120), String(req.body?.phone ?? '').slice(0, 20), nowIso(), userId);
-  flash(req, 'success', 'Da cap nhat thong tin.');
+  flash(req, 'success', 'Đã cập nhật thông tin.');
   res.redirect('/tai-khoan');
 });
 
@@ -158,22 +158,22 @@ router.post(
 
     const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as { password_hash: string };
     if (!verifyPassword(current, row.password_hash)) {
-      flash(req, 'error', 'Mat khau hien tai khong dung.');
+      flash(req, 'error', 'Mật khẩu hiện tại không đúng.');
       return res.redirect('/tai-khoan');
     }
     const check = passwordSchema.safeParse(next);
     if (!check.success) {
-      flash(req, 'error', check.error.issues[0]?.message ?? 'Mat khau khong hop le');
+      flash(req, 'error', check.error.issues[0]?.message ?? 'Mật khẩu không hợp lệ');
       return res.redirect('/tai-khoan');
     }
     if (next !== confirm) {
-      flash(req, 'error', 'Mat khau nhap lai khong khop.');
+      flash(req, 'error', 'Mật khẩu nhập lại không khớp.');
       return res.redirect('/tai-khoan');
     }
 
     db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(hashPassword(next), nowIso(), userId);
     audit({ userId, action: 'user.change_password', entity: 'user', entityId: userId, ip: req.ip });
-    flash(req, 'success', 'Da doi mat khau.');
+    flash(req, 'success', 'Đã đổi mật khẩu.');
     res.redirect('/tai-khoan');
   }),
 );
@@ -184,7 +184,7 @@ router.post(
 function trangBaoMat(req: import('express').Request, them: Record<string, unknown> = {}) {
   const user = req.currentUser!;
   return {
-    title: 'Bao mat tai khoan',
+    title: 'Bảo mật tài khoản',
     state: getState(user.id),
     batBuoc: requires2FA(user.role),
     setup: null as { uri: string; secret: string } | null,
@@ -201,7 +201,7 @@ router.get('/tai-khoan/bao-mat', requireAuth, (req, res) => {
   const user = req.currentUser!;
   // Neu dang cai dat do (vd nguoi dung tai lai trang) thi hien lai dung ma QR do
   const setup = getPendingSetup(user.id, user.email);
-  res.render('account/security', trangBaoMat(req, setup ? { setup, secretDeNhap: formatSecret(setup.secret), qr: qrSvg(setup.uri, { alt: 'Ma QR cai dat xac thuc hai lop' }) } : {}));
+  res.render('account/security', trangBaoMat(req, setup ? { setup, secretDeNhap: formatSecret(setup.secret), qr: qrSvg(setup.uri, { alt: 'Mã QR cài đặt xác thực hai lớp' }) } : {}));
 });
 
 router.post('/tai-khoan/bao-mat/bat-dau', requireAuth, (req, res) => {
@@ -212,10 +212,10 @@ router.post('/tai-khoan/bao-mat/bat-dau', requireAuth, (req, res) => {
       state: getState(user.id),
       setup,
       secretDeNhap: formatSecret(setup.secret),
-      qr: qrSvg(setup.uri, { alt: 'Ma QR cai dat xac thuc hai lop' }),
+      qr: qrSvg(setup.uri, { alt: 'Mã QR cài đặt xác thực hai lớp' }),
     }));
   } catch (err) {
-    flash(req, 'error', err instanceof Error ? err.message : 'Khong bat dau duoc.');
+    flash(req, 'error', err instanceof Error ? err.message : 'Không bắt đầu được.');
     res.redirect('/tai-khoan/bao-mat');
   }
 });
@@ -223,7 +223,7 @@ router.post('/tai-khoan/bao-mat/bat-dau', requireAuth, (req, res) => {
 router.post(
   '/tai-khoan/bao-mat/xac-nhan',
   requireAuth,
-  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Nhap sai qua nhieu lan. Vui long thu lai sau.' }),
+  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Nhập sai quá nhiều lần. Vui lòng thử lại sau.' }),
   (req, res) => {
     const user = req.currentUser!;
     const kq = confirmSetup(user.id, String(req.body?.code ?? ''), req.ip);
@@ -233,8 +233,8 @@ router.post(
       res.status(422).render('account/security', trangBaoMat(req, {
         setup,
         secretDeNhap: setup ? formatSecret(setup.secret) : '',
-        qr: setup ? qrSvg(setup.uri, { alt: 'Ma QR cai dat xac thuc hai lop' }) : '',
-        errors: { code: kq.loi ?? 'Ma khong dung' },
+        qr: setup ? qrSvg(setup.uri, { alt: 'Mã QR cài đặt xác thực hai lớp' }) : '',
+        errors: { code: kq.loi ?? 'Mã không đúng' },
       }));
       return;
     }
@@ -250,16 +250,16 @@ router.post(
 router.post(
   '/tai-khoan/bao-mat/tat',
   requireAuth,
-  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Nhap sai qua nhieu lan. Vui long thu lai sau.' }),
+  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Nhập sai quá nhiều lần. Vui lòng thử lại sau.' }),
   (req, res) => {
     const user = req.currentUser!;
     if (requires2FA(user.role)) {
-      flash(req, 'error', 'Tai khoan quan tri bat buoc dung xac thuc hai lop, khong the tat.');
+      flash(req, 'error', 'Tài khoản quản trị bắt buộc dùng xác thực hai lớp, không thể tắt.');
       return res.redirect('/tai-khoan/bao-mat');
     }
 
     const kq = disable2FA(user.id, String(req.body?.code ?? ''), req.ip);
-    flash(req, kq.ok ? 'success' : 'error', kq.ok ? 'Da tat xac thuc hai lop.' : (kq.loi ?? 'Khong tat duoc.'));
+    flash(req, kq.ok ? 'success' : 'error', kq.ok ? 'Đã tắt xác thực hai lớp.' : (kq.loi ?? 'Không tắt được.'));
     res.redirect('/tai-khoan/bao-mat');
   },
 );
@@ -267,7 +267,7 @@ router.post(
 router.post('/tai-khoan/bao-mat/ma-du-phong', requireAuth, (req, res) => {
   const user = req.currentUser!;
   if (!getState(user.id).enabled) {
-    flash(req, 'error', 'Chua bat xac thuc hai lop.');
+    flash(req, 'error', 'Chưa bật xác thực hai lớp.');
     return res.redirect('/tai-khoan/bao-mat');
   }
   res.render('account/security', trangBaoMat(req, { recoveryCodes: regenerateRecoveryCodes(user.id, req.ip) }));
@@ -288,7 +288,7 @@ router.post('/tai-khoan/api-token', requireAuth, (req, res) => {
   audit({ userId, action: 'api_token.create', entity: 'user', entityId: userId, ip: req.ip, meta: { name, scopes } });
 
   res.render('account/profile', {
-    title: 'Tai khoan cua toi',
+    title: 'Tài khoản của tôi',
     user: db.prepare('SELECT id, email, full_name, phone, balance, created_at FROM users WHERE id = ?').get(userId),
     tokens: db.prepare('SELECT id, name, token_prefix, scopes, last_used_at, created_at FROM api_tokens WHERE user_id = ? AND revoked_at IS NULL ORDER BY id DESC').all(userId),
     wallet: db.prepare('SELECT * FROM wallet_transactions WHERE user_id = ? ORDER BY id DESC LIMIT 20').all(userId),
@@ -301,7 +301,7 @@ router.post('/tai-khoan/api-token', requireAuth, (req, res) => {
 router.post('/tai-khoan/api-token/:id/thu-hoi', requireAuth, (req, res) => {
   db.prepare('UPDATE api_tokens SET revoked_at = ? WHERE id = ? AND user_id = ?')
     .run(nowIso(), Number(req.params.id), req.currentUser!.id);
-  flash(req, 'info', 'Da thu hoi API token.');
+  flash(req, 'info', 'Đã thu hồi API token.');
   res.redirect('/tai-khoan');
 });
 
