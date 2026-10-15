@@ -29,10 +29,10 @@ test('moi dau so di dong deu duoc chap nhan', () => {
 
 test('ma loi Zalo duoc dien giai sang tieng Viet', () => {
   assert.match(explainZnsError(-124), /token/i);
-  assert.match(explainZnsError(-213), /khong khop/i);
-  assert.match(explainZnsError(-226), /chan|tuong tac/i);
-  assert.match(explainZnsError(-230), /so du/i);
-  assert.match(explainZnsError(-99999), /ma loi/i); // ma la van co mo ta
+  assert.match(explainZnsError(-213), /không khớp/i);
+  assert.match(explainZnsError(-226), /chặn|tương tác/i);
+  assert.match(explainZnsError(-230), /số dư/i);
+  assert.match(explainZnsError(-99999), /mã lỗi/i); // ma la van co mo ta
 });
 
 test('chua cau hinh thi ZNS bao chua san sang', () => {

@@ -31,7 +31,7 @@ test('Base32 bo qua khoang trang, gach ngang va dau bang', () => {
 });
 
 test('Base32 tu choi ky tu khong hop le', () => {
-  assert.throws(() => base32Decode('MZXW1'), /khong hop le/);
+  assert.throws(() => base32Decode('MZXW1'), /không hợp lệ/);
 });
 
 /* ------------------------------------------------------------------- TOTP */

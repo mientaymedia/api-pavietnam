@@ -87,7 +87,7 @@ export function buildPermissionUrl(redirectUri: string, state = ''): string {
 export async function exchangeAuthorizationCode(oaCode: string): Promise<{ refreshToken: string }> {
   const c = znsConfig();
   if (!c.appId || !c.secretKey) {
-    throw new ZnsError('Chua dien App ID va Secret Key', 'NO_CONFIG');
+    throw new ZnsError('Chưa điền App ID và Secret Key', 'NO_CONFIG');
   }
 
   const raw = await httpRequest(OAUTH_URL, {
@@ -106,12 +106,12 @@ export async function exchangeAuthorizationCode(oaCode: string): Promise<{ refre
   try {
     parsed = JSON.parse(raw);
   } catch {
-    throw new ZnsError(`Zalo tra ve du lieu khong doc duoc: ${raw.slice(0, 200)}`, 'BAD_RESPONSE', raw);
+    throw new ZnsError(`Zalo trả về dữ liệu không đọc được: ${raw.slice(0, 200)}`, 'BAD_RESPONSE', raw);
   }
 
   if (!parsed.access_token || !parsed.refresh_token) {
     const msg = parsed.error_description || parsed.error_name || raw.slice(0, 200);
-    throw new ZnsError(`Khong lay duoc token: ${msg}`, String(parsed.error ?? ''), raw);
+    throw new ZnsError(`Không lấy được token: ${msg}`, String(parsed.error ?? ''), raw);
   }
 
   const expiresInSec = Number(parsed.expires_in ?? 3600) || 3600;
@@ -137,7 +137,7 @@ export async function exchangeAuthorizationCode(oaCode: string): Promise<{ refre
 async function refreshAccessToken(): Promise<string> {
   const c = znsConfig();
   if (!c.appId || !c.secretKey || !c.refreshToken) {
-    throw new ZnsError('Chua cau hinh ZNS (App ID / Secret Key / Refresh Token)', 'NO_CONFIG');
+    throw new ZnsError('Chưa cấu hình ZNS (App ID / Secret Key / Refresh Token)', 'NO_CONFIG');
   }
 
   const body = new URLSearchParams({
@@ -158,14 +158,14 @@ async function refreshAccessToken(): Promise<string> {
   try {
     parsed = JSON.parse(raw);
   } catch {
-    throw new ZnsError(`Zalo tra ve du lieu khong doc duoc: ${raw.slice(0, 200)}`, 'BAD_RESPONSE', raw);
+    throw new ZnsError(`Zalo trả về dữ liệu không đọc được: ${raw.slice(0, 200)}`, 'BAD_RESPONSE', raw);
   }
 
   if (!parsed.access_token) {
     const msg = parsed.error_description || parsed.error_name || raw.slice(0, 200);
     throw new ZnsError(
-      `Khong doi duoc access token: ${msg}. ` +
-        'Refresh token co the da het han (3 thang) hoac da bi dung o noi khac - vao Zalo Developers cap lai.',
+      `Không đổi được access token: ${msg}. ` +
+        'Refresh token có thể đã hết hạn (3 tháng) hoặc đã bị dùng ở nơi khác - vào Zalo Developers cấp lại.',
       String(parsed.error ?? ''),
       raw,
     );
@@ -243,18 +243,18 @@ export async function sendZns(input: SendZnsInput): Promise<SendZnsResult> {
   const event = input.event ?? '';
 
   if (!isZnsReady()) {
-    logZns({ ...input, event, status: 'skipped', error: 'ZNS chua duoc bat hoac chua cau hinh' });
-    return { ok: false, skipped: true, error: 'ZNS chua duoc cau hinh' };
+    logZns({ ...input, event, status: 'skipped', error: 'ZNS chưa được bật hoặc chưa cấu hình' });
+    return { ok: false, skipped: true, error: 'ZNS chưa được cấu hình' };
   }
   if (!input.templateId) {
-    logZns({ ...input, event, status: 'skipped', error: `Chua khai bao template ID cho su kien "${event}"` });
-    return { ok: false, skipped: true, error: 'Chua khai bao template ID' };
+    logZns({ ...input, event, status: 'skipped', error: `Chưa khai báo template ID cho sự kiện "${event}"` });
+    return { ok: false, skipped: true, error: 'Chưa khai báo template ID' };
   }
 
   const phone = normalizePhone(input.phone);
   if (!phone) {
-    logZns({ ...input, event, status: 'skipped', error: `So dien thoai khong hop le: ${input.phone}` });
-    return { ok: false, skipped: true, error: 'So dien thoai khong hop le' };
+    logZns({ ...input, event, status: 'skipped', error: `Số điện thoại không hợp lệ: ${input.phone}` });
+    return { ok: false, skipped: true, error: 'Số điện thoại không hợp lệ' };
   }
 
   const trackingId = input.trackingId ?? `${event || 'zns'}-${Date.now()}`;
@@ -306,7 +306,7 @@ async function postZns(payload: unknown, accessToken: string) {
   try {
     parsed = JSON.parse(raw);
   } catch {
-    return { ok: false, error: `Phan hoi khong doc duoc: ${raw.slice(0, 200)}`, raw };
+    return { ok: false, error: `Phản hồi không đọc được: ${raw.slice(0, 200)}`, raw };
   }
 
   const code = Number(parsed.error ?? -1);
@@ -316,7 +316,7 @@ async function postZns(payload: unknown, accessToken: string) {
   return {
     ok: false,
     errorCode: String(code),
-    error: `${parsed.message ?? 'Loi khong xac dinh'} (${explainZnsError(code)})`,
+    error: `${parsed.message ?? 'Lỗi không xác định'} (${explainZnsError(code)})`,
     raw,
   };
 }
@@ -324,20 +324,20 @@ async function postZns(payload: unknown, accessToken: string) {
 /** Dien giai cac ma loi ZNS hay gap sang tieng Viet. */
 export function explainZnsError(code: number): string {
   const map: Record<number, string> = {
-    [-124]: 'Access token khong hop le hoac het han',
-    [-125]: 'Access token bi thu hoi',
-    [-201]: 'Tham so khong hop le - kiem tra template_data co dung cac truong cua mau khong',
-    [-202]: 'Thieu tham so bat buoc',
-    [-211]: 'Template khong ton tai hoac chua duoc duyet',
-    [-212]: 'Template chua duoc kich hoat',
-    [-213]: 'Du lieu truyen vao khong khop voi cau truc template',
-    [-216]: 'Ung dung chua duoc lien ket voi Official Account',
-    [-224]: 'So dien thoai khong hop le',
-    [-226]: 'Nguoi nhan chua tung tuong tac hoac da chan OA',
-    [-230]: 'Tai khoan het so du ZNS',
-    [-232]: 'Vuot han muc gui trong ngay',
+    [-124]: 'Access token không hợp lệ hoặc hết hạn',
+    [-125]: 'Access token bị thu hồi',
+    [-201]: 'Tham số không hợp lệ - kiểm tra template_data có đúng các trường của mẫu không',
+    [-202]: 'Thiếu tham số bắt buộc',
+    [-211]: 'Template không tồn tại hoặc chưa được duyệt',
+    [-212]: 'Template chưa được kích hoạt',
+    [-213]: 'Dữ liệu truyền vào không khớp với cấu trúc template',
+    [-216]: 'Ứng dụng chưa được liên kết với Official Account',
+    [-224]: 'Số điện thoại không hợp lệ',
+    [-226]: 'Người nhận chưa từng tương tác hoặc đã chặn OA',
+    [-230]: 'Tài khoản hết số dư ZNS',
+    [-232]: 'Vượt hạn mức gửi trong ngày',
   };
-  return map[code] ?? `ma loi ${code}`;
+  return map[code] ?? `mã lỗi ${code}`;
 }
 
 function logZns(input: {

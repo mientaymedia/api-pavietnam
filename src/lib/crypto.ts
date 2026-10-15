@@ -75,7 +75,7 @@ export function encryptSecret(plain: string): string {
 
 export function decryptSecret(payload: string): string {
   const [v, ivB, tagB, dataB] = payload.split('.');
-  if (v !== 'v1' || !ivB || !tagB || !dataB) throw new Error('Chuoi ma hoa khong hop le');
+  if (v !== 'v1' || !ivB || !tagB || !dataB) throw new Error('Chuỗi mã hóa không hợp lệ');
   const decipher = crypto.createDecipheriv('aes-256-gcm', keyBuf(), Buffer.from(ivB, 'base64url'));
   decipher.setAuthTag(Buffer.from(tagB, 'base64url'));
   return Buffer.concat([decipher.update(Buffer.from(dataB, 'base64url')), decipher.final()]).toString('utf8');

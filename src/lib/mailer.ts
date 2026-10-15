@@ -45,7 +45,7 @@ export async function sendMail(input: MailInput): Promise<boolean> {
   const tx = getTransporter();
 
   if (!tx) {
-    logEmail(input, 'skipped', 'Chua cau hinh SMTP');
+    logEmail(input, 'skipped', 'Chưa cấu hình SMTP');
     log.warn('mail_skipped_no_smtp', { to: input.to, subject: input.subject });
     return false;
   }

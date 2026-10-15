@@ -385,7 +385,7 @@ export function encodeQr(text: string): MaQr {
   const bytes = [...Buffer.from(text, 'utf8')];
   const version = chonPhienBan(bytes.length);
   if (version === null) {
-    throw new Error(`Chuoi qua dai cho ma QR phien ban ${PHIEN_BAN_TOI_DA} (${bytes.length} byte)`);
+    throw new Error(`Chuỗi quá dài cho mã QR phiên bản ${PHIEN_BAN_TOI_DA} (${bytes.length} byte)`);
   }
 
   const [ecMoiKhoi, soKhoi] = EC_M[version - 1]!;
@@ -450,7 +450,7 @@ export function qrSvg(text: string, opts: { scale?: number; vien?: number; alt?:
     }
   }
 
-  const nhan = (opts.alt ?? 'Ma QR').replace(/[<>&"]/g, '');
+  const nhan = (opts.alt ?? 'Mã QR').replace(/[<>&"]/g, '');
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${canh}" height="${canh}" viewBox="0 0 ${canh} ${canh}" role="img" aria-label="${nhan}">` +
     `<rect width="${canh}" height="${canh}" fill="#ffffff"/>` +

@@ -137,7 +137,7 @@ test('chuoi UTF-8 co dau ma hoa duoc', () => {
 });
 
 test('bao loi ro rang khi chuoi qua dai', () => {
-  assert.throws(() => encodeQr('X'.repeat(413)), /qua dai/);
+  assert.throws(() => encodeQr('X'.repeat(413)), /quá dài/);
 });
 
 test('SVG tu chua, khong goi ra ngoai', () => {

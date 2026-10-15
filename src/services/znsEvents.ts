@@ -22,39 +22,39 @@ export interface ZnsEventSpec {
 export const ZNS_EVENTS = {
   order_created: {
     settingKey: 'zns.tpl.order_created',
-    label: 'Don hang moi - cho thanh toan',
+    label: 'Đơn hàng mới - chờ thanh toán',
     params: ['order_code', 'amount', 'domain'],
-    sample: 'Don hang <order_code> cho ten mien <domain> tri gia <amount> dang cho thanh toan.',
+    sample: 'Đơn hàng <order_code> cho tên miền <domain> trị giá <amount> đang chờ thanh toán.',
   },
   payment_received: {
     settingKey: 'zns.tpl.payment_received',
-    label: 'Da nhan thanh toan',
+    label: 'Đã nhận thanh toán',
     params: ['order_code', 'amount'],
-    sample: 'Da nhan thanh toan <amount> cho don <order_code>. He thong dang kich hoat ten mien.',
+    sample: 'Đã nhận thanh toán <amount> cho đơn <order_code>. Hệ thống đang kích hoạt tên miền.',
   },
   domain_activated: {
     settingKey: 'zns.tpl.domain_activated',
-    label: 'Ten mien da kich hoat',
+    label: 'Tên miền đã kích hoạt',
     params: ['domain', 'expires_at'],
-    sample: 'Ten mien <domain> da kich hoat, su dung den <expires_at>.',
+    sample: 'Tên miền <domain> đã kích hoạt, sử dụng đến <expires_at>.',
   },
   renewal_reminder: {
     settingKey: 'zns.tpl.renewal_reminder',
-    label: 'Nhac gia han ten mien',
+    label: 'Nhắc gia hạn tên miền',
     params: ['domain', 'expires_at', 'days_left'],
-    sample: 'Ten mien <domain> se het han ngay <expires_at>, con <days_left> ngay.',
+    sample: 'Tên miền <domain> sẽ hết hạn ngày <expires_at>, còn <days_left> ngày.',
   },
   auto_renew_charged: {
     settingKey: 'zns.tpl.auto_renew_charged',
-    label: 'Da tu dong gia han',
+    label: 'Đã tự động gia hạn',
     params: ['domain', 'amount', 'expires_at'],
-    sample: 'Da tu dong gia han <domain>, tru <amount>. Han moi: <expires_at>.',
+    sample: 'Đã tự động gia hạn <domain>, trừ <amount>. Hạn mới: <expires_at>.',
   },
   provision_failed: {
     settingKey: 'zns.tpl.provision_failed',
-    label: 'Dang ky ten mien that bai',
+    label: 'Đăng ký tên miền thất bại',
     params: ['domain', 'order_code'],
-    sample: 'Dang ky <domain> (don <order_code>) chua hoan tat. Bo phan ky thuat dang xu ly.',
+    sample: 'Đăng ký <domain> (đơn <order_code>) chưa hoàn tất. Bộ phận kỹ thuật đang xử lý.',
   },
 } as const satisfies Record<string, ZnsEventSpec>;
 

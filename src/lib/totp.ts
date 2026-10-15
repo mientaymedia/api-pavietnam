@@ -39,7 +39,7 @@ export function base32Decode(input: string): Buffer {
   const out: number[] = [];
   for (const ch of sach) {
     const idx = BANG_BASE32.indexOf(ch);
-    if (idx < 0) throw new Error(`Ky tu Base32 khong hop le: ${ch}`);
+    if (idx < 0) throw new Error(`Ký tự Base32 không hợp lệ: ${ch}`);
     value = (value << 5) | idx;
     bits += 5;
     if (bits >= 8) {

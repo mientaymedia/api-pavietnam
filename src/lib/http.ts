@@ -38,7 +38,7 @@ export async function httpRequest(url: string, opts: FetchOptions = {}): Promise
           await sleep(backoff(attempt));
           continue;
         }
-        throw new HttpError(`HTTP ${res.status} tu ${hostOf(url)}`, res.status, text);
+        throw new HttpError(`HTTP ${res.status} từ ${hostOf(url)}`, res.status, text);
       }
       return text;
     } catch (err) {
@@ -52,7 +52,7 @@ export async function httpRequest(url: string, opts: FetchOptions = {}): Promise
     }
   }
   if (lastErr instanceof HttpError) throw lastErr;
-  throw new HttpError(`Khong goi duoc ${hostOf(url)}: ${String(lastErr)}`);
+  throw new HttpError(`Không gọi được ${hostOf(url)}: ${String(lastErr)}`);
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

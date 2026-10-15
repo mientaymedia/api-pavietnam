@@ -40,7 +40,7 @@ Chạy trong Git Bash tại `D:\api-pavietnam`. Từ B1 trở đi phải đạt 
 - [x] B8. Khách và tên miền: `dashboard`, `account/*`, `domains/*` (detail có thể commit riêng), `account.ts`, `controlPanel.ts`, services liên quan, `test/domain-contact.test.ts`, `test/transfer-out.test.ts` (`/mở khóa/i`). Kết quả: 193/193 đạt.
 - [x] B9. Quản trị: `views/admin/*`, `routes/admin.ts` (gồm giá trị mẫu ZNS), `reports.ts`, `audit.ts`, `jobs/*`, thông điệp hiển thị trong `client.ts`. Có thể tách commit. Kết quả: 193/193 đạt (commit B9a, B9b).
 - [x] B10. API JSON: `routes/api.ts` (chỉ giá trị `error`/`message`). Kết quả: 193/193 đạt.
-- [ ] B11. Email và ZNS: `notifications.ts`, `znsEvents.ts`, `lib/zns.ts`, `mailer.ts`, `test/zns.test.ts`, `test/email-encoding.test.ts`.
+- [x] B11. Email và ZNS: `notifications.ts`, `znsEvents.ts`, `lib/zns.ts`, `mailer.ts`, `test/zns.test.ts`, `test/email-encoding.test.ts`. Kết quả: 195/195 đạt.
 - [ ] B12. Kiểm chứng cuối có thể làm trên máy: `kiem-dau` toàn bộ = 0, NFD = 0, mã băm, `kiem-base` = 0, spec 6.2, curl 6.3 bước 1 đến 3 (cả hai chế độ tiền tố), rút gọn danh sách cho phép, lập `test.md` có bảng kiểm chính tả cho chủ. Không mở PR (không push).
 
 ## Lệch spec
@@ -57,3 +57,4 @@ Chạy trong Git Bash tại `D:\api-pavietnam`. Từ B1 trở đi phải đạt 
 10. B3: `GET /ten-mien` (thiếu `/` cuối) trả 301 sang `/ten-mien/` do `express.static` tự chuyển hướng; đích có tiền tố đúng nên giữ.
 11. Spec 3.6 liệt kê 12 câu so khớp chữ trong test, nhưng thực tế còn thêm: `two-factor.test.ts:89` (`/dang bat/`), `qrcode.test.ts:140` (`/qua dai/`), `totp.test.ts:34` (`/khong hop le/`). Câu nào có chữ nguồn được thêm dấu thì đổi theo trong cùng commit, giữ nguyên độ chặt (B6: `/dang bat/` thành `/đang bật/`).
 12. B7: thông điệp `verifyReturn` của MoMo (`momo.ts:110`) được hiện cho khách qua flash ở trang `/thanh-toan/ket-qua`, khác `verifyIpn`, nên đã thêm dấu; `verifyIpn` giữ nguyên theo spec 3.4. Hai chỗ viết cứng đơn vị "d" (`pricing.ts` lỗi mã giảm giá tối thiểu, `balance.ts` số dư không đủ) chuyển sang `formatVnd` để thống nhất "830.000 đ" (C2).
+13. B11: thêm dấu cả ở vài tệp spec không liệt kê nhưng chữ lọt ra màn hình hoặc vào test: `src/lib/http.ts` (lỗi mạng ghép vào thông điệp lỗi P.A hiện cho quản trị), `src/lib/crypto.ts`, `src/lib/totp.ts` (lỗi nội bộ; `totp.test.ts:34` đổi theo thành `/không hợp lệ/`), `src/lib/qrcode.ts` (`aria-label` mặc định "Mã QR" và lỗi chuỗi quá dài; `qrcode.test.ts:140` thành `/quá dài/`). Không đổi hành vi.

@@ -21,7 +21,7 @@ function esc(s: unknown): string {
 
 function layout(title: string, bodyHtml: string): string {
   const site = settings.site();
-  return `<!doctype html><html lang="vi"><body style="margin:0;padding:24px;background:#f4f6f8;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2937;">
+  return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body style="margin:0;padding:24px;background:#f4f6f8;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2937;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
   <tr><td style="background:${esc(site.primaryColor)};padding:20px 28px;color:#fff;font-size:18px;font-weight:600;">${esc(site.name)}</td></tr>
@@ -31,7 +31,7 @@ function layout(title: string, bodyHtml: string): string {
   </td></tr>
   <tr><td style="padding:18px 28px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;">
     ${esc(site.name)}${site.hotline ? ` &middot; Hotline: ${esc(site.hotline)}` : ''}${site.supportEmail ? ` &middot; ${esc(site.supportEmail)}` : ''}<br>
-    Email nay duoc gui tu he thong, vui long khong tra loi truc tiep.
+    Email này được gửi từ hệ thống, vui lòng không trả lời trực tiếp.
   </td></tr>
 </table></td></tr></table></body></html>`;
 }
@@ -61,11 +61,11 @@ export async function sendWelcome(user: { id: number; email: string; full_name: 
     to: user.email,
     userId: user.id,
     template: 'welcome',
-    subject: `Chao mung ban den voi ${settings.site().name}`,
-    html: layout('Tai khoan cua ban da san sang', `
-      <p>Xin chao <b>${esc(user.full_name || user.email)}</b>,</p>
-      <p>Tai khoan cua ban da duoc tao thanh cong. Ban co the dang nhap de tim kiem, dang ky ten mien va quan ly DNS ngay bay gio.</p>
-      ${button('Vao trang quan ly', url('/dashboard'))}
+    subject: `Chào mừng bạn đến với ${settings.site().name}`,
+    html: layout('Tài khoản của bạn đã sẵn sàng', `
+      <p>Xin chào <b>${esc(user.full_name || user.email)}</b>,</p>
+      <p>Tài khoản của bạn đã được tạo thành công. Bạn có thể đăng nhập để tìm kiếm, đăng ký tên miền và quản lý DNS ngay bây giờ.</p>
+      ${button('Vào trang quản lý', url('/dashboard'))}
     `),
   });
 }
@@ -85,18 +85,18 @@ export async function sendEmailVerification(
     to: user.email,
     userId: user.id,
     template: 'email_verification',
-    subject: `Xac thuc dia chi email cho tai khoan ${site.name}`,
-    html: layout('Xac thuc dia chi email', `
-      <p>Xin chao <b>${esc(user.full_name || user.email)}</b>,</p>
-      <p>Vui long xac nhan day la dia chi email cua ban. He thong dung email nay de gui
-         <b>thong tin quan tri ten mien</b>: ngay het han, nameserver, canh bao va hoa don.</p>
-      ${button('Xac thuc email cua toi', link)}
+    subject: `Xác thực địa chỉ email cho tài khoản ${site.name}`,
+    html: layout('Xác thực địa chỉ email', `
+      <p>Xin chào <b>${esc(user.full_name || user.email)}</b>,</p>
+      <p>Vui lòng xác nhận đây là địa chỉ email của bạn. Hệ thống dùng email này để gửi
+         <b>thông tin quản trị tên miền</b>: ngày hết hạn, nameserver, cảnh báo và hóa đơn.</p>
+      ${button('Xác thực email của tôi', link)}
       <p style="font-size:13px;color:#6b7280;">
-        Neu nut tren khong bam duoc, sao chep lien ket sau vao trinh duyet:<br>
+        Nếu nút trên không bấm được, sao chép liên kết sau vào trình duyệt:<br>
         <span style="word-break:break-all;font-family:monospace;font-size:12px;">${esc(link)}</span>
       </p>
       <p style="font-size:13px;color:#6b7280;">
-        Lien ket co hieu luc trong <b>24 gio</b>. Neu ban khong tao tai khoan nao, hay bo qua email nay.
+        Liên kết có hiệu lực trong <b>24 giờ</b>. Nếu bạn không tạo tài khoản nào, hãy bỏ qua email này.
       </p>
     `),
   });
@@ -107,11 +107,11 @@ export async function sendPasswordReset(user: { id: number; email: string }, tok
     to: user.email,
     userId: user.id,
     template: 'password_reset',
-    subject: 'Khoi phuc mat khau',
-    html: layout('Dat lai mat khau', `
-      <p>Chung toi nhan duoc yeu cau dat lai mat khau cho tai khoan <b>${esc(user.email)}</b>.</p>
-      <p>Lien ket co hieu luc trong 60 phut. Neu ban khong yeu cau, hay bo qua email nay.</p>
-      ${button('Dat lai mat khau', url(`/dat-lai-mat-khau?token=${encodeURIComponent(token)}`))}
+    subject: 'Khôi phục mật khẩu',
+    html: layout('Đặt lại mật khẩu', `
+      <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản <b>${esc(user.email)}</b>.</p>
+      <p>Liên kết có hiệu lực trong 60 phút. Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
+      ${button('Đặt lại mật khẩu', url(`/dat-lai-mat-khau?token=${encodeURIComponent(token)}`))}
     `),
   });
 }
@@ -122,26 +122,26 @@ export async function sendOrderCreated(order: {
   const bank = settings.sepay();
   const bankBlock = payment.provider === 'sepay'
     ? `${table([
-        ['Ngan hang', esc(bank.bankName || bank.bankCode)],
-        ['So tai khoan', `<span style="font-family:monospace;font-size:16px;">${esc(bank.accountNumber)}</span>`],
-        ['Chu tai khoan', esc(bank.accountName)],
-        ['So tien', esc(formatVnd(order.total))],
-        ['Noi dung chuyen khoan', `<span style="font-family:monospace;font-size:16px;color:#b91c1c;">${esc(payment.refCode)}</span>`],
+        ['Ngân hàng', esc(bank.bankName || bank.bankCode)],
+        ['Số tài khoản', `<span style="font-family:monospace;font-size:16px;">${esc(bank.accountNumber)}</span>`],
+        ['Chủ tài khoản', esc(bank.accountName)],
+        ['Số tiền', esc(formatVnd(order.total))],
+        ['Nội dung chuyển khoản', `<span style="font-family:monospace;font-size:16px;color:#b91c1c;">${esc(payment.refCode)}</span>`],
       ])}
-      <p style="font-size:13px;color:#b91c1c;">Vui long ghi <b>dung noi dung chuyen khoan</b> de he thong tu dong doi soat va kich hoat ten mien.</p>
-      ${payment.qrUrl ? `<p style="text-align:center;"><img src="${esc(payment.qrUrl)}" alt="Ma QR chuyen khoan" width="260" style="max-width:100%;border:1px solid #e5e7eb;border-radius:8px;"></p>` : ''}`
-    : `<p>Vui long hoan tat thanh toan de he thong kich hoat ten mien tu dong.</p>
-       ${payment.payUrl ? button('Thanh toan ngay', payment.payUrl) : ''}`;
+      <p style="font-size:13px;color:#b91c1c;">Vui lòng ghi <b>đúng nội dung chuyển khoản</b> để hệ thống tự động đối soát và kích hoạt tên miền.</p>
+      ${payment.qrUrl ? `<p style="text-align:center;"><img src="${esc(payment.qrUrl)}" alt="Mã QR chuyển khoản" width="260" style="max-width:100%;border:1px solid #e5e7eb;border-radius:8px;"></p>` : ''}`
+    : `<p>Vui lòng hoàn tất thanh toán để hệ thống kích hoạt tên miền tự động.</p>
+       ${payment.payUrl ? button('Thanh toán ngay', payment.payUrl) : ''}`;
 
   await sendMail({
     to: email,
     userId: order.user_id,
     template: 'order_created',
-    subject: `Don hang ${order.code} - cho thanh toan`,
-    html: layout(`Don hang ${esc(order.code)}`, `
-      <p>Cam on ban da dat hang. Don hang dang cho thanh toan.</p>
+    subject: `Đơn hàng ${order.code} - chờ thanh toán`,
+    html: layout(`Đơn hàng ${esc(order.code)}`, `
+      <p>Cảm ơn bạn đã đặt hàng. Đơn hàng đang chờ thanh toán.</p>
       ${bankBlock}
-      ${button('Xem chi tiet don hang', url(`/don-hang/${order.code}`))}
+      ${button('Xem chi tiết đơn hàng', url(`/don-hang/${order.code}`))}
     `),
   });
 
@@ -157,11 +157,11 @@ export async function sendPaymentReceived(order: { id: number; code: string; tot
     to: email,
     userId: order.user_id,
     template: 'payment_received',
-    subject: `Da nhan thanh toan don hang ${order.code}`,
-    html: layout('Thanh toan thanh cong', `
-      <p>Chung toi da nhan duoc thanh toan <b>${esc(formatVnd(order.total))}</b> cho don hang <b>${esc(order.code)}</b>.</p>
-      <p>He thong dang tien hanh dang ky ten mien. Ban se nhan duoc email thong tin quan tri ngay khi hoan tat (thuong duoi 1 phut).</p>
-      ${button('Theo doi don hang', url(`/don-hang/${order.code}`))}
+    subject: `Đã nhận thanh toán đơn hàng ${order.code}`,
+    html: layout('Thanh toán thành công', `
+      <p>Chúng tôi đã nhận được thanh toán <b>${esc(formatVnd(order.total))}</b> cho đơn hàng <b>${esc(order.code)}</b>.</p>
+      <p>Hệ thống đang tiến hành đăng ký tên miền. Bạn sẽ nhận được email thông tin quản trị ngay khi hoàn tất (thường dưới 1 phút).</p>
+      ${button('Theo dõi đơn hàng', url(`/don-hang/${order.code}`))}
     `),
   });
 
@@ -187,25 +187,25 @@ export async function sendDomainActivated(input: {
     to: input.email,
     userId: input.userId,
     template: 'domain_activated',
-    subject: `Ten mien ${input.domain} da duoc kich hoat`,
-    html: layout(`Ten mien ${esc(input.domain)} da hoat dong`, `
-      <p>Ten mien cua ban da duoc dang ky thanh cong va kich hoat.</p>
+    subject: `Tên miền ${input.domain} đã được kích hoạt`,
+    html: layout(`Tên miền ${esc(input.domain)} đã hoạt động`, `
+      <p>Tên miền của bạn đã được đăng ký thành công và kích hoạt.</p>
       ${table([
-        ['Ten mien', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
-        ['Thoi han', `${esc(input.years)} nam`],
-        ['Ngay het han', esc(input.expiresAt ? input.expiresAt.slice(0, 10) : 'Dang cap nhat')],
-        ['Nameserver', input.nameservers.length ? input.nameservers.map((n) => `<span style="font-family:monospace;">${esc(n)}</span>`).join('<br>') : 'Mac dinh cua he thong'],
+        ['Tên miền', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
+        ['Thời hạn', `${esc(input.years)} năm`],
+        ['Ngày hết hạn', esc(input.expiresAt ? input.expiresAt.slice(0, 10) : 'Đang cập nhật')],
+        ['Nameserver', input.nameservers.length ? input.nameservers.map((n) => `<span style="font-family:monospace;">${esc(n)}</span>`).join('<br>') : 'Mặc định của hệ thống'],
       ])}
-      <p>Ban co the quan ly ban ghi DNS, doi nameserver va bat gia han tu dong trong Control Panel:</p>
-      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
-      <p style="font-size:13px;color:#6b7280;">Luu y: thay doi DNS can 5 phut den 24 gio de cap nhat tren toan cau.</p>
-      ${site.hotline ? `<p style="font-size:13px;color:#6b7280;">Can ho tro? Goi ${esc(site.hotline)}.</p>` : ''}
+      <p>Bạn có thể quản lý bản ghi DNS, đổi nameserver và bật gia hạn tự động trong Control Panel:</p>
+      ${button('Mở Control Panel tên miền', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+      <p style="font-size:13px;color:#6b7280;">Lưu ý: thay đổi DNS cần 5 phút đến 24 giờ để cập nhật trên toàn cầu.</p>
+      ${site.hotline ? `<p style="font-size:13px;color:#6b7280;">Cần hỗ trợ? Gọi ${esc(site.hotline)}.</p>` : ''}
     `),
   });
 
   await notifyZns('domain_activated', input.userId, {
     domain: input.domain,
-    expires_at: input.expiresAt ? input.expiresAt.slice(0, 10) : 'dang cap nhat',
+    expires_at: input.expiresAt ? input.expiresAt.slice(0, 10) : 'đang cập nhật',
   }, `active-${input.domain}`);
 }
 
@@ -217,17 +217,17 @@ export async function sendTransferSubmitted(input: {
     to: input.email,
     userId: input.userId,
     template: 'transfer_submitted',
-    subject: `Da tiep nhan yeu cau chuyen ten mien ${input.domain}`,
-    html: layout('Yeu cau chuyen ten mien da duoc gui', `
-      <p>Chung toi da gui yeu cau chuyen <b>${esc(input.domain)}</b> ve he thong (don hang <b>${esc(input.orderCode)}</b>).</p>
-      <p><b>Viec ban can lam tiep:</b></p>
+    subject: `Đã tiếp nhận yêu cầu chuyển tên miền ${input.domain}`,
+    html: layout('Yêu cầu chuyển tên miền đã được gửi', `
+      <p>Chúng tôi đã gửi yêu cầu chuyển <b>${esc(input.domain)}</b> về hệ thống (đơn hàng <b>${esc(input.orderCode)}</b>).</p>
+      <p><b>Việc bạn cần làm tiếp:</b></p>
       <ul style="font-size:14px; line-height:1.8;">
-        <li>Kiem tra hop thu cua <b>email quan tri ten mien</b> - nha dang ky cu se gui thu xac nhan.</li>
-        <li>Bam duyet trong thu do. Neu khong duyet, yeu cau se tu huy sau 5-7 ngay.</li>
-        <li>Dam bao ten mien <b>khong bi khoa</b> (trang thai clientTransferProhibited) va da qua 60 ngay ke tu lan dang ky/chuyen gan nhat.</li>
+        <li>Kiểm tra hộp thư của <b>email quản trị tên miền</b> - nhà đăng ký cũ sẽ gửi thư xác nhận.</li>
+        <li>Bấm duyệt trong thư đó. Nếu không duyệt, yêu cầu sẽ tự hủy sau 5-7 ngày.</li>
+        <li>Đảm bảo tên miền <b>không bị khóa</b> (trạng thái clientTransferProhibited) và đã quá 60 ngày kể từ lần đăng ký/chuyển gần nhất.</li>
       </ul>
-      <p>Ten mien quoc te thuong mat 5-7 ngay de hoan tat. Chung toi se gui email khi ten mien ve tai khoan cua ban.</p>
-      ${button('Theo doi don hang', url(`/don-hang/${input.orderCode}`))}
+      <p>Tên miền quốc tế thường mất 5-7 ngày để hoàn tất. Chúng tôi sẽ gửi email khi tên miền về tài khoản của bạn.</p>
+      ${button('Theo dõi đơn hàng', url(`/don-hang/${input.orderCode}`))}
     `),
   });
 }
@@ -239,12 +239,12 @@ export async function sendProvisionFailed(input: {
     to: input.email,
     userId: input.userId,
     template: 'provision_failed',
-    subject: `Can xu ly: dang ky ${input.domain} chua hoan tat`,
-    html: layout('Dang ky ten mien chua hoan tat', `
-      <p>Rat tiec, he thong chua dang ky duoc ten mien <b>${esc(input.domain)}</b> thuoc don hang <b>${esc(input.orderCode)}</b>.</p>
+    subject: `Cần xử lý: đăng ký ${input.domain} chưa hoàn tất`,
+    html: layout('Đăng ký tên miền chưa hoàn tất', `
+      <p>Rất tiếc, hệ thống chưa đăng ký được tên miền <b>${esc(input.domain)}</b> thuộc đơn hàng <b>${esc(input.orderCode)}</b>.</p>
       <p style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:8px;font-size:13px;">${esc(input.error)}</p>
-      <p>Bo phan ky thuat da duoc thong bao va se lien he voi ban. Khoan thanh toan cua ban van duoc bao luu.</p>
-      ${button('Xem don hang', url(`/don-hang/${input.orderCode}`))}
+      <p>Bộ phận kỹ thuật đã được thông báo và sẽ liên hệ với bạn. Khoản thanh toán của bạn vẫn được bảo lưu.</p>
+      ${button('Xem đơn hàng', url(`/don-hang/${input.orderCode}`))}
     `),
   });
   await notifyZns('provision_failed', input.userId, {
@@ -252,8 +252,8 @@ export async function sendProvisionFailed(input: {
     order_code: input.orderCode,
   }, `failed-${input.orderCode}-${input.domain}`);
 
-  await alertAdmin(`Dang ky that bai: ${input.domain}`, `
-    <p>Don hang <b>${esc(input.orderCode)}</b> - ten mien <b>${esc(input.domain)}</b> dang ky that bai.</p>
+  await alertAdmin(`Đăng ký thất bại: ${input.domain}`, `
+    <p>Đơn hàng <b>${esc(input.orderCode)}</b> - tên miền <b>${esc(input.domain)}</b> đăng ký thất bại.</p>
     <pre style="background:#f3f4f6;padding:12px;border-radius:8px;white-space:pre-wrap;font-size:12px;">${esc(input.error)}</pre>
   `);
 }
@@ -268,24 +268,24 @@ export async function sendRefunded(input: {
     to: input.email,
     userId: input.userId,
     template: 'refunded',
-    subject: `Da hoan ${formatVnd(input.amount)} cho ${input.domain}`,
-    html: layout('Da hoan tien vao tai khoan cua ban', `
-      <p>Rat tiec, ten mien <b>${esc(input.domain)}</b> khong dang ky duoc. Chung toi da hoan lai
-         so tien tuong ung vao so du tai khoan cua ban.</p>
+    subject: `Đã hoàn ${formatVnd(input.amount)} cho ${input.domain}`,
+    html: layout('Đã hoàn tiền vào tài khoản của bạn', `
+      <p>Rất tiếc, tên miền <b>${esc(input.domain)}</b> không đăng ký được. Chúng tôi đã hoàn lại
+         số tiền tương ứng vào số dư tài khoản của bạn.</p>
       ${table([
-        ['Ten mien', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
-        ['Ma don hang', esc(input.orderCode)],
-        ['So tien hoan', esc(formatVnd(input.amount))],
-        ['So du hien tai', esc(formatVnd(input.balanceAfter))],
-        ['Ly do', esc(input.reason)],
+        ['Tên miền', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
+        ['Mã đơn hàng', esc(input.orderCode)],
+        ['Số tiền hoàn', esc(formatVnd(input.amount))],
+        ['Số dư hiện tại', esc(formatVnd(input.balanceAfter))],
+        ['Lý do', esc(input.reason)],
       ])}
-      <p>So du nay dung duoc ngay cho don hang tiep theo - chon thanh toan bang
-         <b>So du tai khoan</b> khi dat hang.</p>
+      <p>Số dư này dùng được ngay cho đơn hàng tiếp theo - chọn thanh toán bằng
+         <b>Số dư tài khoản</b> khi đặt hàng.</p>
       <p style="font-size:13px;color:#6b7280;">
-        Muon nhan lai bang tien mat thay vi so du? Lien he
-        ${esc(site.supportEmail || site.hotline || 'bo phan ho tro')} kem ma don <b>${esc(input.orderCode)}</b>.
+        Muốn nhận lại bằng tiền mặt thay vì số dư? Liên hệ
+        ${esc(site.supportEmail || site.hotline || 'bộ phận hỗ trợ')} kèm mã đơn <b>${esc(input.orderCode)}</b>.
       </p>
-      ${button('Xem so du tai khoan', url('/tai-khoan'))}
+      ${button('Xem số dư tài khoản', url('/tai-khoan'))}
     `),
   });
 }
@@ -297,12 +297,12 @@ export async function sendRenewalReminder(input: {
     to: input.email,
     userId: input.userId,
     template: 'renewal_reminder',
-    subject: `Ten mien ${input.domain} het han sau ${input.daysLeft} ngay`,
-    html: layout('Nhac gia han ten mien', `
-      <p>Ten mien <b>${esc(input.domain)}</b> se het han vao <b>${esc(input.expiresAt.slice(0, 10))}</b> (con ${esc(input.daysLeft)} ngay).</p>
-      ${table([['Phi gia han 1 nam', esc(formatVnd(input.renewPrice))]])}
-      <p>De tranh gian doan website va email, vui long gia han truoc ngay het han.</p>
-      ${button('Gia han ngay', url(`/control-panel/${encodeURIComponent(input.domain)}/gia-han`))}
+    subject: `Tên miền ${input.domain} hết hạn sau ${input.daysLeft} ngày`,
+    html: layout('Nhắc gia hạn tên miền', `
+      <p>Tên miền <b>${esc(input.domain)}</b> sẽ hết hạn vào <b>${esc(input.expiresAt.slice(0, 10))}</b> (còn ${esc(input.daysLeft)} ngày).</p>
+      ${table([['Phí gia hạn 1 năm', esc(formatVnd(input.renewPrice))]])}
+      <p>Để tránh gián đoạn website và email, vui lòng gia hạn trước ngày hết hạn.</p>
+      ${button('Gia hạn ngay', url(`/control-panel/${encodeURIComponent(input.domain)}/gia-han`))}
     `),
   });
 
@@ -321,17 +321,17 @@ export async function sendAutoRenewCharged(input: {
     to: input.email,
     userId: input.userId,
     template: 'auto_renew_charged',
-    subject: `Da tu dong gia han ${input.domain}`,
-    html: layout('Gia han tu dong thanh cong', `
-      <p>Ten mien <b>${esc(input.domain)}</b> da duoc gia han tu dong.</p>
+    subject: `Đã tự động gia hạn ${input.domain}`,
+    html: layout('Gia hạn tự động thành công', `
+      <p>Tên miền <b>${esc(input.domain)}</b> đã được gia hạn tự động.</p>
       ${table([
-        ['Thoi han gia han', `${esc(input.years)} nam`],
-        ['So tien da tru', esc(formatVnd(input.amount))],
-        ['So du con lai', esc(formatVnd(input.balanceAfter))],
-        ['Ma don hang', esc(input.orderCode)],
+        ['Thời hạn gia hạn', `${esc(input.years)} năm`],
+        ['Số tiền đã trừ', esc(formatVnd(input.amount))],
+        ['Số dư còn lại', esc(formatVnd(input.balanceAfter))],
+        ['Mã đơn hàng', esc(input.orderCode)],
       ])}
-      <p class="tiny">Muon dung gia han tu dong? Tat trong Control Panel cua ten mien.</p>
-      ${button('Xem don hang', url(`/don-hang/${input.orderCode}`))}
+      <p class="tiny">Muốn dừng gia hạn tự động? Tắt trong Control Panel của tên miền.</p>
+      ${button('Xem đơn hàng', url(`/don-hang/${input.orderCode}`))}
     `),
   });
 
@@ -350,17 +350,17 @@ export async function sendAutoRenewNeedsPayment(input: {
     to: input.email,
     userId: input.userId,
     template: 'auto_renew_needs_payment',
-    subject: `Can thanh toan de gia han ${input.domain} (con ${input.daysLeft} ngay)`,
-    html: layout('Gia han tu dong: can thanh toan', `
-      <p>Ten mien <b>${esc(input.domain)}</b> se het han sau <b>${esc(input.daysLeft)} ngay</b>.</p>
-      <p>He thong da tao san don gia han, nhung so du tai khoan khong du de tru tu dong:</p>
+    subject: `Cần thanh toán để gia hạn ${input.domain} (còn ${input.daysLeft} ngày)`,
+    html: layout('Gia hạn tự động: cần thanh toán', `
+      <p>Tên miền <b>${esc(input.domain)}</b> sẽ hết hạn sau <b>${esc(input.daysLeft)} ngày</b>.</p>
+      <p>Hệ thống đã tạo sẵn đơn gia hạn, nhưng số dư tài khoản không đủ để trừ tự động:</p>
       ${table([
-        ['Can thanh toan', esc(formatVnd(input.amount))],
-        ['So du hien tai', esc(formatVnd(input.balance))],
-        ['Ma don hang', esc(input.orderCode)],
+        ['Cần thanh toán', esc(formatVnd(input.amount))],
+        ['Số dư hiện tại', esc(formatVnd(input.balance))],
+        ['Mã đơn hàng', esc(input.orderCode)],
       ])}
-      <p>Vui long thanh toan don duoi day de ten mien duoc gia han. Don se tu huy neu khong thanh toan.</p>
-      ${button('Thanh toan ngay', url(`/don-hang/${input.orderCode}`))}
+      <p>Vui lòng thanh toán đơn dưới đây để tên miền được gia hạn. Đơn sẽ tự hủy nếu không thanh toán.</p>
+      ${button('Thanh toán ngay', url(`/don-hang/${input.orderCode}`))}
     `),
   });
 }
@@ -378,24 +378,24 @@ export async function sendAuthCodeIssued(input: {
     to: input.email,
     userId: input.userId,
     template: 'auth_code_issued',
-    subject: `Canh bao: ma chuyen doi cua ${input.domain} vua duoc lay`,
-    html: layout('Ma chuyen doi ten mien vua duoc lay', `
-      <p>Ma EPP (Auth Code) cua ten mien <b>${esc(input.domain)}</b> vua duoc lay tu tai khoan cua ban.</p>
+    subject: `Cảnh báo: mã chuyển đổi của ${input.domain} vừa được lấy`,
+    html: layout('Mã chuyển đổi tên miền vừa được lấy', `
+      <p>Mã EPP (Auth Code) của tên miền <b>${esc(input.domain)}</b> vừa được lấy từ tài khoản của bạn.</p>
       ${table([
-        ['Ten mien', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
-        ['Thoi diem', new Date().toISOString().replace('T', ' ').slice(0, 16)],
-        ['Dia chi IP', esc(input.ip || 'khong xac dinh')],
+        ['Tên miền', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
+        ['Thời điểm', new Date().toISOString().replace('T', ' ').slice(0, 16)],
+        ['Địa chỉ IP', esc(input.ip || 'không xác định')],
       ])}
       <p style="background:#ecfdf5;border:1px solid #a7f3d0;padding:12px;border-radius:8px;font-size:14px;">
-        <b>Neu chinh ban vua thao tac:</b> khong can lam gi them. Dung ma do tai nha dang ky moi de
-        hoan tat viec chuyen ten mien.
+        <b>Nếu chính bạn vừa thao tác:</b> không cần làm gì thêm. Dùng mã đó tại nhà đăng ký mới để
+        hoàn tất việc chuyển tên miền.
       </p>
       <p style="background:#fef2f2;border:1px solid #fecaca;padding:12px;border-radius:8px;font-size:14px;">
-        <b>Neu KHONG phai ban:</b> tai khoan cua ban co the da bi truy cap trai phep. Hay
-        <b>doi mat khau ngay</b>, sau do vao Control Panel <b>khoa chuyen doi</b> cho ten mien nay.
-        ${site.hotline ? `Can gap, goi ${esc(site.hotline)}.` : ''}
+        <b>Nếu KHÔNG phải bạn:</b> tài khoản của bạn có thể đã bị truy cập trái phép. Hãy
+        <b>đổi mật khẩu ngay</b>, sau đó vào Control Panel <b>khóa chuyển đổi</b> cho tên miền này.
+        ${site.hotline ? `Cần gấp, gọi ${esc(site.hotline)}.` : ''}
       </p>
-      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+      ${button('Mở Control Panel tên miền', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
     `),
   });
 }
@@ -408,15 +408,15 @@ export async function sendTransferLockChanged(input: {
     to: input.email,
     userId: input.userId,
     template: 'transfer_lock_changed',
-    subject: `${input.domain}: da ${input.locked ? 'khoa' : 'mo khoa'} chuyen doi`,
-    html: layout(`Da ${input.locked ? 'khoa' : 'mo khoa'} chuyen doi`, `
-      <p>Ten mien <b>${esc(input.domain)}</b> vua duoc <b>${input.locked ? 'khoa' : 'mo khoa'}</b> chuyen doi.</p>
+    subject: `${input.domain}: đã ${input.locked ? 'khóa' : 'mở khóa'} chuyển đổi`,
+    html: layout(`Đã ${input.locked ? 'khóa' : 'mở khóa'} chuyển đổi`, `
+      <p>Tên miền <b>${esc(input.domain)}</b> vừa được <b>${input.locked ? 'khóa' : 'mở khóa'}</b> chuyển đổi.</p>
       ${input.locked
-        ? '<p>Ten mien dang duoc bao ve: khong ai co the chuyen no sang nha dang ky khac.</p>'
+        ? '<p>Tên miền đang được bảo vệ: không ai có thể chuyển nó sang nhà đăng ký khác.</p>'
         : '<p style="background:#fffbeb;border:1px solid #fde68a;padding:12px;border-radius:8px;font-size:14px;">' +
-          'Trong thoi gian mo khoa, ten mien <b>co the bi chuyen di</b> neu ai do co ma EPP. ' +
-          'Nen khoa lai ngay sau khi hoan tat cong viec.</p>'}
-      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+          'Trong thời gian mở khóa, tên miền <b>có thể bị chuyển đi</b> nếu ai đó có mã EPP. ' +
+          'Nên khóa lại ngay sau khi hoàn tất công việc.</p>'}
+      ${button('Mở Control Panel tên miền', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
     `),
   });
 }
@@ -430,25 +430,25 @@ export async function sendContactUpdated(input: {
     to: input.email,
     userId: input.userId,
     template: 'contact_updated',
-    subject: `${input.domain}: thong tin chu the vua duoc cap nhat`,
-    html: layout('Thong tin chu the ten mien da thay doi', `
-      <p>Thong tin lien he cua chu the ten mien <b>${esc(input.domain)}</b> vua duoc cap nhat.</p>
+    subject: `${input.domain}: thông tin chủ thể vừa được cập nhật`,
+    html: layout('Thông tin chủ thể tên miền đã thay đổi', `
+      <p>Thông tin liên hệ của chủ thể tên miền <b>${esc(input.domain)}</b> vừa được cập nhật.</p>
       ${table([
-        ['Ten mien', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
+        ['Tên miền', `<span style="font-family:monospace;">${esc(input.domain)}</span>`],
         ...(doiEmail
-          ? ([['Email chu the', `${esc(input.emailCu)} &rarr; <b>${esc(input.emailMoi)}</b>`]] as [string, string][])
-          : ([['Email chu the', esc(input.emailMoi)]] as [string, string][])),
-        ['Thoi diem', new Date().toISOString().replace('T', ' ').slice(0, 16)],
-        ['Dia chi IP', esc(input.ip || 'khong xac dinh')],
+          ? ([['Email chủ thể', `${esc(input.emailCu)} &rarr; <b>${esc(input.emailMoi)}</b>`]] as [string, string][])
+          : ([['Email chủ thể', esc(input.emailMoi)]] as [string, string][])),
+        ['Thời điểm', new Date().toISOString().replace('T', ' ').slice(0, 16)],
+        ['Địa chỉ IP', esc(input.ip || 'không xác định')],
       ])}
       ${doiEmail
         ? `<p style="background:#fffbeb;border:1px solid #fde68a;padding:12px;border-radius:8px;font-size:14px;">
-             Email chu the la duong khoi phuc quyen kiem soat ten mien. Email nay duoc gui toi
-             <b>ca dia chi cu va moi</b> de hai ben cung biet.
+             Email chủ thể là đường khôi phục quyền kiểm soát tên miền. Email này được gửi tới
+             <b>cả địa chỉ cũ và mới</b> để hai bên cùng biết.
            </p>`
         : ''}
-      <p style="font-size:13px;color:#6b7280;">Neu khong phai ban thao tac, hay doi mat khau ngay va lien he chung toi.</p>
-      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+      <p style="font-size:13px;color:#6b7280;">Nếu không phải bạn thao tác, hãy đổi mật khẩu ngay và liên hệ chúng tôi.</p>
+      ${button('Mở Control Panel tên miền', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
     `),
   });
 }
@@ -458,14 +458,14 @@ export async function sendOwnershipRequestStatus(input: {
   userId: number; email: string; domain: string; status: string; note: string; requestId: number;
 }): Promise<void> {
   const moTa: Record<string, { tieuDe: string; noiDung: string }> = {
-    in_review: { tieuDe: 'Ho so dang duoc xem xet', noiDung: 'Chung toi da tiep nhan va dang kiem tra ho so cua ban.' },
-    need_documents: { tieuDe: 'Ho so can bo sung giay to', noiDung: 'Ho so chua du dieu kien. Vui long bo sung theo huong dan ben duoi.' },
-    approved: { tieuDe: 'Ho so da duoc duyet', noiDung: 'Ho so hop le. Chung toi dang tien hanh thu tuc voi nha dang ky.' },
-    completed: { tieuDe: 'Da doi chu the thanh cong', noiDung: 'Ten mien da chuyen sang chu the moi.' },
-    rejected: { tieuDe: 'Ho so khong duoc chap nhan', noiDung: 'Rat tiec, ho so cua ban khong duoc chap nhan.' },
-    cancelled: { tieuDe: 'Ho so da huy', noiDung: 'Ho so doi chu the da duoc huy.' },
+    in_review: { tieuDe: 'Hồ sơ đang được xem xét', noiDung: 'Chúng tôi đã tiếp nhận và đang kiểm tra hồ sơ của bạn.' },
+    need_documents: { tieuDe: 'Hồ sơ cần bổ sung giấy tờ', noiDung: 'Hồ sơ chưa đủ điều kiện. Vui lòng bổ sung theo hướng dẫn bên dưới.' },
+    approved: { tieuDe: 'Hồ sơ đã được duyệt', noiDung: 'Hồ sơ hợp lệ. Chúng tôi đang tiến hành thủ tục với nhà đăng ký.' },
+    completed: { tieuDe: 'Đã đổi chủ thể thành công', noiDung: 'Tên miền đã chuyển sang chủ thể mới.' },
+    rejected: { tieuDe: 'Hồ sơ không được chấp nhận', noiDung: 'Rất tiếc, hồ sơ của bạn không được chấp nhận.' },
+    cancelled: { tieuDe: 'Hồ sơ đã hủy', noiDung: 'Hồ sơ đổi chủ thể đã được hủy.' },
   };
-  const m = moTa[input.status] ?? { tieuDe: 'Cap nhat ho so doi chu the', noiDung: `Trang thai moi: ${input.status}` };
+  const m = moTa[input.status] ?? { tieuDe: 'Cập nhật hồ sơ đổi chủ thể', noiDung: `Trạng thái mới: ${input.status}` };
 
   await sendMail({
     to: input.email,
@@ -473,14 +473,14 @@ export async function sendOwnershipRequestStatus(input: {
     template: 'ownership_request_status',
     subject: `${input.domain}: ${m.tieuDe.toLowerCase()}`,
     html: layout(m.tieuDe, `
-      <p>Ho so doi chu the cho ten mien <b>${esc(input.domain)}</b> (ma ho so <b>#${input.requestId}</b>):</p>
+      <p>Hồ sơ đổi chủ thể cho tên miền <b>${esc(input.domain)}</b> (mã hồ sơ <b>#${input.requestId}</b>):</p>
       <p>${esc(m.noiDung)}</p>
       ${input.note
         ? `<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:12px;border-radius:8px;font-size:14px;">
-             <b>Ghi chu tu bo phan xu ly:</b><br>${esc(input.note)}
+             <b>Ghi chú từ bộ phận xử lý:</b><br>${esc(input.note)}
            </div>`
         : ''}
-      ${button('Mo Control Panel ten mien', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
+      ${button('Mở Control Panel tên miền', url(`/control-panel/${encodeURIComponent(input.domain)}`))}
     `),
   });
 }
