@@ -24,7 +24,7 @@ import { db } from '../db/index.js';
 
 const router = Router();
 
-router.use(rateLimit({ windowMs: 60_000, max: 120, message: 'Vuot qua gioi han 120 request/phut.' }));
+router.use(rateLimit({ windowMs: 60_000, max: 120, message: 'Vượt quá giới hạn 120 request/phút.' }));
 
 /* ------------------------------------------------------------- cong khai */
 
@@ -76,7 +76,7 @@ router.get(
         },
       });
     } catch (err) {
-      res.status(502).json({ error: err instanceof Error ? err.message : 'Loi goi API nha dang ky' });
+      res.status(502).json({ error: err instanceof Error ? err.message : 'Lỗi gọi API nhà đăng ký' });
     }
   }),
 );
@@ -124,13 +124,13 @@ const orderSchema = z.object({
           if (v.action === 'transfer' && !v.authCode) {
             ctx.addIssue({
               code: 'custom', path: ['authCode'],
-              message: `${v.domain}: chuyen ten mien ve can authCode (ma EPP)`,
+              message: `${v.domain}: chuyển tên miền về cần authCode (mã EPP)`,
             });
           }
         }),
     )
-    .min(1, 'Can it nhat mot ten mien')
-    .max(20, 'Toi da 20 ten mien moi don'),
+    .min(1, 'Cần ít nhất một tên miền')
+    .max(20, 'Tối đa 20 tên miền mỗi đơn'),
   contactId: z.coerce.number().int().positive().optional(),
   coupon: z.string().trim().max(50).optional(),
   /** Tao luon giao dich thanh toan va tra ve link/QR. */
@@ -164,7 +164,7 @@ router.post(
     if (contactId) {
       const owned = db.prepare('SELECT 1 FROM contacts WHERE id = ? AND user_id = ?').get(contactId, userId);
       if (!owned) {
-        res.status(422).json({ error: 'contactId khong thuoc ve tai khoan nay' });
+        res.status(422).json({ error: 'contactId không thuộc về tài khoản này' });
         return;
       }
     } else {
@@ -201,7 +201,7 @@ router.post(
           instructions: payment.instructions ?? null,
         };
       } catch (err) {
-        body['paymentError'] = err instanceof Error ? err.message : 'Khong tao duoc giao dich thanh toan';
+        body['paymentError'] = err instanceof Error ? err.message : 'Không tạo được giao dịch thanh toán';
       }
     }
 
@@ -216,7 +216,7 @@ router.get('/orders', (req, res) => {
 router.get('/orders/:code', (req, res) => {
   const order = getOrderByCode(String(req.params.code));
   if (!order || order.user_id !== req.currentUser!.id) {
-    res.status(404).json({ error: 'Khong tim thay don hang' });
+    res.status(404).json({ error: 'Không tìm thấy đơn hàng' });
     return;
   }
   res.json({ data: serializeOrder(order.code) });
@@ -267,7 +267,7 @@ router.get('/domains', (req, res) => {
 function ownedOr404(req: Parameters<typeof requireApiToken>[0], res: Parameters<typeof requireApiToken>[1]) {
   const row = getOwnedDomain(String(req.params.domain ?? ''), req.currentUser!.id);
   if (!row) {
-    res.status(404).json({ error: 'Khong tim thay ten mien trong tai khoan' });
+    res.status(404).json({ error: 'Không tìm thấy tên miền trong tài khoản' });
     return null;
   }
   return row;
@@ -325,7 +325,7 @@ router.put(
     const domain = ownedOr404(req, res);
     if (!domain) return;
 
-    const parsed = z.array(nameserverSchema).min(2, 'Can toi thieu 2 nameserver').max(6)
+    const parsed = z.array(nameserverSchema).min(2, 'Cần tối thiểu 2 nameserver').max(6)
       .safeParse((req.body as { nameservers?: unknown })?.nameservers ?? req.body);
     if (!parsed.success) {
       res.status(422).json({ error: firstError(parsed.error) });
