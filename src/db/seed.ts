@@ -33,7 +33,7 @@ if (existingAdmin) {
   } else {
     db.prepare(
       `INSERT INTO users (email, password_hash, full_name, role, created_at, updated_at)
-       VALUES (?, ?, 'Quan tri vien', 'admin', ?, ?)`,
+       VALUES (?, ?, 'Quản trị viên', 'admin', ?, ?)`,
     ).run(adminEmail, hashPassword(password), nowIso(), nowIso());
     console.log(`+ Da tao tai khoan quan tri: ${adminEmail}`);
   }
@@ -50,27 +50,27 @@ interface SeedTld {
 
 const SEED_TLDS: SeedTld[] = [
   // --- Ten mien Viet Nam (bat buoc ho so chu the theo quy dinh VNNIC) ---
-  { tld: 'vn',        kind: 'vn', label: 'Ten mien quoc gia Viet Nam', cost_register: 700_000, cost_renew: 460_000, price_register: 830_000, price_renew: 520_000, setup_fee: 0, requires_vn_contact: 1, is_featured: 1, sort_order: 1 },
-  { tld: 'com.vn',    kind: 'vn', label: 'Doanh nghiep, thuong mai',   cost_register: 600_000, cost_renew: 380_000, price_register: 690_000, price_renew: 430_000, requires_vn_contact: 1, is_featured: 1, sort_order: 2 },
-  { tld: 'net.vn',    kind: 'vn', label: 'Nha cung cap dich vu mang',  cost_register: 600_000, cost_renew: 380_000, price_register: 690_000, price_renew: 430_000, requires_vn_contact: 1, sort_order: 3 },
-  { tld: 'org.vn',    kind: 'vn', label: 'To chuc',                    cost_register: 400_000, cost_renew: 250_000, price_register: 460_000, price_renew: 290_000, requires_vn_contact: 1, sort_order: 4 },
-  { tld: 'edu.vn',    kind: 'vn', label: 'Giao duc, dao tao',          cost_register: 400_000, cost_renew: 250_000, price_register: 460_000, price_renew: 290_000, requires_vn_contact: 1, sort_order: 5 },
-  { tld: 'info.vn',   kind: 'vn', label: 'Thong tin',                  cost_register: 400_000, cost_renew: 250_000, price_register: 460_000, price_renew: 290_000, requires_vn_contact: 1, sort_order: 6 },
+  { tld: 'vn',        kind: 'vn', label: 'Tên miền quốc gia Việt Nam', cost_register: 700_000, cost_renew: 460_000, price_register: 830_000, price_renew: 520_000, setup_fee: 0, requires_vn_contact: 1, is_featured: 1, sort_order: 1 },
+  { tld: 'com.vn',    kind: 'vn', label: 'Doanh nghiệp, thương mại',   cost_register: 600_000, cost_renew: 380_000, price_register: 690_000, price_renew: 430_000, requires_vn_contact: 1, is_featured: 1, sort_order: 2 },
+  { tld: 'net.vn',    kind: 'vn', label: 'Nhà cung cấp dịch vụ mạng',  cost_register: 600_000, cost_renew: 380_000, price_register: 690_000, price_renew: 430_000, requires_vn_contact: 1, sort_order: 3 },
+  { tld: 'org.vn',    kind: 'vn', label: 'Tổ chức',                    cost_register: 400_000, cost_renew: 250_000, price_register: 460_000, price_renew: 290_000, requires_vn_contact: 1, sort_order: 4 },
+  { tld: 'edu.vn',    kind: 'vn', label: 'Giáo dục, đào tạo',          cost_register: 400_000, cost_renew: 250_000, price_register: 460_000, price_renew: 290_000, requires_vn_contact: 1, sort_order: 5 },
+  { tld: 'info.vn',   kind: 'vn', label: 'Thông tin',                  cost_register: 400_000, cost_renew: 250_000, price_register: 460_000, price_renew: 290_000, requires_vn_contact: 1, sort_order: 6 },
   { tld: 'biz.vn',    kind: 'vn', label: 'Kinh doanh',                 cost_register: 400_000, cost_renew: 250_000, price_register: 460_000, price_renew: 290_000, requires_vn_contact: 1, sort_order: 7 },
 
   // --- Ten mien quoc te ---
-  { tld: 'com',   kind: 'intl', label: 'Pho bien nhat the gioi', cost_register: 280_000, cost_renew: 310_000, price_register: 319_000, price_renew: 359_000, price_transfer: 319_000, is_featured: 1, sort_order: 10 },
-  { tld: 'net',   kind: 'intl', label: 'Cong nghe, mang',        cost_register: 330_000, cost_renew: 360_000, price_register: 379_000, price_renew: 409_000, price_transfer: 379_000, is_featured: 1, sort_order: 11 },
-  { tld: 'org',   kind: 'intl', label: 'To chuc phi loi nhuan',  cost_register: 320_000, cost_renew: 350_000, price_register: 369_000, price_renew: 399_000, price_transfer: 369_000, sort_order: 12 },
-  { tld: 'info',  kind: 'intl', label: 'Trang thong tin',        cost_register: 120_000, cost_renew: 420_000, price_register: 149_000, price_renew: 479_000, sort_order: 13 },
+  { tld: 'com',   kind: 'intl', label: 'Phổ biến nhất thế giới', cost_register: 280_000, cost_renew: 310_000, price_register: 319_000, price_renew: 359_000, price_transfer: 319_000, is_featured: 1, sort_order: 10 },
+  { tld: 'net',   kind: 'intl', label: 'Công nghệ, mạng',        cost_register: 330_000, cost_renew: 360_000, price_register: 379_000, price_renew: 409_000, price_transfer: 379_000, is_featured: 1, sort_order: 11 },
+  { tld: 'org',   kind: 'intl', label: 'Tổ chức phi lợi nhuận',  cost_register: 320_000, cost_renew: 350_000, price_register: 369_000, price_renew: 399_000, price_transfer: 369_000, sort_order: 12 },
+  { tld: 'info',  kind: 'intl', label: 'Trang thông tin',        cost_register: 120_000, cost_renew: 420_000, price_register: 149_000, price_renew: 479_000, sort_order: 13 },
   { tld: 'biz',   kind: 'intl', label: 'Kinh doanh',             cost_register: 300_000, cost_renew: 380_000, price_register: 349_000, price_renew: 429_000, sort_order: 14 },
-  { tld: 'shop',  kind: 'intl', label: 'Ban hang truc tuyen',    cost_register: 150_000, cost_renew: 800_000, price_register: 189_000, price_renew: 899_000, is_featured: 1, sort_order: 15 },
-  { tld: 'store', kind: 'intl', label: 'Cua hang',               cost_register: 150_000, cost_renew: 900_000, price_register: 189_000, price_renew: 999_000, sort_order: 16 },
-  { tld: 'online',kind: 'intl', label: 'Truc tuyen',             cost_register: 100_000, cost_renew: 850_000, price_register: 129_000, price_renew: 949_000, sort_order: 17 },
-  { tld: 'site',  kind: 'intl', label: 'Website ca nhan',        cost_register: 100_000, cost_renew: 700_000, price_register: 129_000, price_renew: 799_000, sort_order: 18 },
-  { tld: 'xyz',   kind: 'intl', label: 'Sang tao, khoi nghiep',  cost_register: 60_000,  cost_renew: 350_000, price_register: 79_000,  price_renew: 399_000, sort_order: 19 },
-  { tld: 'dev',   kind: 'intl', label: 'Lap trinh vien',         cost_register: 380_000, cost_renew: 400_000, price_register: 429_000, price_renew: 459_000, sort_order: 20 },
-  { tld: 'io',    kind: 'intl', label: 'Cong nghe, startup',     cost_register: 1_100_000, cost_renew: 1_200_000, price_register: 1_249_000, price_renew: 1_349_000, sort_order: 21 },
+  { tld: 'shop',  kind: 'intl', label: 'Bán hàng trực tuyến',    cost_register: 150_000, cost_renew: 800_000, price_register: 189_000, price_renew: 899_000, is_featured: 1, sort_order: 15 },
+  { tld: 'store', kind: 'intl', label: 'Cửa hàng',               cost_register: 150_000, cost_renew: 900_000, price_register: 189_000, price_renew: 999_000, sort_order: 16 },
+  { tld: 'online',kind: 'intl', label: 'Trực tuyến',             cost_register: 100_000, cost_renew: 850_000, price_register: 129_000, price_renew: 949_000, sort_order: 17 },
+  { tld: 'site',  kind: 'intl', label: 'Website cá nhân',        cost_register: 100_000, cost_renew: 700_000, price_register: 129_000, price_renew: 799_000, sort_order: 18 },
+  { tld: 'xyz',   kind: 'intl', label: 'Sáng tạo, khởi nghiệp',  cost_register: 60_000,  cost_renew: 350_000, price_register: 79_000,  price_renew: 399_000, sort_order: 19 },
+  { tld: 'dev',   kind: 'intl', label: 'Lập trình viên',         cost_register: 380_000, cost_renew: 400_000, price_register: 429_000, price_renew: 459_000, sort_order: 20 },
+  { tld: 'io',    kind: 'intl', label: 'Công nghệ, startup',     cost_register: 1_100_000, cost_renew: 1_200_000, price_register: 1_249_000, price_renew: 1_349_000, sort_order: 21 },
 ];
 
 let added = 0;
@@ -95,7 +95,7 @@ console.log(`+ Bang gia: them ${added} duoi moi (tong ${SEED_TLDS.length} duoi m
 
 const DEFAULTS: Record<string, string> = {
   'site.name': config.appName,
-  'site.tagline': 'Dang ky ten mien Viet Nam & Quoc te - kich hoat tuc thi',
+  'site.tagline': 'Đăng ký tên miền Việt Nam & Quốc tế - kích hoạt tức thì',
   'site.primary_color': '#0f766e',
   'dns.default_ns': 'ns1.pavietnam.vn,ns2.pavietnam.vn',
   'pricing.markup_percent': '0',

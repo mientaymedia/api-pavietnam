@@ -59,7 +59,7 @@ export const config = {
   port: num('PORT', 3000),
   appUrl,
   basePath: chuanHoaBasePath(str('BASE_PATH', ''), appUrl),
-  appName: str('APP_NAME', 'Ten Mien Viet'),
+  appName: str('APP_NAME', 'MienTay Media'),
   sessionSecret: secret('SESSION_SECRET'),
   encryptionKey: secret('ENCRYPTION_KEY'),
   trustProxy: bool('TRUST_PROXY', false),

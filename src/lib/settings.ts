@@ -83,7 +83,7 @@ export function setSettings(entries: Record<string, string>, secretKeys: string[
 export const settings = {
   site: () => ({
     name: getSetting('site.name', config.appName),
-    tagline: getSetting('site.tagline', 'Dang ky ten mien Viet Nam & Quoc te - kich hoat tuc thi'),
+    tagline: getSetting('site.tagline', 'Đăng ký tên miền Việt Nam & Quốc tế - kích hoạt tức thì'),
     supportEmail: getSetting('site.support_email', config.smtp.from),
     hotline: getSetting('site.hotline', ''),
     address: getSetting('site.address', ''),

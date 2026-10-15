@@ -14,9 +14,9 @@ function wantsJson(req: Request): boolean {
 export function notFound(req: Request, res: Response): void {
   res.status(404);
   if (!wantsJson(req)) {
-    res.render('error', { title: 'Khong tim thay trang', message: `Duong dan ${req.path} khong ton tai.` });
+    res.render('error', { title: 'Không tìm thấy trang', message: `Đường dẫn ${req.path} không tồn tại.` });
   } else {
-    res.json({ error: 'Khong tim thay' });
+    res.json({ error: 'Không tìm thấy' });
   }
 }
 
@@ -28,11 +28,11 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
   res.status(500);
   if (!wantsJson(req)) {
     res.render('error', {
-      title: 'Da xay ra loi',
-      message: config.isProd ? 'He thong gap su co. Vui long thu lai sau it phut.' : message,
+      title: 'Đã xảy ra lỗi',
+      message: config.isProd ? 'Hệ thống gặp sự cố. Vui lòng thử lại sau ít phút.' : message,
     });
   } else {
-    res.json({ error: config.isProd ? 'Loi he thong' : message });
+    res.json({ error: config.isProd ? 'Lỗi hệ thống' : message });
   }
 }
 

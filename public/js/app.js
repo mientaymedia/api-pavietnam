@@ -10,7 +10,7 @@
     var text = btn.getAttribute('data-copy');
     var done = function () {
       var old = btn.textContent;
-      btn.textContent = 'Da chep!';
+      btn.textContent = 'Đã chép!';
       setTimeout(function () { btn.textContent = old; }, 1500);
     };
     if (navigator.clipboard) {

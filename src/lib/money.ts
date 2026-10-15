@@ -7,7 +7,7 @@ export function toVnd(n: number): number {
 }
 
 export function formatVnd(n: number): string {
-  return `${toVnd(n).toLocaleString('vi-VN')} d`;
+  return `${toVnd(n).toLocaleString('vi-VN')} đ`;
 }
 
 /** Lam tron len boi so (vd 1.000d) cho gia ban le. */

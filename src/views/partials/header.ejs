@@ -13,16 +13,16 @@
       // Menu dung chung cho ca man hinh rong lan hep - khai bao mot lan de hai
       // ban khong bi lech nhau khi them muc moi.
       var menu = [
-        { url: '/', nhan: 'Tim ten mien', khop: currentPath === '/' },
-        { url: '/bang-gia', nhan: 'Bang gia', khop: currentPath === '/bang-gia' },
+        { url: '/', nhan: 'Tìm tên miền', khop: currentPath === '/' },
+        { url: '/bang-gia', nhan: 'Bảng giá', khop: currentPath === '/bang-gia' },
         { url: '/whois', nhan: 'WHOIS', khop: currentPath === '/whois' },
-        { url: '/chuyen-ten-mien', nhan: 'Chuyen ve', khop: currentPath === '/chuyen-ten-mien' }
+        { url: '/chuyen-ten-mien', nhan: 'Chuyển về', khop: currentPath === '/chuyen-ten-mien' }
       ];
       if (currentUser) {
         menu.push({ url: '/control-panel', nhan: 'Control Panel', khop: currentPath.indexOf('/control-panel') === 0 });
-        menu.push({ url: '/don-hang', nhan: 'Don hang', khop: currentPath.indexOf('/don-hang') === 0 });
+        menu.push({ url: '/don-hang', nhan: 'Đơn hàng', khop: currentPath.indexOf('/don-hang') === 0 });
         if (currentUser.role === 'admin' || currentUser.role === 'staff') {
-          menu.push({ url: '/admin', nhan: 'Quan tri', khop: currentPath.indexOf('/admin') === 0 });
+          menu.push({ url: '/admin', nhan: 'Quản trị', khop: currentPath.indexOf('/admin') === 0 });
         }
       }
     %>
@@ -30,21 +30,21 @@
     <!-- Nut mo menu: chi hien tren man hinh hep. Dung <details> nen khong can
          JavaScript - menu van mo duoc ke ca khi script loi. -->
     <details class="nav-toggle">
-      <summary aria-label="Mo menu"><span class="nav-icon"></span></summary>
+      <summary aria-label="Mở menu"><span class="nav-icon"></span></summary>
       <nav class="nav nav-mobile">
         <% menu.forEach(function (m) { %>
           <a href="<%= base %><%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
         <% }); %>
-        <a href="<%= base %>/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <a href="<%= base %>/gio-hang">Giỏ hàng<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
         <% if (currentUser) { %>
           <a href="<%= base %>/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
           <form method="post" action="<%= base %>/dang-xuat">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button type="submit">Thoat</button>
+            <button type="submit">Thoát</button>
           </form>
         <% } else { %>
-          <a href="<%= base %>/dang-nhap">Dang nhap</a>
-          <a href="<%= base %>/dang-ky">Dang ky</a>
+          <a href="<%= base %>/dang-nhap">Đăng nhập</a>
+          <a href="<%= base %>/dang-ky">Đăng ký</a>
         <% } %>
       </nav>
     </details>
@@ -53,16 +53,16 @@
       <% menu.forEach(function (m) { %>
         <a href="<%= base %><%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
       <% }); %>
-      <a href="<%= base %>/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+      <a href="<%= base %>/gio-hang">Giỏ hàng<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
       <% if (currentUser) { %>
         <a href="<%= base %>/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
         <form method="post" action="<%= base %>/dang-xuat" style="display:inline">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit">Thoat</button>
+          <button type="submit">Thoát</button>
         </form>
       <% } else { %>
-        <a href="<%= base %>/dang-nhap">Dang nhap</a>
-        <a href="<%= base %>/dang-ky" class="btn btn-sm">Dang ky</a>
+        <a href="<%= base %>/dang-nhap">Đăng nhập</a>
+        <a href="<%= base %>/dang-ky" class="btn btn-sm">Đăng ký</a>
       <% } %>
     </nav>
   </div>
@@ -72,12 +72,12 @@
     <div class="container" style="padding-top:10px; padding-bottom:10px;">
       <div class="row-between" style="gap:10px">
         <span class="small">
-          Dia chi email <strong><%= currentUser.email %></strong> chua duoc xac thuc.
-          He thong dung email nay de gui thong tin quan tri ten mien.
+          Địa chỉ email <strong><%= currentUser.email %></strong> chưa được xác thực.
+          Hệ thống dùng email này để gửi thông tin quản trị tên miền.
         </span>
         <form method="post" action="<%= base %>/gui-lai-xac-thuc" style="margin:0">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button class="btn btn-sm" type="submit">Gui lai email xac thuc</button>
+          <button class="btn btn-sm" type="submit">Gửi lại email xác thực</button>
         </form>
       </div>
     </div>

@@ -1,13 +1,13 @@
 <%
   var map = {
-    pending_payment: ['badge-warn', 'Cho thanh toan'],
-    paid: ['badge-info', 'Da thanh toan'],
-    processing: ['badge-info', 'Dang xu ly'],
-    completed: ['badge-ok', 'Hoan tat'],
-    partially_completed: ['badge-warn', 'Hoan tat mot phan'],
-    failed: ['badge-danger', 'That bai'],
-    cancelled: ['badge-muted', 'Da huy'],
-    refunded: ['badge-info', 'Da hoan tien']
+    pending_payment: ['badge-warn', 'Chờ thanh toán'],
+    paid: ['badge-info', 'Đã thanh toán'],
+    processing: ['badge-info', 'Đang xử lý'],
+    completed: ['badge-ok', 'Hoàn tất'],
+    partially_completed: ['badge-warn', 'Hoàn tất một phần'],
+    failed: ['badge-danger', 'Thất bại'],
+    cancelled: ['badge-muted', 'Đã hủy'],
+    refunded: ['badge-info', 'Đã hoàn tiền']
   };
   var s = map[status] || ['badge-muted', status];
 %>
