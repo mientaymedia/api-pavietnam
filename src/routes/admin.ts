@@ -1,7 +1,7 @@
 /**
  * KHU VUC QUAN TRI.
  *
- * Trang trong tam: /admin/cau-hinh  -> "Cau hinh Control Panel"
+ * Trang trong tam: /admin/cau-hinh  -> "Cấu hình Control Panel"
  * Cho phep sua truc tiep (khong can sua .env, khong can restart):
  *   - Ket noi API dai ly P.A Viet Nam (endpoint, username, API Key, sandbox)
  *   - Nameserver mac dinh
@@ -53,7 +53,7 @@ router.get('/', (_req, res) => {
     (db.prepare(sql).get(...params) as { n: number }).n;
 
   res.render('admin/dashboard', {
-    title: 'Quan tri - Tong quan',
+    title: 'Quản trị - Tổng quan',
     stats: {
       users: count('SELECT COUNT(*) AS n FROM users'),
       domains: count('SELECT COUNT(*) AS n FROM domains'),
@@ -74,75 +74,75 @@ router.get('/', (_req, res) => {
 /** Cac o nhap tren trang cau hinh: [key trong DB, nhan hien thi, loai]. */
 const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' | 'number' | 'checkbox' | 'textarea'; hint?: string }[] = [
   // Thuong hieu
-  { key: 'site.name', label: 'Ten website' },
-  { key: 'site.tagline', label: 'Khau hieu' },
+  { key: 'site.name', label: 'Tên website' },
+  { key: 'site.tagline', label: 'Khẩu hiệu' },
   { key: 'site.hotline', label: 'Hotline' },
-  { key: 'site.support_email', label: 'Email ho tro' },
-  { key: 'site.address', label: 'Dia chi cong ty' },
-  { key: 'site.primary_color', label: 'Mau chu dao', hint: 'Vi du: #0f766e' },
-  { key: 'site.logo_url', label: 'Duong dan logo' },
+  { key: 'site.support_email', label: 'Email hỗ trợ' },
+  { key: 'site.address', label: 'Địa chỉ công ty' },
+  { key: 'site.primary_color', label: 'Màu chủ đạo', hint: 'Ví dụ: #0f766e' },
+  { key: 'site.logo_url', label: 'Đường dẫn logo' },
 
   // API P.A Viet Nam
   { key: 'pa.endpoint', label: 'API endpoint', hint: 'https://daily.pavietnam.vn/interface.php' },
-  { key: 'pa.username', label: 'Username dai ly' },
-  { key: 'pa.apikey', label: 'API Key', type: 'password', hint: 'API Key doi khi ban doi mat khau tai khoan dai ly' },
-  { key: 'pa.sandbox', label: 'Che do gia lap (khong goi API that)', type: 'checkbox' },
+  { key: 'pa.username', label: 'Username đại lý' },
+  { key: 'pa.apikey', label: 'API Key', type: 'password', hint: 'API Key đổi khi bạn đổi mật khẩu tài khoản đại lý' },
+  { key: 'pa.sandbox', label: 'Chế độ giả lập (không gọi API thật)', type: 'checkbox' },
 
   // DNS & gia
-  { key: 'dns.default_ns', label: 'Nameserver mac dinh', hint: 'Cach nhau bang dau phay' },
-  { key: 'pricing.markup_percent', label: 'Ty le cong them (%)', type: 'number' },
-  { key: 'pricing.round_step', label: 'Lam tron gia len boi so (VND)', type: 'number' },
-  { key: 'pricing.vat_percent', label: 'VAT mac dinh (%)', type: 'number' },
-  { key: 'order.auto_provision', label: 'Tu dong dang ky sau khi thanh toan', type: 'checkbox' },
-  { key: 'order.payment_ttl_hours', label: 'Gio giu don cho thanh toan', type: 'number' },
-  { key: 'order.auto_refund_failed', label: 'Tu dong hoan tien vao vi khi dang ky that bai', type: 'checkbox' },
-  { key: 'order.sync_batch_size', label: 'So ten mien dong bo moi lan quet', type: 'number' },
-  { key: 'order.sync_stale_hours', label: 'Lam moi ten mien sau bao nhieu gio', type: 'number' },
-  { key: 'order.sync_near_expiry_hours', label: 'Ten mien sap het han: doc lai moi (gio)', type: 'number' },
-  { key: 'order.renew_notice_days', label: 'Moc nhac gia han (ngay)', hint: 'Vi du: 30,15,7,1' },
+  { key: 'dns.default_ns', label: 'Nameserver mặc định', hint: 'Cách nhau bằng dấu phẩy' },
+  { key: 'pricing.markup_percent', label: 'Tỷ lệ cộng thêm (%)', type: 'number' },
+  { key: 'pricing.round_step', label: 'Làm tròn giá lên bội số (VND)', type: 'number' },
+  { key: 'pricing.vat_percent', label: 'VAT mặc định (%)', type: 'number' },
+  { key: 'order.auto_provision', label: 'Tự động đăng ký sau khi thanh toán', type: 'checkbox' },
+  { key: 'order.payment_ttl_hours', label: 'Giờ giữ đơn chờ thanh toán', type: 'number' },
+  { key: 'order.auto_refund_failed', label: 'Tự động hoàn tiền vào ví khi đăng ký thất bại', type: 'checkbox' },
+  { key: 'order.sync_batch_size', label: 'Số tên miền đồng bộ mỗi lần quét', type: 'number' },
+  { key: 'order.sync_stale_hours', label: 'Làm mới tên miền sau bao nhiêu giờ', type: 'number' },
+  { key: 'order.sync_near_expiry_hours', label: 'Tên miền sắp hết hạn: đọc lại mỗi (giờ)', type: 'number' },
+  { key: 'order.renew_notice_days', label: 'Mốc nhắc gia hạn (ngày)', hint: 'Ví dụ: 30,15,7,1' },
 
   // SePay
-  { key: 'sepay.enabled', label: 'Bat thanh toan chuyen khoan (SePay)', type: 'checkbox' },
-  { key: 'sepay.bank_code', label: 'Ma ngan hang (QR)', hint: 'TCB, VCB, ACB, MB, BIDV...' },
-  { key: 'sepay.bank_name', label: 'Ten ngan hang hien thi' },
-  { key: 'sepay.account_number', label: 'So tai khoan nhan tien' },
-  { key: 'sepay.account_name', label: 'Ten chu tai khoan' },
-  { key: 'sepay.webhook_token', label: 'SePay webhook token', type: 'password', hint: 'Trung voi header Apikey khai bao tren my.sepay.vn' },
-  { key: 'sepay.api_token', label: 'SePay API token', type: 'password', hint: 'Dung de doi soat bu khi webhook that lac' },
+  { key: 'sepay.enabled', label: 'Bật thanh toán chuyển khoản (SePay)', type: 'checkbox' },
+  { key: 'sepay.bank_code', label: 'Mã ngân hàng (QR)', hint: 'TCB, VCB, ACB, MB, BIDV...' },
+  { key: 'sepay.bank_name', label: 'Tên ngân hàng hiển thị' },
+  { key: 'sepay.account_number', label: 'Số tài khoản nhận tiền' },
+  { key: 'sepay.account_name', label: 'Tên chủ tài khoản' },
+  { key: 'sepay.webhook_token', label: 'SePay webhook token', type: 'password', hint: 'Trùng với header Apikey khai báo trên my.sepay.vn' },
+  { key: 'sepay.api_token', label: 'SePay API token', type: 'password', hint: 'Dùng để đối soát bù khi webhook thất lạc' },
 
   // Vi dien tu
-  { key: 'momo.enabled', label: 'Bat vi MoMo', type: 'checkbox' },
+  { key: 'momo.enabled', label: 'Bật ví MoMo', type: 'checkbox' },
   { key: 'momo.partner_code', label: 'MoMo Partner Code' },
   { key: 'momo.access_key', label: 'MoMo Access Key', type: 'password' },
   { key: 'momo.secret_key', label: 'MoMo Secret Key', type: 'password' },
   { key: 'momo.endpoint', label: 'MoMo endpoint' },
-  { key: 'zalopay.enabled', label: 'Bat ZaloPay', type: 'checkbox' },
+  { key: 'zalopay.enabled', label: 'Bật ZaloPay', type: 'checkbox' },
   { key: 'zalopay.app_id', label: 'ZaloPay App ID' },
   { key: 'zalopay.key1', label: 'ZaloPay Key1', type: 'password' },
   { key: 'zalopay.key2', label: 'ZaloPay Key2', type: 'password' },
   { key: 'zalopay.endpoint', label: 'ZaloPay endpoint' },
 
   // Xac thuc tai khoan
-  { key: 'auth.require_email_verified', label: 'Bat buoc xac thuc email truoc khi dat hang', type: 'checkbox' },
-  { key: 'auth.verify_resend_per_hour', label: 'So lan gui lai email xac thuc / gio', type: 'number' },
+  { key: 'auth.require_email_verified', label: 'Bắt buộc xác thực email trước khi đặt hàng', type: 'checkbox' },
+  { key: 'auth.verify_resend_per_hour', label: 'Số lần gửi lại email xác thực / giờ', type: 'number' },
 
   // Bao mat
-  { key: 'security.require_2fa_admin', label: 'Bat buoc xac thuc hai lop cho tai khoan quan tri', type: 'checkbox', hint: 'Tat khi khong con thiet bi xac thuc - nhung khi tat, mat khau bi lo la mat toan bo quyen quan tri' },
+  { key: 'security.require_2fa_admin', label: 'Bắt buộc xác thực hai lớp cho tài khoản quản trị', type: 'checkbox', hint: 'Tắt khi không còn thiết bị xác thực - nhưng khi tắt, mật khẩu bị lộ là mất toàn bộ quyền quản trị' },
 
   // ZNS - Zalo Notification Service
-  { key: 'zns.enabled', label: 'Bat gui tin qua Zalo (ZNS)', type: 'checkbox' },
+  { key: 'zns.enabled', label: 'Bật gửi tin qua Zalo (ZNS)', type: 'checkbox' },
   { key: 'zns.app_id', label: 'Zalo App ID' },
   { key: 'zns.secret_key', label: 'Zalo Secret Key', type: 'password' },
-  { key: 'zns.refresh_token', label: 'Zalo Refresh Token', type: 'password', hint: 'Zalo doi token nay moi lan dung - he thong tu luu lai ban moi' },
+  { key: 'zns.refresh_token', label: 'Zalo Refresh Token', type: 'password', hint: 'Zalo đổi token này mỗi lần dùng - hệ thống tự lưu lại bản mới' },
 
   // Email
   { key: 'smtp.host', label: 'SMTP host' },
   { key: 'smtp.port', label: 'SMTP port', type: 'number' },
-  { key: 'smtp.secure', label: 'SMTP dung SSL/TLS', type: 'checkbox' },
+  { key: 'smtp.secure', label: 'SMTP dùng SSL/TLS', type: 'checkbox' },
   { key: 'smtp.user', label: 'SMTP user' },
   { key: 'smtp.pass', label: 'SMTP password', type: 'password' },
-  { key: 'smtp.from', label: 'Dia chi gui di' },
-  { key: 'smtp.admin_alert', label: 'Email nhan canh bao noi bo' },
+  { key: 'smtp.from', label: 'Địa chỉ gửi đi' },
+  { key: 'smtp.admin_alert', label: 'Email nhận cảnh báo nội bộ' },
 ];
 
 /** Gia tri hien tai de do vao form; secret duoc che di. */
@@ -177,7 +177,7 @@ function flatten(prefix: string, obj: Record<string, unknown>): Record<string, s
 
 router.get('/cau-hinh', (_req, res) => {
   res.render('admin/settings', {
-    title: 'Cau hinh Control Panel',
+    title: 'Cấu hình Control Panel',
     fields: SETTING_FIELDS,
     values: currentSettingValues(),
     secretKeys: SECRET_KEYS,
@@ -197,7 +197,7 @@ router.post('/cau-hinh/zns-template', (req, res) => {
     if (v !== undefined) updates[e.settingKey] = v.trim();
   }
   setSettings(updates);
-  flash(req, 'success', 'Da luu template ID cua ZNS.');
+  flash(req, 'success', 'Đã lưu template ID của ZNS.');
   res.redirect('/admin/cau-hinh');
 });
 
@@ -227,7 +227,7 @@ router.post('/cau-hinh', (req, res) => {
     meta: { keys: Object.keys(updates).filter((k) => !SECRET_KEYS.includes(k)) },
   });
 
-  flash(req, 'success', 'Da luu cau hinh. Thay doi co hieu luc ngay, khong can khoi dong lai.');
+  flash(req, 'success', 'Đã lưu cấu hình. Thay đổi có hiệu lực ngay, không cần khởi động lại.');
   res.redirect('/admin/cau-hinh');
 });
 
@@ -241,22 +241,22 @@ router.post(
       let balanceText = '';
       try {
         const b = await getBalance();
-        balanceText = b.ok ? ` So du dai ly: ${b.balance.toLocaleString('vi-VN')}.` : '';
+        balanceText = b.ok ? ` Số dư đại lý: ${b.balance.toLocaleString('vi-VN')}.` : '';
       } catch {
         // khong bat buoc
       }
       flash(
         req,
         check.ok ? 'success' : 'error',
-        `Ket noi API: ${check.ok ? 'THANH CONG' : 'THAT BAI'}. ${domain} -> ${check.available ? 'con trong' : 'da dang ky'}.${balanceText} ` +
-          `Phan hoi tho: ${check.raw.slice(0, 200)}`,
+        `Kết nối API: ${check.ok ? 'THÀNH CÔNG' : 'THẤT BẠI'}. ${domain} -> ${check.available ? 'còn trống' : 'đã đăng ký'}.${balanceText} ` +
+          `Phản hồi thô: ${check.raw.slice(0, 200)}`,
       );
     } catch (err) {
       flash(
         req,
         'error',
-        `Khong goi duoc API: ${err instanceof Error ? err.message : String(err)}. ` +
-          'Kiem tra lai username/API Key va IP da duoc P.A whitelist chua.',
+        `Không gọi được API: ${err instanceof Error ? err.message : String(err)}. ` +
+          'Kiểm tra lại username/API Key và IP đã được P.A whitelist chưa.',
       );
     }
     res.redirect('/admin/cau-hinh');
@@ -273,19 +273,19 @@ router.post(
     const ok = await sendMail({
       to,
       template: 'smtp_test',
-      subject: `[${settings.site().name}] Thu cau hinh SMTP`,
+      subject: `[${settings.site().name}] Thử cấu hình SMTP`,
       html:
-        `<p>Neu ban doc duoc email nay, cau hinh SMTP da hoat dong.</p>` +
-        `<p>May chu: <b>${s.host}:${s.port}</b> (${s.secure ? 'SSL/TLS' : 'khong ma hoa'})<br>` +
-        `Gui tu: <b>${s.from}</b></p>`,
+        `<p>Nếu bạn đọc được email này, cấu hình SMTP đã hoạt động.</p>` +
+        `<p>Máy chủ: <b>${s.host}:${s.port}</b> (${s.secure ? 'SSL/TLS' : 'không mã hóa'})<br>` +
+        `Gửi từ: <b>${s.from}</b></p>`,
     });
 
     if (ok) {
-      flash(req, 'success', `Da gui email thu toi ${to}. Kiem tra hop thu (ca thu muc spam).`);
+      flash(req, 'success', `Đã gửi email thử tới ${to}. Kiểm tra hộp thư (cả thư mục spam).`);
     } else {
       const last = db.prepare(`SELECT error FROM email_logs WHERE status='failed' ORDER BY id DESC LIMIT 1`)
         .get() as { error: string } | undefined;
-      flash(req, 'error', `Gui that bai. ${last?.error ?? 'Kiem tra host, port, tai khoan va mat khau ung dung.'}`);
+      flash(req, 'error', `Gửi thất bại. ${last?.error ?? 'Kiểm tra host, port, tài khoản và mật khẩu ứng dụng.'}`);
     }
     res.redirect('/admin/cau-hinh');
   }),
@@ -300,19 +300,19 @@ router.post(
     const spec = ZNS_EVENTS[event] ?? ZNS_EVENTS.domain_activated;
 
     if (!normalizePhone(phone)) {
-      flash(req, 'error', 'So dien thoai khong hop le. Dung dang 0901234567 hoac 84901234567.');
+      flash(req, 'error', 'Số điện thoại không hợp lệ. Dùng dạng 0901234567 hoặc 84901234567.');
       return res.redirect('/admin/cau-hinh');
     }
 
     // Dien du lieu mau cho dung cac tham so ma mau tin khai bao
     const templateData: Record<string, string> = {};
     for (const key of spec.params) {
-      templateData[key] = key === 'amount' ? '100.000 d'
+      templateData[key] = key === 'amount' ? formatVnd(100_000)
         : key.includes('domain') ? 'vidu-thu.vn'
         : key.includes('date') || key.includes('expires') ? new Date().toISOString().slice(0, 10)
         : key.includes('days') ? '7'
         : key.includes('order') ? 'DHTHU001'
-        : 'thu-nghiem';
+        : 'thử nghiệm';
     }
 
     const result = await sendZns({
@@ -327,8 +327,8 @@ router.post(
       req,
       result.ok ? 'success' : 'error',
       result.ok
-        ? `Da gui ZNS thu toi ${phone} (msg_id: ${result.msgId ?? '-'}). Kiem tra Zalo cua so nay.`
-        : `Gui ZNS that bai: ${result.error ?? 'khong ro nguyen nhan'}`,
+        ? `Đã gửi ZNS thử tới ${phone} (msg_id: ${result.msgId ?? '-'}). Kiểm tra Zalo của số này.`
+        : `Gửi ZNS thất bại: ${result.error ?? 'không rõ nguyên nhân'}`,
     );
     res.redirect('/admin/cau-hinh');
   }),
@@ -339,7 +339,7 @@ router.post(
 router.get('/bao-cao', (_req, res) => {
   const theoThang = doanhThuTheoThang(12);
   res.render('admin/reports', {
-    title: 'Bao cao kinh doanh',
+    title: 'Báo cáo kinh doanh',
     tongQuan: tongQuan(),
     theoThang,
     // Truc y dung chung cho ca 12 cot; 1 de tranh chia cho 0 khi chua co du lieu
@@ -364,7 +364,7 @@ router.get('/xuat/:loai', (req, res) => {
 
   const muc = bang[loai];
   if (!muc) {
-    flash(req, 'error', 'Loai du lieu khong hop le.');
+    flash(req, 'error', 'Loại dữ liệu không hợp lệ.');
     return res.redirect('/admin/bao-cao');
   }
 
@@ -377,14 +377,14 @@ router.get('/xuat/:loai', (req, res) => {
 /* ------------------------------------------------------------------ bang gia */
 
 router.get('/bang-gia', (_req, res) => {
-  res.render('admin/pricing', { title: 'Quan ly bang gia', tlds: listTlds({ activeOnly: false }) });
+  res.render('admin/pricing', { title: 'Quản lý bảng giá', tlds: listTlds({ activeOnly: false }) });
 });
 
 router.post('/bang-gia', (req, res) => {
   const body = (req.body ?? {}) as Record<string, string>;
   const tld = String(body['tld'] ?? '').trim().replace(/^\./, '').toLowerCase();
   if (!tld) {
-    flash(req, 'error', 'Vui long nhap duoi ten mien.');
+    flash(req, 'error', 'Vui lòng nhập đuôi tên miền.');
     return res.redirect('/admin/bang-gia');
   }
 
@@ -407,7 +407,7 @@ router.post('/bang-gia', (req, res) => {
     sort_order: Number(body['sort_order']) || 100,
   });
 
-  flash(req, 'success', `Da luu bang gia cho .${tld}`);
+  flash(req, 'success', `Đã lưu bảng giá cho .${tld}`);
   res.redirect('/admin/bang-gia');
 });
 
@@ -415,7 +415,7 @@ router.post('/bang-gia', (req, res) => {
 
 router.get('/ma-giam-gia', (_req, res) => {
   res.render('admin/coupons', {
-    title: 'Ma giam gia',
+    title: 'Mã giảm giá',
     coupons: db.prepare('SELECT * FROM coupons ORDER BY id DESC LIMIT 200').all(),
     tlds: listTlds({ activeOnly: false }),
   });
@@ -426,18 +426,18 @@ router.post('/ma-giam-gia', (req, res) => {
   const code = String(body['code'] ?? '').trim().toUpperCase();
 
   if (!/^[A-Z0-9_-]{3,30}$/.test(code)) {
-    flash(req, 'error', 'Ma giam gia chi gom chu, so, gach ngang - tu 3 den 30 ky tu.');
+    flash(req, 'error', 'Mã giảm giá chỉ gồm chữ, số, gạch ngang - từ 3 đến 30 ký tự.');
     return res.redirect('/admin/ma-giam-gia');
   }
 
   const discountType = body['discount_type'] === 'fixed' ? 'fixed' : 'percent';
   const value = Math.max(0, Number(body['value']) || 0);
   if (discountType === 'percent' && value > 100) {
-    flash(req, 'error', 'Giam theo phan tram khong the vuot qua 100%.');
+    flash(req, 'error', 'Giảm theo phần trăm không thể vượt quá 100%.');
     return res.redirect('/admin/ma-giam-gia');
   }
   if (!value) {
-    flash(req, 'error', 'Vui long nhap muc giam.');
+    flash(req, 'error', 'Vui lòng nhập mức giảm.');
     return res.redirect('/admin/ma-giam-gia');
   }
 
@@ -469,14 +469,14 @@ router.post('/ma-giam-gia', (req, res) => {
   );
 
   audit({ userId: req.currentUser!.id, action: 'coupon.save', entity: 'coupon', entityId: code, ip: req.ip });
-  flash(req, 'success', `Da luu ma giam gia ${code}.`);
+  flash(req, 'success', `Đã lưu mã giảm giá ${code}.`);
   res.redirect('/admin/ma-giam-gia');
 });
 
 router.post('/ma-giam-gia/:id/trang-thai', (req, res) => {
   const id = Number(req.params.id);
   db.prepare('UPDATE coupons SET is_active = CASE is_active WHEN 1 THEN 0 ELSE 1 END WHERE id = ?').run(id);
-  flash(req, 'success', 'Da doi trang thai ma giam gia.');
+  flash(req, 'success', 'Đã đổi trạng thái mã giảm giá.');
   res.redirect('/admin/ma-giam-gia');
 });
 
@@ -487,17 +487,17 @@ router.get('/don-hang', (req, res) => {
   const rows = status
     ? db.prepare('SELECT * FROM orders WHERE status = ? ORDER BY id DESC LIMIT 200').all(status)
     : db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 200').all();
-  res.render('admin/orders', { title: 'Quan ly don hang', orders: rows, status });
+  res.render('admin/orders', { title: 'Quản lý đơn hàng', orders: rows, status });
 });
 
 router.get('/don-hang/:id', (req, res) => {
   const order = getOrder(Number(req.params.id));
   if (!order) {
-    flash(req, 'error', 'Khong tim thay don hang.');
+    flash(req, 'error', 'Không tìm thấy đơn hàng.');
     return res.redirect('/admin/don-hang');
   }
   res.render('admin/order-detail', {
-    title: `Don hang ${order.code}`,
+    title: `Đơn hàng ${order.code}`,
     order,
     items: getOrderItems(order.id),
     payments: db.prepare('SELECT * FROM payments WHERE order_id = ? ORDER BY id DESC').all(order.id),
@@ -515,9 +515,9 @@ router.post(
     flash(
       req,
       outcome.status === 'paid' ? 'success' : 'info',
-      outcome.status === 'paid' ? 'Da ghi nhan thanh toan, he thong dang dang ky ten mien.'
-        : outcome.status === 'already_paid' ? 'Don hang nay da duoc thanh toan truoc do.'
-        : 'Khong the ghi nhan thanh toan cho don nay.',
+      outcome.status === 'paid' ? 'Đã ghi nhận thanh toán, hệ thống đang đăng ký tên miền.'
+        : outcome.status === 'already_paid' ? 'Đơn hàng này đã được thanh toán trước đó.'
+        : 'Không thể ghi nhận thanh toán cho đơn này.',
     );
     res.redirect(`/admin/don-hang/${id}`);
   }),
@@ -532,9 +532,9 @@ router.post(
     db.prepare(`UPDATE order_items SET status='pending', attempts=0, error='' WHERE order_id=? AND status='failed'`).run(id);
     try {
       const summary = await provisionOrder(id);
-      flash(req, 'success', `Da chay lai: ${summary.succeeded} thanh cong, ${summary.failed} that bai.`);
+      flash(req, 'success', `Đã chạy lại: ${summary.succeeded} thành công, ${summary.failed} thất bại.`);
     } catch (err) {
-      flash(req, 'error', err instanceof Error ? err.message : 'Khong chay lai duoc.');
+      flash(req, 'error', err instanceof Error ? err.message : 'Không chạy lại được.');
     }
     refreshOrderStatus(id);
     res.redirect(`/admin/don-hang/${id}`);
@@ -552,12 +552,12 @@ router.post(
     });
 
     const thongBao: Record<string, [string, string]> = {
-      refunded: ['success', `Da hoan ${outcome.status === 'refunded' ? formatVnd(outcome.amount) : ''} vao so du khach hang.`],
-      already_refunded: ['info', 'Dong don nay da duoc hoan tien truoc do.'],
-      not_refundable: ['error', outcome.status === 'not_refundable' ? outcome.reason : 'Khong hoan duoc'],
-      not_found: ['error', 'Khong tim thay dong don hang.'],
+      refunded: ['success', `Đã hoàn ${outcome.status === 'refunded' ? formatVnd(outcome.amount) : ''} vào số dư khách hàng.`],
+      already_refunded: ['info', 'Dòng đơn này đã được hoàn tiền trước đó.'],
+      not_refundable: ['error', outcome.status === 'not_refundable' ? outcome.reason : 'Không hoàn được'],
+      not_found: ['error', 'Không tìm thấy dòng đơn hàng.'],
     };
-    const [loai, noiDung] = thongBao[outcome.status] ?? ['error', 'Khong hoan duoc'];
+    const [loai, noiDung] = thongBao[outcome.status] ?? ['error', 'Không hoàn được'];
     flash(req, loai as 'success' | 'info' | 'error', noiDung);
     res.redirect(`/admin/don-hang/${orderId}`);
   }),
@@ -575,7 +575,7 @@ router.post(
     flash(
       req,
       refunded ? 'success' : 'info',
-      refunded ? `Da hoan ${refunded} dong, tong ${formatVnd(total)} vao so du khach hang.` : 'Khong co dong nao can hoan tien.',
+      refunded ? `Đã hoàn ${refunded} dòng, tổng ${formatVnd(total)} vào số dư khách hàng.` : 'Không có dòng nào cần hoàn tiền.',
     );
     res.redirect(`/admin/don-hang/${orderId}`);
   }),
@@ -586,7 +586,7 @@ router.post(
 router.get('/doi-chu-the', (req, res) => {
   const status = String(req.query['status'] ?? '');
   res.render('admin/ownership', {
-    title: 'Ho so doi chu the',
+    title: 'Hồ sơ đổi chủ thể',
     requests: listOwnershipRequests(status ? { status } : {}),
     status,
     ownerSnapshot,
@@ -599,7 +599,7 @@ router.post(
     const status = String(req.body?.status ?? '') as Parameters<typeof setOwnershipStatus>[1];
     const hopLe = ['pending', 'in_review', 'need_documents', 'approved', 'completed', 'rejected', 'cancelled'];
     if (!hopLe.includes(status)) {
-      flash(req, 'error', 'Trang thai khong hop le.');
+      flash(req, 'error', 'Trạng thái không hợp lệ.');
       return res.redirect('/admin/doi-chu-the');
     }
 
@@ -607,7 +607,7 @@ router.post(
       adminUserId: req.currentUser!.id,
       note: String(req.body?.note ?? ''),
     });
-    flash(req, ok ? 'success' : 'error', ok ? 'Da cap nhat ho so va gui email cho khach.' : 'Khong tim thay ho so.');
+    flash(req, ok ? 'success' : 'error', ok ? 'Đã cập nhật hồ sơ và gửi email cho khách.' : 'Không tìm thấy hồ sơ.');
     res.redirect('/admin/doi-chu-the');
   }),
 );
@@ -620,7 +620,7 @@ router.get('/ten-mien', (req, res) => {
     ? db.prepare(`SELECT d.*, u.email FROM domains d JOIN users u ON u.id=d.user_id
                   WHERE d.domain LIKE ? ORDER BY d.id DESC LIMIT 200`).all(`%${q}%`)
     : db.prepare(`SELECT d.*, u.email FROM domains d JOIN users u ON u.id=d.user_id ORDER BY d.id DESC LIMIT 200`).all();
-  res.render('admin/domains', { title: 'Quan ly ten mien', domains: rows, q });
+  res.render('admin/domains', { title: 'Quản lý tên miền', domains: rows, q });
 });
 
 router.post('/ten-mien/:id/dong-bo', (req, res) => {
@@ -628,7 +628,7 @@ router.post('/ten-mien/:id/dong-bo', (req, res) => {
   if (row) {
     enqueue('sync_domain', { domain: row.domain }, { dedupeKey: `sync:${row.domain}` });
     kickWorker();
-    flash(req, 'info', `Dang dong bo ${row.domain}...`);
+    flash(req, 'info', `Đang đồng bộ ${row.domain}...`);
   }
   res.redirect('/admin/ten-mien');
 });
@@ -640,19 +640,19 @@ router.get('/nguoi-dung', (req, res) => {
   const rows = q
     ? db.prepare('SELECT id,email,full_name,phone,role,status,balance,created_at FROM users WHERE email LIKE ? OR full_name LIKE ? ORDER BY id DESC LIMIT 200').all(`%${q}%`, `%${q}%`)
     : db.prepare('SELECT id,email,full_name,phone,role,status,balance,created_at FROM users ORDER BY id DESC LIMIT 200').all();
-  res.render('admin/users', { title: 'Quan ly khach hang', users: rows, q });
+  res.render('admin/users', { title: 'Quản lý khách hàng', users: rows, q });
 });
 
 router.post('/nguoi-dung/:id/nap-vi', (req, res) => {
   const userId = Number(req.params.id);
   const amount = Math.round(Number(req.body?.amount) || 0);
   if (amount === 0) {
-    flash(req, 'error', 'So tien khong hop le.');
+    flash(req, 'error', 'Số tiền không hợp lệ.');
     return res.redirect('/admin/nguoi-dung');
   }
   const after = credit(userId, amount, amount > 0 ? 'topup' : 'adjustment', `admin:${req.currentUser!.id}`, String(req.body?.note ?? ''));
   audit({ userId: req.currentUser!.id, action: 'wallet.adjust', entity: 'user', entityId: userId, ip: req.ip, meta: { amount } });
-  flash(req, 'success', `Da cap nhat so du. So du moi: ${after.toLocaleString('vi-VN')}d`);
+  flash(req, 'success', `Đã cập nhật số dư. Số dư mới: ${formatVnd(after)}`);
   res.redirect('/admin/nguoi-dung');
 });
 
@@ -662,7 +662,7 @@ router.post('/nguoi-dung/:id/trang-thai', (req, res) => {
   db.prepare('UPDATE users SET status = ?, updated_at = ? WHERE id = ?').run(status, nowIso(), userId);
   if (status === 'suspended') db.prepare('DELETE FROM sessions WHERE user_id = ?').run(userId);
   audit({ userId: req.currentUser!.id, action: 'user.status', entity: 'user', entityId: userId, ip: req.ip, meta: { status } });
-  flash(req, 'success', status === 'suspended' ? 'Da khoa tai khoan.' : 'Da mo khoa tai khoan.');
+  flash(req, 'success', status === 'suspended' ? 'Đã khóa tài khoản.' : 'Đã mở khóa tài khoản.');
   res.redirect('/admin/nguoi-dung');
 });
 
@@ -673,12 +673,12 @@ router.get('/nhat-ky-api', (req, res) => {
   const rows = onlyErrors
     ? db.prepare('SELECT * FROM api_logs WHERE ok = 0 ORDER BY id DESC LIMIT 200').all()
     : db.prepare('SELECT * FROM api_logs ORDER BY id DESC LIMIT 200').all();
-  res.render('admin/api-logs', { title: 'Nhat ky goi API', logs: rows, onlyErrors });
+  res.render('admin/api-logs', { title: 'Nhật ký gọi API', logs: rows, onlyErrors });
 });
 
 router.get('/giao-dich', (_req, res) => {
   res.render('admin/bank-transactions', {
-    title: 'Doi soat ngan hang',
+    title: 'Đối soát ngân hàng',
     transactions: db.prepare('SELECT * FROM bank_transactions ORDER BY id DESC LIMIT 200').all(),
   });
 });
@@ -687,7 +687,7 @@ router.get('/giao-dich', (_req, res) => {
 router.get('/zns/ket-noi', (req, res) => {
   const cfg = settings.zns();
   if (!cfg.appId || !cfg.secretKey) {
-    flash(req, 'error', 'Vui long dien App ID va Secret Key truoc khi ket noi.');
+    flash(req, 'error', 'Vui lòng điền App ID và Secret Key trước khi kết nối.');
     return res.redirect('/admin/cau-hinh');
   }
 
@@ -706,23 +706,23 @@ router.get(
     delete req.session['znsOauthState'];
 
     if (!luu || state !== luu) {
-      flash(req, 'error', 'Phien ket noi khong hop le hoac da het han. Vui long bam Ket noi lai.');
+      flash(req, 'error', 'Phiên kết nối không hợp lệ hoặc đã hết hạn. Vui lòng bấm Kết nối lại.');
       return res.redirect('/admin/zns');
     }
 
     const oaCode = String(req.query['oa_code'] ?? req.query['code'] ?? '');
     if (!oaCode) {
-      const loi = String(req.query['error_description'] ?? req.query['error'] ?? 'Zalo khong tra ve ma cap quyen');
-      flash(req, 'error', `Ket noi that bai: ${loi}`);
+      const loi = String(req.query['error_description'] ?? req.query['error'] ?? 'Zalo không trả về mã cấp quyền');
+      flash(req, 'error', `Kết nối thất bại: ${loi}`);
       return res.redirect('/admin/zns');
     }
 
     try {
       await exchangeAuthorizationCode(oaCode);
       audit({ userId: req.currentUser!.id, action: 'zns.connected', entity: 'settings', ip: req.ip });
-      flash(req, 'success', 'Da ket noi Zalo OA thanh cong. Tu day he thong tu duy tri token, ban khong phai lam gi them.');
+      flash(req, 'success', 'Đã kết nối Zalo OA thành công. Từ đây hệ thống tự duy trì token, bạn không phải làm gì thêm.');
     } catch (err) {
-      flash(req, 'error', err instanceof Error ? err.message : 'Khong doi duoc token');
+      flash(req, 'error', err instanceof Error ? err.message : 'Không đổi được token');
     }
     res.redirect('/admin/zns');
   }),
@@ -731,7 +731,7 @@ router.get(
 router.get('/zns', (_req, res) => {
   const cfg = settings.zns();
   res.render('admin/zns-logs', {
-    title: 'Nhat ky ZNS',
+    title: 'Nhật ký ZNS',
     logs: db.prepare('SELECT * FROM zns_logs ORDER BY id DESC LIMIT 200').all(),
     ready: isZnsReady(),
     coAppId: Boolean(cfg.appId && cfg.secretKey),
@@ -745,7 +745,7 @@ router.get('/hang-doi', (_req, res) => {
     id: number; type: string; payload: string; status: string; attempts: number; last_error: string; run_after: string;
   }[];
   res.render('admin/jobs', {
-    title: 'Hang doi xu ly',
+    title: 'Hàng đợi xử lý',
     jobs: rows.map((j) => ({ ...j, payloadObj: parseJson<Record<string, unknown>>(j.payload, {}) })),
     stats: jobStats(),
   });
@@ -755,7 +755,7 @@ router.post('/hang-doi/:id/chay-lai', (req, res) => {
   db.prepare(`UPDATE jobs SET status='queued', attempts=0, run_after=?, last_error='' WHERE id=?`)
     .run(nowIso(), Number(req.params.id));
   kickWorker();
-  flash(req, 'info', 'Da dua job vao hang doi chay lai.');
+  flash(req, 'info', 'Đã đưa job vào hàng đợi chạy lại.');
   res.redirect('/admin/hang-doi');
 });
 
@@ -764,7 +764,7 @@ router.post('/hang-doi/chay-ngay', (req, res) => {
   if (type) {
     enqueue(type as never, {}, { maxAttempts: 1 });
     kickWorker();
-    flash(req, 'info', `Da xep lich chay "${type}".`);
+    flash(req, 'info', `Đã xếp lịch chạy "${type}".`);
   }
   res.redirect('/admin/hang-doi');
 });
