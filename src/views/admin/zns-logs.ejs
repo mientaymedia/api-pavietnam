@@ -2,36 +2,36 @@
 <%- include('../partials/header') %>
 <div class="container">
   <%- include('../partials/flash') %>
-  <h1>Nhat ky ZNS</h1>
+  <h1>Nhật ký ZNS</h1>
   <%- include('../partials/admin-nav') %>
 
   <div class="card">
     <div class="card-title">
-      <h2>Ket noi Zalo Official Account</h2>
-      <span class="badge <%= daKetNoi ? 'badge-ok' : 'badge-warn' %>"><%= daKetNoi ? 'Da ket noi' : 'Chua ket noi' %></span>
+      <h2>Kết nối Zalo Official Account</h2>
+      <span class="badge <%= daKetNoi ? 'badge-ok' : 'badge-warn' %>"><%= daKetNoi ? 'Đã kết nối' : 'Chưa kết nối' %></span>
     </div>
 
     <% if (!coAppId) { %>
       <p class="muted small">
-        Buoc 1: vao <a href="<%= base %>/admin/cau-hinh">Cau hinh Control Panel</a> dien <strong>App ID</strong> va
-        <strong>Secret Key</strong> lay tu developers.zalo.me, roi quay lai day.
+        Bước 1: vào <a href="<%= base %>/admin/cau-hinh">Cấu hình Control Panel</a> điền <strong>App ID</strong> và
+        <strong>Secret Key</strong> lấy từ developers.zalo.me, rồi quay lại đây.
       </p>
     <% } else { %>
       <p class="muted small">
-        Bam nut duoi day, Zalo se hoi ban cho phep ung dung truy cap Official Account.
-        Cho phep xong, he thong <strong>tu lay va tu duy tri token</strong> - ban khong phai
-        sao chep refresh token bang tay, cung khong phai lam lai dinh ky.
+        Bấm nút dưới đây, Zalo sẽ hỏi bạn cho phép ứng dụng truy cập Official Account.
+        Cho phép xong, hệ thống <strong>tự lấy và tự duy trì token</strong> - bạn không phải
+        sao chép refresh token bằng tay, cũng không phải làm lại định kỳ.
       </p>
       <div class="copy-row" style="margin-bottom:12px">
-        <span class="label">Dia chi callback (khai bao trong Zalo neu duoc hoi)</span>
+        <span class="label">Địa chỉ callback (khai báo trong Zalo nếu được hỏi)</span>
         <span class="value"><%= callbackUrl %>
-          <button type="button" class="btn-link tiny" data-copy="<%= callbackUrl %>">chep</button></span>
+          <button type="button" class="btn-link tiny" data-copy="<%= callbackUrl %>">chép</button></span>
       </div>
-      <a class="btn" href="<%= base %>/admin/zns/ket-noi"><%= daKetNoi ? 'Ket noi lai' : 'Ket noi Zalo OA' %></a>
+      <a class="btn" href="<%= base %>/admin/zns/ket-noi"><%= daKetNoi ? 'Kết nối lại' : 'Kết nối Zalo OA' %></a>
       <% if (daKetNoi) { %>
         <p class="tiny muted" style="margin:10px 0 0">
-          Chi ket noi lai khi token bi hong (Nhat ky bao loi -124/-125 lien tuc)
-          hoac khi doi sang Official Account khac.
+          Chỉ kết nối lại khi token bị hỏng (Nhật ký báo lỗi -124/-125 liên tục)
+          hoặc khi đổi sang Official Account khác.
         </p>
       <% } %>
     <% } %>
@@ -39,26 +39,26 @@
 
   <% if (!ready) { %>
     <div class="alert alert-warn">
-      ZNS chua san sang. Can du ba thu: <strong>bat ZNS</strong>, <strong>App ID + Secret Key</strong>,
-      va <strong>ket noi Zalo OA</strong> o tren. Sau do khai template ID cho tung su kien
-      trong <a href="<%= base %>/admin/cau-hinh">Cau hinh Control Panel</a>.
+      ZNS chưa sẵn sàng. Cần đủ ba thứ: <strong>bật ZNS</strong>, <strong>App ID + Secret Key</strong>,
+      và <strong>kết nối Zalo OA</strong> ở trên. Sau đó khai template ID cho từng sự kiện
+      trong <a href="<%= base %>/admin/cau-hinh">Cấu hình Control Panel</a>.
     </div>
   <% } %>
 
   <div class="card">
     <p class="muted small">
-      Moi lan gui deu duoc ghi lai, ke ca truong hop bi bo qua (khach khong co so dien thoai,
-      chua khai template ID). Xem cot <em>Ket qua</em> de biet ly do.
+      Mỗi lần gửi đều được ghi lại, kể cả trường hợp bị bỏ qua (khách không có số điện thoại,
+      chưa khai template ID). Xem cột <em>Kết quả</em> để biết lý do.
     </p>
 
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Thoi gian</th><th>Su kien</th><th>So dien thoai</th><th>Template</th><th>Ket qua</th><th>Ghi chu</th></tr>
+          <tr><th>Thời gian</th><th>Sự kiện</th><th>Số điện thoại</th><th>Template</th><th>Kết quả</th><th>Ghi chú</th></tr>
         </thead>
         <tbody>
           <% if (!logs.length) { %>
-            <tr><td colspan="6" class="muted center">Chua gui tin ZNS nao.</td></tr>
+            <tr><td colspan="6" class="muted center">Chưa gửi tin ZNS nào.</td></tr>
           <% } %>
           <% logs.forEach(function (l) { %>
             <tr>
@@ -68,7 +68,7 @@
               <td class="tiny mono muted"><%= l.template_id || '-' %></td>
               <td>
                 <span class="badge <%= l.status === 'sent' ? 'badge-ok' : l.status === 'skipped' ? 'badge-muted' : 'badge-danger' %>">
-                  <%= l.status === 'sent' ? 'Da gui' : l.status === 'skipped' ? 'Bo qua' : 'That bai' %>
+                  <%= l.status === 'sent' ? 'Đã gửi' : l.status === 'skipped' ? 'Bỏ qua' : 'Thất bại' %>
                 </span>
                 <% if (l.msg_id) { %><div class="tiny muted mono"><%= l.msg_id %></div><% } %>
               </td>

@@ -2,18 +2,18 @@
 <%- include('../partials/header') %>
 <div class="container">
   <%- include('../partials/flash') %>
-  <h1>Hang doi xu ly</h1>
+  <h1>Hàng đợi xử lý</h1>
   <%- include('../partials/admin-nav') %>
 
   <div class="grid grid-4">
-    <div class="stat"><div class="stat-value"><%= stats.queued %></div><div class="stat-label">Dang cho</div></div>
-    <div class="stat"><div class="stat-value"><%= stats.running %></div><div class="stat-label">Dang chay</div></div>
-    <div class="stat"><div class="stat-value"><%= stats.done %></div><div class="stat-label">Hoan tat</div></div>
-    <div class="stat"><div class="stat-value" style="color:<%= stats.failed ? 'var(--danger)' : 'inherit' %>"><%= stats.failed %></div><div class="stat-label">That bai</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.queued %></div><div class="stat-label">Đang chờ</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.running %></div><div class="stat-label">Đang chạy</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.done %></div><div class="stat-label">Hoàn tất</div></div>
+    <div class="stat"><div class="stat-value" style="color:<%= stats.failed ? 'var(--danger)' : 'inherit' %>"><%= stats.failed %></div><div class="stat-label">Thất bại</div></div>
   </div>
 
   <div class="card" style="margin-top:18px">
-    <div class="card-title"><h2>Chay tac vu dinh ky ngay</h2></div>
+    <div class="card-title"><h2>Chạy tác vụ định kỳ ngay</h2></div>
     <div class="row">
       <% ['send_renewal_reminders', 'auto_renew_domains', 'expire_stale_orders', 'reconcile_sepay', 'sync_domains_due'].forEach(function (t) { %>
         <form method="post" action="<%= base %>/admin/hang-doi/chay-ngay">
@@ -28,7 +28,7 @@
   <div class="card">
     <div class="table-wrap">
       <table>
-        <thead><tr><th>#</th><th>Loai</th><th>Du lieu</th><th>Trang thai</th><th>Lan thu</th><th>Loi gan nhat</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>Loại</th><th>Dữ liệu</th><th>Trạng thái</th><th>Lần thử</th><th>Lỗi gần nhất</th><th></th></tr></thead>
         <tbody>
           <% jobs.forEach(function (j) { %>
             <tr>
@@ -44,7 +44,7 @@
                 <% if (j.status === 'failed') { %>
                   <form method="post" action="<%= base %>/admin/hang-doi/<%= j.id %>/chay-lai">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <button class="btn btn-sm btn-outline" type="submit">Chay lai</button>
+                    <button class="btn btn-sm btn-outline" type="submit">Chạy lại</button>
                   </form>
                 <% } %>
               </td>

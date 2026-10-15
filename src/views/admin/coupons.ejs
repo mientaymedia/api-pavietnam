@@ -2,86 +2,86 @@
 <%- include('../partials/header') %>
 <div class="container">
   <%- include('../partials/flash') %>
-  <h1>Ma giam gia</h1>
+  <h1>Mã giảm giá</h1>
   <%- include('../partials/admin-nav') %>
 
   <div class="card">
-    <div class="card-title"><h2>Tao / cap nhat ma</h2></div>
-    <p class="muted small" style="margin-top:-6px">Nhap lai mot ma da co se cap nhat ma do.</p>
+    <div class="card-title"><h2>Tạo / cập nhật mã</h2></div>
+    <p class="muted small" style="margin-top:-6px">Nhập lại một mã đã có sẽ cập nhật mã đó.</p>
 
     <form method="post" action="<%= base %>/admin/ma-giam-gia">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <div class="grid grid-4" style="gap:0 14px">
         <div class="field">
-          <label><span class="field-name">Ma giam gia</span>
+          <label><span class="field-name">Mã giảm giá</span>
           <input type="text" name="code" placeholder="TETVUI2027" required style="text-transform:uppercase">
-          <div class="hint">Chu, so, gach ngang - 3 den 30 ky tu</div>
+          <div class="hint">Chữ, số, gạch ngang - 3 đến 30 ký tự</div>
         </div>
         <div class="field">
-          <label><span class="field-name">Kieu giam</span>
+          <label><span class="field-name">Kiểu giảm</span>
           <select name="discount_type"></label>
-            <option value="percent">Theo phan tram (%)</option>
-            <option value="fixed">So tien co dinh (VND)</option>
+            <option value="percent">Theo phần trăm (%)</option>
+            <option value="fixed">Số tiền cố định (VND)</option>
           </select></label>
         </div>
         <div class="field">
-          <label><span class="field-name">Muc giam</span>
+          <label><span class="field-name">Mức giảm</span>
           <input type="number" name="value" placeholder="10" required></label>
-          <div class="hint">10 = giam 10% hoac 10 VND tuy kieu tren</div>
+          <div class="hint">10 = giảm 10% hoặc 10 VND tùy kiểu trên</div>
         </div>
         <div class="field">
-          <label><span class="field-name">Giam toi da (VND)</span>
+          <label><span class="field-name">Giảm tối đa (VND)</span>
           <input type="number" name="max_discount" value="0"></label>
-          <div class="hint">0 = khong gioi han</div>
+          <div class="hint">0 = không giới hạn</div>
         </div>
 
         <div class="field">
-          <label><span class="field-name">Don toi thieu (VND)</span>
+          <label><span class="field-name">Đơn tối thiểu (VND)</span>
           <input type="number" name="min_amount" value="0"></label>
         </div>
         <div class="field">
-          <label><span class="field-name">Gioi han luot dung</span>
+          <label><span class="field-name">Giới hạn lượt dùng</span>
           <input type="number" name="max_uses" value="0"></label>
-          <div class="hint">0 = khong gioi han</div>
+          <div class="hint">0 = không giới hạn</div>
         </div>
         <div class="field">
-          <label><span class="field-name">Bat dau</span>
+          <label><span class="field-name">Bắt đầu</span>
           <input type="date" name="starts_at"></label>
         </div>
         <div class="field">
-          <label><span class="field-name">Ket thuc</span>
+          <label><span class="field-name">Kết thúc</span>
           <input type="date" name="expires_at"></label>
         </div>
       </div>
 
       <div class="field">
-        <label><span class="field-name">Chi ap dung cho duoi (de trong = tat ca)</span>
+        <label><span class="field-name">Chỉ áp dụng cho đuôi (để trống = tất cả)</span>
         <input type="text" name="tld_filter" placeholder="vn,com.vn"></label>
         <div class="hint">
-          Cach nhau bang dau phay. Duoi dang ban:
+          Cách nhau bằng dấu phẩy. Đuôi đang bán:
           <%= tlds.filter(function (t) { return t.is_active; }).map(function (t) { return t.tld; }).join(', ') %>
         </div>
       </div>
 
       <label class="check" style="margin-bottom:14px">
         <input type="checkbox" name="is_active" value="1" checked>
-        <span>Kich hoat ngay</span>
+        <span>Kích hoạt ngay</span>
       </label>
 
-      <button class="btn" type="submit">Luu ma giam gia</button>
+      <button class="btn" type="submit">Lưu mã giảm giá</button>
     </form>
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Danh sach (<%= coupons.length %>)</h2></div>
+    <div class="card-title"><h2>Danh sách (<%= coupons.length %>)</h2></div>
     <% if (!coupons.length) { %>
-      <p class="muted small">Chua co ma giam gia nao.</p>
+      <p class="muted small">Chưa có mã giảm giá nào.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Ma</th><th>Muc giam</th><th>Dieu kien</th><th>Hieu luc</th><th>Da dung</th><th>Trang thai</th><th></th></tr>
+            <tr><th>Mã</th><th>Mức giảm</th><th>Điều kiện</th><th>Hiệu lực</th><th>Đã dùng</th><th>Trạng thái</th><th></th></tr>
           </thead>
           <tbody>
             <% coupons.forEach(function (c) { %>
@@ -89,23 +89,23 @@
                 <td class="mono"><strong><%= c.code %></strong></td>
                 <td>
                   <%= c.discount_type === 'percent' ? c.value + '%' : formatVnd(c.value) %>
-                  <% if (c.max_discount) { %><div class="tiny muted">toi da <%= formatVnd(c.max_discount) %></div><% } %>
+                  <% if (c.max_discount) { %><div class="tiny muted">tối đa <%= formatVnd(c.max_discount) %></div><% } %>
                 </td>
                 <td class="small">
-                  <% if (c.min_amount) { %>Don tu <%= formatVnd(c.min_amount) %><br><% } %>
-                  <% if (c.tld_filter) { %><span class="tiny muted">Duoi: <%= c.tld_filter %></span><% } else { %><span class="tiny muted">Moi duoi</span><% } %>
+                  <% if (c.min_amount) { %>Đơn từ <%= formatVnd(c.min_amount) %><br><% } %>
+                  <% if (c.tld_filter) { %><span class="tiny muted">Đuôi: <%= c.tld_filter %></span><% } else { %><span class="tiny muted">Mọi đuôi</span><% } %>
                 </td>
                 <td class="small">
                   <%= c.starts_at ? c.starts_at.slice(0, 10) : 'Ngay' %>
                   &rarr;
-                  <%= c.expires_at ? c.expires_at.slice(0, 10) : 'Khong han' %>
+                  <%= c.expires_at ? c.expires_at.slice(0, 10) : 'Không hạn' %>
                 </td>
                 <td class="small"><%= c.used_count %><%= c.max_uses ? ' / ' + c.max_uses : '' %></td>
-                <td><span class="badge <%= c.is_active ? 'badge-ok' : 'badge-muted' %>"><%= c.is_active ? 'Dang chay' : 'Tam tat' %></span></td>
+                <td><span class="badge <%= c.is_active ? 'badge-ok' : 'badge-muted' %>"><%= c.is_active ? 'Đang chạy' : 'Tạm tắt' %></span></td>
                 <td class="right">
                   <form method="post" action="<%= base %>/admin/ma-giam-gia/<%= c.id %>/trang-thai">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <button class="btn btn-sm btn-outline" type="submit"><%= c.is_active ? 'Tat' : 'Bat' %></button>
+                    <button class="btn btn-sm btn-outline" type="submit"><%= c.is_active ? 'Tắt' : 'Bật' %></button>
                   </form>
                 </td>
               </tr>

@@ -22,13 +22,13 @@ export const handlers: Record<JobType, Handler> = {
   /** Dang ky / gia han toan bo cac dong cua don hang da thanh toan. */
   async provision_order(payload) {
     const orderId = Number(payload['orderId']);
-    if (!orderId) throw new Error('Thieu orderId');
+    if (!orderId) throw new Error('Thiếu orderId');
     await provisionOrder(orderId);
   },
 
   async provision_item(payload) {
     const itemId = Number(payload['itemId']);
-    if (!itemId) throw new Error('Thieu itemId');
+    if (!itemId) throw new Error('Thiếu itemId');
     await provisionItem(itemId);
     const item = db.prepare('SELECT order_id FROM order_items WHERE id = ?').get(itemId) as { order_id: number } | undefined;
     if (item) refreshOrderStatus(item.order_id);
@@ -164,7 +164,7 @@ export const handlers: Record<JobType, Handler> = {
         domain: domain.domain,
         tld: domain.tld,
         years: 1,
-        note: 'Gia han tu dong',
+        note: 'Gia hạn tự động',
       });
       if (!created.ok) {
         log.warn('auto_renew_order_failed', { domain: domain.domain, error: created.error });
@@ -176,7 +176,7 @@ export const handlers: Record<JobType, Handler> = {
       const order = created.order;
       const email = userEmail(domain.user_id);
 
-      if (debit(domain.user_id, order.total, `auto_renew:${order.code}`, `Gia han tu dong ${domain.domain}`)) {
+      if (debit(domain.user_id, order.total, `auto_renew:${order.code}`, `Gia hạn tự động ${domain.domain}`)) {
         await settlePayment({
           provider: 'balance',
           refCode: order.code,
@@ -223,7 +223,7 @@ export const handlers: Record<JobType, Handler> = {
       .all(cutoff) as { id: number }[];
 
     for (const row of stale) {
-      cancelOrder(row.id, `Qua ${ttlHours} gio khong thanh toan`);
+      cancelOrder(row.id, `Quá ${ttlHours} giờ không thanh toán`);
     }
     if (stale.length) log.info('stale_orders_cancelled', { count: stale.length });
   },

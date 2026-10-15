@@ -64,7 +64,7 @@ export async function call(
   const sandbox = sandboxEnabled();
   if (!sandbox && (!cred.username || !cred.apikey)) {
     throw new RegistrarError(
-      'Chua cau hinh username/API Key cua P.A Viet Nam. Vao Control Panel > Cau hinh API hoac dat PAVIETNAM_USERNAME / PAVIETNAM_APIKEY trong .env.',
+      'Chưa cấu hình username/API Key của P.A Việt Nam. Vào Control Panel > Cấu hình API hoặc đặt PAVIETNAM_USERNAME / PAVIETNAM_APIKEY trong .env.',
       'NO_CREDENTIALS',
     );
   }
@@ -112,10 +112,10 @@ export async function call(
   } catch (err) {
     const durationMs = Date.now() - started;
     const message = err instanceof Error ? err.message : String(err);
-    writeApiLog(action, opts.domainForLog ?? String(params[FIELDS.domain] ?? ''), logged, `LOI: ${message}`, false, durationMs);
+    writeApiLog(action, opts.domainForLog ?? String(params[FIELDS.domain] ?? ''), logged, `LỖI: ${message}`, false, durationMs);
     log.error('pavietnam_call_failed', { action, error: message });
     if (err instanceof RegistrarError) throw err;
-    throw new RegistrarError(`Khong ket noi duoc API P.A Viet Nam: ${message}`, 'NETWORK', raw);
+    throw new RegistrarError(`Không kết nối được API P.A Việt Nam: ${message}`, 'NETWORK', raw);
   }
 }
 
@@ -168,7 +168,7 @@ function writeApiLog(action: string, domain: string, request: string, response: 
 }
 
 function ensureOk(res: RawResult, what: string): RawResult {
-  if (!res.ok) throw new RegistrarError(res.message || `${what} that bai`, res.code, res.raw);
+  if (!res.ok) throw new RegistrarError(res.message || `${what} thất bại`, res.code, res.raw);
   return res;
 }
 
@@ -247,7 +247,7 @@ export async function registerDomain(input: {
     params[FIELDS.ns] = input.nameservers.join(',');
   }
 
-  const res = ensureOk(await call(ACTIONS.register, params, { method: 'POST', domainForLog: d }), `Dang ky ${d}`);
+  const res = ensureOk(await call(ACTIONS.register, params, { method: 'POST', domainForLog: d }), `Đăng ký ${d}`);
   return {
     ...res,
     domain: d,
@@ -261,7 +261,7 @@ export async function renewDomain(domain: string, years: number): Promise<Regist
   const d = normalizeDomain(domain);
   const res = ensureOk(
     await call(ACTIONS.renew, { [FIELDS.domain]: d, [FIELDS.years]: years }, { method: 'POST', domainForLog: d }),
-    `Gia han ${d}`,
+    `Gia hạn ${d}`,
   );
   return {
     ...res,
@@ -297,7 +297,7 @@ export async function transferDomain(input: {
 
   const res = ensureOk(
     await call(ACTIONS.transfer, params, { method: 'POST', domainForLog: d }),
-    `Chuyen ten mien ${d}`,
+    `Chuyển tên miền ${d}`,
   );
   return {
     ...res,
@@ -340,7 +340,7 @@ export async function updateDomainContact(domain: string, contact: RegisterConta
   const d = normalizeDomain(domain);
   return ensureOk(
     await call(ACTIONS.contactSet, { [FIELDS.domain]: d, ...contactParams(contact) }, { method: 'POST', domainForLog: d }),
-    `Cap nhat thong tin lien he ${d}`,
+    `Cập nhật thông tin liên hệ ${d}`,
   );
 }
 
@@ -355,14 +355,14 @@ export async function getAuthCode(domain: string): Promise<{ authCode: string } 
   const d = normalizeDomain(domain);
   const res = ensureOk(
     await call(ACTIONS.authCode, { [FIELDS.domain]: d }, { domainForLog: d }),
-    `Lay ma EPP cua ${d}`,
+    `Lấy mã EPP của ${d}`,
   );
 
   const code = pick(res.data, [...RESPONSE_KEYS.authCode]) ?? '';
   if (!code) {
     throw new RegistrarError(
-      'Nha dang ky khong tra ve ma EPP. Ten mien co the dang bi khoa chuyen doi, ' +
-        'hoac chua qua 60 ngay ke tu lan dang ky/chuyen gan nhat.',
+      'Nhà đăng ký không trả về mã EPP. Tên miền có thể đang bị khóa chuyển đổi, ' +
+        'hoặc chưa quá 60 ngày kể từ lần đăng ký/chuyển gần nhất.',
       'NO_AUTH_CODE',
       res.raw,
     );
@@ -382,7 +382,7 @@ export async function setDomainLock(domain: string, locked: boolean): Promise<Ra
       { [FIELDS.domain]: d, [FIELDS.lock]: locked ? '1' : '0', status: locked ? 'lock' : 'unlock' },
       { method: 'POST', domainForLog: d },
     ),
-    `${locked ? 'Khoa' : 'Mo khoa'} ten mien ${d}`,
+    `${locked ? 'Khóa' : 'Mở khóa'} tên miền ${d}`,
   );
 }
 
@@ -428,13 +428,13 @@ export async function domainInfo(domain: string): Promise<DomainInfo & RawResult
 export async function setNameservers(domain: string, nameservers: string[]): Promise<RawResult> {
   const d = normalizeDomain(domain);
   const list = parseNameservers(nameservers);
-  if (list.length < 2) throw new RegistrarError('Can toi thieu 2 nameserver.', 'VALIDATION');
+  if (list.length < 2) throw new RegistrarError('Cần tối thiểu 2 nameserver.', 'VALIDATION');
 
   const params: Record<string, string> = { [FIELDS.domain]: d, [FIELDS.ns]: list.join(',') };
   list.forEach((ns, i) => {
     params[`${FIELDS.ns}${i + 1}`] = ns;
   });
-  return ensureOk(await call(ACTIONS.nsSet, params, { method: 'POST', domainForLog: d }), `Doi nameserver ${d}`);
+  return ensureOk(await call(ACTIONS.nsSet, params, { method: 'POST', domainForLog: d }), `Đổi nameserver ${d}`);
 }
 
 /** Lay danh sach ban ghi DNS hien tai. */
@@ -460,7 +460,7 @@ export async function setDnsRecords(domain: string, records: DnsRecord[]): Promi
   // Gui kem dang JSON de tuong thich neu API chap nhan tham so `records`
   params['records'] = JSON.stringify(records);
 
-  return ensureOk(await call(ACTIONS.dnsSet, params, { method: 'POST', domainForLog: d }), `Cap nhat DNS ${d}`);
+  return ensureOk(await call(ACTIONS.dnsSet, params, { method: 'POST', domainForLog: d }), `Cập nhật DNS ${d}`);
 }
 
 /** Danh sach ten mien trong tai khoan dai ly (dung de doi soat dinh ky). */

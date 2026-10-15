@@ -2,20 +2,20 @@
 <%- include('../partials/header') %>
 <div class="container">
   <%- include('../partials/flash') %>
-  <h1>Doi soat ngan hang (SePay)</h1>
+  <h1>Đối soát ngân hàng (SePay)</h1>
   <%- include('../partials/admin-nav') %>
 
   <div class="card">
     <p class="muted small">
-      Moi giao dich SePay bao ve deu duoc ghi lai o day, ke ca giao dich khong khop don hang -
-      giup ban tra soat khi khach bao "da chuyen tien roi".
+      Mọi giao dịch SePay báo về đều được ghi lại ở đây, kể cả giao dịch không khớp đơn hàng -
+      giúp bạn tra soát khi khách báo "đã chuyển tiền rồi".
     </p>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Thoi gian</th><th>Ma GD</th><th class="right">So tien</th><th>Noi dung</th><th>Ma don do duoc</th><th>Ket qua</th></tr></thead>
+        <thead><tr><th>Thời gian</th><th>Mã GD</th><th class="right">Số tiền</th><th>Nội dung</th><th>Mã đơn dò được</th><th>Kết quả</th></tr></thead>
         <tbody>
           <% if (!transactions.length) { %>
-            <tr><td colspan="6" class="muted center">Chua nhan giao dich nao. Kiem tra webhook da tro dung URL chua.</td></tr>
+            <tr><td colspan="6" class="muted center">Chưa nhận giao dịch nào. Kiểm tra webhook đã trỏ đúng URL chưa.</td></tr>
           <% } %>
           <% transactions.forEach(function (t) { %>
             <tr>
@@ -27,11 +27,11 @@
               <td>
                 <%
                   var m = {
-                    matched: ['badge-ok', 'Da khop don'],
-                    duplicate: ['badge-muted', 'Trung / da xu ly'],
-                    unmatched: ['badge-warn', 'Khong khop'],
-                    amount_mismatch: ['badge-danger', 'Sai so tien'],
-                    received: ['badge-muted', 'Da nhan']
+                    matched: ['badge-ok', 'Đã khớp đơn'],
+                    duplicate: ['badge-muted', 'Trùng / đã xử lý'],
+                    unmatched: ['badge-warn', 'Không khớp'],
+                    amount_mismatch: ['badge-danger', 'Sai số tiền'],
+                    received: ['badge-muted', 'Đã nhận']
                   }[t.status] || ['badge-muted', t.status];
                 %>
                 <span class="badge <%= m[0] %>"><%= m[1] %></span>

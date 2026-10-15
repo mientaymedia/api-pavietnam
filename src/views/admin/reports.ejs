@@ -3,19 +3,19 @@
 <div class="container">
   <%- include('../partials/flash') %>
   <div class="row-between">
-    <h1>Bao cao kinh doanh</h1>
+    <h1>Báo cáo kinh doanh</h1>
     <div class="row">
-      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/doanh-thu">Xuat doanh thu</a>
-      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/don-hang">Xuat don hang</a>
-      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/ten-mien">Xuat ten mien</a>
+      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/doanh-thu">Xuất doanh thu</a>
+      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/don-hang">Xuất đơn hàng</a>
+      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/ten-mien">Xuất tên miền</a>
     </div>
   </div>
   <%- include('../partials/admin-nav') %>
 
   <div class="alert alert-info tiny">
-    Doanh thu chi tinh cac ten mien <strong>da kich hoat</strong> thuoc don da thanh toan -
-    dong that bai hoac da hoan tien khong duoc tinh. Gia von lay tu bang gia <strong>tai thoi diem xem</strong>,
-    nen neu ban sua gia von thi so lai cua ky cu se thay doi theo.
+    Doanh thu chỉ tính các tên miền <strong>đã kích hoạt</strong> thuộc đơn đã thanh toán -
+    dòng thất bại hoặc đã hoàn tiền không được tính. Giá vốn lấy từ bảng giá <strong>tại thời điểm xem</strong>,
+    nên nếu bạn sửa giá vốn thì số lãi của kỳ cũ sẽ thay đổi theo.
   </div>
 
   <!-- ---------------------------------------------------------- tong quan -->
@@ -26,31 +26,31 @@
     </div>
     <div class="stat">
       <div class="stat-value" style="color:var(--ok)"><%= formatVnd(tongQuan.lai) %></div>
-      <div class="stat-label">Lai gop &middot; <%= tongQuan.tyLeLai %>%</div>
+      <div class="stat-label">Lãi gộp &middot; <%= tongQuan.tyLeLai %>%</div>
     </div>
     <div class="stat">
       <div class="stat-value"><%= tongQuan.soTenMien %></div>
-      <div class="stat-label">Ten mien da ban &middot; <%= tongQuan.soKhachHang %> khach</div>
+      <div class="stat-label">Tên miền đã bán &middot; <%= tongQuan.soKhachHang %> khách</div>
     </div>
     <div class="stat">
       <div class="stat-value"><%= formatVnd(tongQuan.giaTriDonTrungBinh) %></div>
-      <div class="stat-label">Gia tri don trung binh</div>
+      <div class="stat-label">Giá trị đơn trung bình</div>
     </div>
   </div>
 
   <!-- ------------------------------------------------- doanh thu theo thang -->
   <div class="card viz" style="margin-top:18px">
     <div class="card-title">
-      <h2>Doanh thu 12 thang gan nhat</h2>
-      <a class="small" href="<%= base %>/admin/xuat/doanh-thu">Tai CSV</a>
+      <h2>Doanh thu 12 tháng gần nhất</h2>
+      <a class="small" href="<%= base %>/admin/xuat/doanh-thu">Tải CSV</a>
     </div>
 
     <% if (!theoThang.length) { %>
-      <p class="muted center" style="padding:32px 0">Chua co doanh thu nao duoc ghi nhan.</p>
+      <p class="muted center" style="padding:32px 0">Chưa có doanh thu nào được ghi nhận.</p>
     <% } else { %>
       <div class="viz-legend">
-        <span class="viz-key"><span class="viz-swatch" style="background:var(--series-lai)"></span> Lai gop</span>
-        <span class="viz-key"><span class="viz-swatch" style="background:var(--series-von)"></span> Gia von</span>
+        <span class="viz-key"><span class="viz-swatch" style="background:var(--series-lai)"></span> Lãi gộp</span>
+        <span class="viz-key"><span class="viz-swatch" style="background:var(--series-von)"></span> Giá vốn</span>
       </div>
 
       <div class="viz-bars">
@@ -68,9 +68,9 @@
             <div class="viz-tip">
               <b><%= t.thang %></b><br>
               Doanh thu: <b><%= formatVnd(t.doanhThu) %></b><br>
-              Gia von: <%= formatVnd(t.giaVon) %><br>
-              Lai gop: <b><%= formatVnd(t.lai) %></b><br>
-              <%= t.doanhThu === 0 ? 'Khong co doanh thu' : t.soDon + ' don &middot; ' + t.soTenMien + ' ten mien' %>
+              Giá vốn: <%= formatVnd(t.giaVon) %><br>
+              Lãi gộp: <b><%= formatVnd(t.lai) %></b><br>
+              <%= t.doanhThu === 0 ? 'Không có doanh thu' : t.soDon + ' đơn &middot; ' + t.soTenMien + ' tên miền' %>
             </div>
 
             <!-- Chi ghi so tren cot thang cuoi: dat so tren moi cot se roi mat -->
@@ -89,10 +89,10 @@
       </div>
 
       <details style="margin-top:16px">
-        <summary class="small muted" style="cursor:pointer">Xem dang bang so lieu</summary>
+        <summary class="small muted" style="cursor:pointer">Xem dạng bảng số liệu</summary>
         <div class="table-wrap" style="margin-top:10px">
           <table>
-            <thead><tr><th>Thang</th><th class="right">Doanh thu</th><th class="right">Gia von</th><th class="right">Lai gop</th><th class="right">Ty le lai</th><th class="right">Don</th></tr></thead>
+            <thead><tr><th>Tháng</th><th class="right">Doanh thu</th><th class="right">Giá vốn</th><th class="right">Lãi gộp</th><th class="right">Tỷ lệ lãi</th><th class="right">Đơn</th></tr></thead>
             <tbody>
               <% theoThang.slice().reverse().forEach(function (t) { %>
                 <tr>
@@ -114,14 +114,14 @@
   <div class="grid grid-2" style="align-items:start">
     <!-- ------------------------------------------------ doanh thu theo duoi -->
     <div class="card viz">
-      <div class="card-title"><h2>Theo duoi ten mien</h2></div>
+      <div class="card-title"><h2>Theo đuôi tên miền</h2></div>
       <% if (!theoDuoi.length) { %>
-        <p class="muted small">Chua co du lieu.</p>
+        <p class="muted small">Chưa có dữ liệu.</p>
       <% } else { %>
         <% var dinhDuoi = Math.max(1, ...theoDuoi.map(function (d) { return d.doanhThu; })); %>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Duoi</th><th class="right">SL</th><th class="right">Doanh thu</th><th class="right">Lai</th><th style="width:110px"></th></tr></thead>
+            <thead><tr><th>Đuôi</th><th class="right">SL</th><th class="right">Doanh thu</th><th class="right">Lãi</th><th style="width:110px"></th></tr></thead>
             <tbody>
               <% theoDuoi.forEach(function (d) { %>
                 <tr>
@@ -147,25 +147,25 @@
 
     <!-- ----------------------------------------------------- du bao gia han -->
     <div class="card">
-      <div class="card-title"><h2>Du kien doanh thu gia han</h2></div>
-      <p class="muted small" style="margin-top:-6px">Neu toan bo ten mien sap het han deu duoc gia han 1 nam.</p>
+      <div class="card-title"><h2>Dự kiến doanh thu gia hạn</h2></div>
+      <p class="muted small" style="margin-top:-6px">Nếu toàn bộ tên miền sắp hết hạn đều được gia hạn 1 năm.</p>
       <% duBao.forEach(function (m) { %>
         <div class="copy-row">
-          <span class="label">Trong <%= m.soNgay %> ngay toi
-            <div class="tiny muted"><%= m.soTenMien %> ten mien</div>
+          <span class="label">Trong <%= m.soNgay %> ngày tới
+            <div class="tiny muted"><%= m.soTenMien %> tên miền</div>
           </span>
           <span class="value"><%= formatVnd(m.duKienDoanhThu) %></span>
         </div>
       <% }); %>
 
-      <h3 class="section-heading">Tien thuc nhan theo phuong thuc</h3>
+      <h3 class="section-heading">Tiền thực nhận theo phương thức</h3>
       <% if (!phuongThuc.length) { %>
-        <p class="muted small">Chua co giao dich nao.</p>
+        <p class="muted small">Chưa có giao dịch nào.</p>
       <% } else { %>
         <% phuongThuc.forEach(function (p) { %>
           <div class="copy-row">
-            <span class="label"><%= p.provider === 'sepay' ? 'Chuyen khoan (SePay)' : p.provider === 'balance' ? 'So du tai khoan' : p.provider === 'manual' ? 'Xac nhan thu cong' : p.provider %>
-              <div class="tiny muted"><%= p.soGiaoDich %> giao dich</div>
+            <span class="label"><%= p.provider === 'sepay' ? 'Chuyển khoản (SePay)' : p.provider === 'balance' ? 'Số dư tài khoản' : p.provider === 'manual' ? 'Xác nhận thủ công' : p.provider %>
+              <div class="tiny muted"><%= p.soGiaoDich %> giao dịch</div>
             </span>
             <span class="value"><%= formatVnd(p.tongTien) %></span>
           </div>
@@ -174,7 +174,7 @@
 
       <% if (tongQuan.daHoanTien) { %>
         <div class="copy-row" style="border-top:1px solid var(--line); margin-top:6px; padding-top:12px">
-          <span class="label">Da hoan cho khach</span>
+          <span class="label">Đã hoàn cho khách</span>
           <span class="value" style="color:var(--danger)">-<%= formatVnd(tongQuan.daHoanTien) %></span>
         </div>
       <% } %>
@@ -183,17 +183,17 @@
 
   <!-- ------------------------------------------------------- khach hang -->
   <div class="card">
-    <div class="card-title"><h2>Khach hang dong gop nhieu nhat</h2></div>
+    <div class="card-title"><h2>Khách hàng đóng góp nhiều nhất</h2></div>
     <% if (!khachHang.length) { %>
-      <p class="muted small">Chua co du lieu.</p>
+      <p class="muted small">Chưa có dữ liệu.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Khach hang</th><th class="right">Ten mien</th><th class="right">Doanh thu</th></tr></thead>
+          <thead><tr><th>Khách hàng</th><th class="right">Tên miền</th><th class="right">Doanh thu</th></tr></thead>
           <tbody>
             <% khachHang.forEach(function (k) { %>
               <tr>
-                <td><strong><%= k.hoTen || '(chua dat ten)' %></strong><div class="tiny muted"><%= k.email %></div></td>
+                <td><strong><%= k.hoTen || '(chưa đặt tên)' %></strong><div class="tiny muted"><%= k.email %></div></td>
                 <td class="right"><%= k.soTenMien %></td>
                 <td class="right"><%= formatVnd(k.doanhThu) %></td>
               </tr>

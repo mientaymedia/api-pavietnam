@@ -2,57 +2,57 @@
 <%- include('../partials/header') %>
 <div class="container">
   <%- include('../partials/flash') %>
-  <h1>Quan ly bang gia</h1>
+  <h1>Quản lý bảng giá</h1>
   <%- include('../partials/admin-nav') %>
 
   <div class="card">
-    <div class="card-title"><h2>Them / cap nhat duoi ten mien</h2></div>
-    <p class="muted small">Nhap lai mot duoi da co se cap nhat gia cua duoi do. Gia nhap la <strong>gia goc</strong>; he thong tu cong markup va VAT theo cau hinh.</p>
+    <div class="card-title"><h2>Thêm / cập nhật đuôi tên miền</h2></div>
+    <p class="muted small">Nhập lại một đuôi đã có sẽ cập nhật giá của đuôi đó. Giá nhập là <strong>giá gốc</strong>; hệ thống tự cộng markup và VAT theo cấu hình.</p>
     <form method="post" action="<%= base %>/admin/bang-gia">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="grid grid-4" style="gap:0 14px">
-        <div class="field"><label><span class="field-name">Duoi (khong dau cham)</span><input type="text" name="tld" placeholder="com.vn" required></label></div>
-        <div class="field"><label><span class="field-name">Loai</span><select name="kind"></label><option value="intl">Quoc te</option><option value="vn">Viet Nam</option></select></div>
-        <div class="field"><label><span class="field-name">Ten hien thi</span><input type="text" name="label" placeholder="Doanh nghiep Viet Nam"></label></div>
-        <div class="field"><label><span class="field-name">Thu tu sap xep</span><input type="number" name="sort_order" value="100"></label></div>
+        <div class="field"><label><span class="field-name">Đuôi (không dấu chấm)</span><input type="text" name="tld" placeholder="com.vn" required></label></div>
+        <div class="field"><label><span class="field-name">Loại</span><select name="kind"></label><option value="intl">Quốc tế</option><option value="vn">Việt Nam</option></select></div>
+        <div class="field"><label><span class="field-name">Tên hiển thị</span><input type="text" name="label" placeholder="Doanh nghiệp Việt Nam"></label></div>
+        <div class="field"><label><span class="field-name">Thứ tự sắp xếp</span><input type="number" name="sort_order" value="100"></label></div>
 
-        <div class="field"><label><span class="field-name">Gia von dang ky</span><input type="number" name="cost_register" value="0"></label></div>
-        <div class="field"><label><span class="field-name">Gia von gia han</span><input type="number" name="cost_renew" value="0"></label></div>
-        <div class="field"><label><span class="field-name">Gia ban dang ky</span><input type="number" name="price_register" value="0" required></label></div>
-        <div class="field"><label><span class="field-name">Gia ban gia han</span><input type="number" name="price_renew" value="0" required></label></div>
+        <div class="field"><label><span class="field-name">Giá vốn đăng ký</span><input type="number" name="cost_register" value="0"></label></div>
+        <div class="field"><label><span class="field-name">Giá vốn gia hạn</span><input type="number" name="cost_renew" value="0"></label></div>
+        <div class="field"><label><span class="field-name">Giá bán đăng ký</span><input type="number" name="price_register" value="0" required></label></div>
+        <div class="field"><label><span class="field-name">Giá bán gia hạn</span><input type="number" name="price_renew" value="0" required></label></div>
 
-        <div class="field"><label><span class="field-name">Gia chuyen ve</span><input type="number" name="price_transfer" value="0"></label></div>
-        <div class="field"><label><span class="field-name">Phi khoi tao</span><input type="number" name="setup_fee" value="0"></label></div>
+        <div class="field"><label><span class="field-name">Giá chuyển về</span><input type="number" name="price_transfer" value="0"></label></div>
+        <div class="field"><label><span class="field-name">Phí khởi tạo</span><input type="number" name="setup_fee" value="0"></label></div>
         <div class="field"><label><span class="field-name">VAT (%)</span><input type="number" name="vat_percent" value="0"></label></div>
-        <div class="field"><label>Nam toi thieu / toi da</label>
+        <div class="field"><label>Năm tối thiểu / tối đa</label>
           <div class="row" style="gap:6px">
-            <input type="number" name="min_years" value="1" aria-label="So nam toi thieu" style="width:70px">
-            <input type="number" name="max_years" value="10" aria-label="So nam toi da" style="width:70px">
+            <input type="number" name="min_years" value="1" aria-label="Số năm tối thiểu" style="width:70px">
+            <input type="number" name="max_years" value="10" aria-label="Số năm tối đa" style="width:70px">
           </div>
         </div>
       </div>
 
       <div class="row" style="margin-bottom:14px">
-        <label class="check"><input type="checkbox" name="is_active" value="1" checked><span>Dang ban</span></label>
-        <label class="check"><input type="checkbox" name="is_featured" value="1"><span>Noi bat trang chu</span></label>
-        <label class="check"><input type="checkbox" name="requires_vn_contact" value="1"><span>Bat buoc ho so chu the (.vn)</span></label>
+        <label class="check"><input type="checkbox" name="is_active" value="1" checked><span>Đang bán</span></label>
+        <label class="check"><input type="checkbox" name="is_featured" value="1"><span>Nổi bật trang chủ</span></label>
+        <label class="check"><input type="checkbox" name="requires_vn_contact" value="1"><span>Bắt buộc hồ sơ chủ thể (.vn)</span></label>
       </div>
 
-      <button class="btn" type="submit">Luu bang gia</button>
+      <button class="btn" type="submit">Lưu bảng giá</button>
     </form>
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Danh sach duoi (<%= tlds.length %>)</h2></div>
+    <div class="card-title"><h2>Danh sách đuôi (<%= tlds.length %>)</h2></div>
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Duoi</th><th>Loai</th><th class="right">Von DK</th><th class="right">Ban DK</th><th class="right">Ban GH</th><th class="right">Lai/nam</th><th>Trang thai</th></tr>
+          <tr><th>Đuôi</th><th>Loại</th><th class="right">Vốn ĐK</th><th class="right">Bán ĐK</th><th class="right">Bán GH</th><th class="right">Lãi/năm</th><th>Trạng thái</th></tr>
         </thead>
         <tbody>
           <% tlds.forEach(function (t) { %>
             <tr>
-              <td><strong>.<%= t.tld %></strong><% if (t.requires_vn_contact) { %> <span class="badge badge-info tiny">chu the</span><% } %></td>
+              <td><strong>.<%= t.tld %></strong><% if (t.requires_vn_contact) { %> <span class="badge badge-info tiny">chủ thể</span><% } %></td>
               <td><span class="badge badge-muted"><%= t.kind %></span></td>
               <td class="right small muted"><%= formatVnd(t.cost_register) %></td>
               <td class="right"><%= formatVnd(t.price_register) %></td>
@@ -61,8 +61,8 @@
                 <%= formatVnd(t.price_register - t.cost_register) %>
               </td>
               <td>
-                <span class="badge <%= t.is_active ? 'badge-ok' : 'badge-muted' %>"><%= t.is_active ? 'Dang ban' : 'Tam an' %></span>
-                <% if (t.is_featured) { %><span class="badge badge-info">Noi bat</span><% } %>
+                <span class="badge <%= t.is_active ? 'badge-ok' : 'badge-muted' %>"><%= t.is_active ? 'Đang bán' : 'Tạm ẩn' %></span>
+                <% if (t.is_featured) { %><span class="badge badge-info">Nổi bật</span><% } %>
               </td>
             </tr>
           <% }); %>

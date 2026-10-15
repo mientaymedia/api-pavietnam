@@ -2,31 +2,31 @@
 <%- include('../partials/header') %>
 <div class="container">
   <%- include('../partials/flash') %>
-  <h1>Quan tri he thong</h1>
+  <h1>Quản trị hệ thống</h1>
   <%- include('../partials/admin-nav') %>
 
   <div class="grid grid-3">
-    <div class="stat"><div class="stat-value"><%= stats.users %></div><div class="stat-label">Khach hang</div></div>
-    <div class="stat"><div class="stat-value"><%= stats.activeDomains %>/<%= stats.domains %></div><div class="stat-label">Ten mien dang hoat dong</div></div>
-    <div class="stat"><div class="stat-value"><%= formatVnd(stats.revenue) %></div><div class="stat-label">Doanh thu da thanh toan</div></div>
-    <div class="stat"><div class="stat-value" style="color:var(--warn)"><%= stats.pendingOrders %></div><div class="stat-label">Don cho thanh toan</div></div>
-    <div class="stat"><div class="stat-value" style="color:<%= stats.failedItems ? 'var(--danger)' : 'inherit' %>"><%= stats.failedItems %></div><div class="stat-label">Dong don that bai</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.users %></div><div class="stat-label">Khách hàng</div></div>
+    <div class="stat"><div class="stat-value"><%= stats.activeDomains %>/<%= stats.domains %></div><div class="stat-label">Tên miền đang hoạt động</div></div>
+    <div class="stat"><div class="stat-value"><%= formatVnd(stats.revenue) %></div><div class="stat-label">Doanh thu đã thanh toán</div></div>
+    <div class="stat"><div class="stat-value" style="color:var(--warn)"><%= stats.pendingOrders %></div><div class="stat-label">Đơn chờ thanh toán</div></div>
+    <div class="stat"><div class="stat-value" style="color:<%= stats.failedItems ? 'var(--danger)' : 'inherit' %>"><%= stats.failedItems %></div><div class="stat-label">Dòng đơn thất bại</div></div>
     <div class="stat">
       <div class="stat-value" style="color:<%= stats.ownershipPending ? 'var(--warn)' : 'inherit' %>"><%= stats.ownershipPending %></div>
-      <div class="stat-label"><a href="<%= base %>/admin/doi-chu-the">Ho so doi chu the cho xu ly</a></div>
+      <div class="stat-label"><a href="<%= base %>/admin/doi-chu-the">Hồ sơ đổi chủ thể chờ xử lý</a></div>
     </div>
     <div class="stat">
       <div class="stat-value"><%= jobs.queued %></div>
-      <div class="stat-label">Job dang cho<% if (jobs.failed) { %> &middot; <span style="color:var(--danger)"><%= jobs.failed %> loi</span><% } %></div>
+      <div class="stat-label">Job đang chờ<% if (jobs.failed) { %> &middot; <span style="color:var(--danger)"><%= jobs.failed %> lỗi</span><% } %></div>
     </div>
   </div>
 
   <div class="grid grid-2" style="margin-top:18px">
     <div class="card">
-      <div class="card-title"><h2>Don hang moi</h2><a class="small" href="<%= base %>/admin/don-hang">Tat ca</a></div>
+      <div class="card-title"><h2>Đơn hàng mới</h2><a class="small" href="<%= base %>/admin/don-hang">Tất cả</a></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Ma don</th><th>Trang thai</th><th class="right">Tien</th></tr></thead>
+          <thead><tr><th>Mã đơn</th><th>Trạng thái</th><th class="right">Tiền</th></tr></thead>
           <tbody>
             <% recentOrders.forEach(function (o) { %>
               <tr>
@@ -41,9 +41,9 @@
     </div>
 
     <div class="card">
-      <div class="card-title"><h2>Loi API gan day</h2><a class="small" href="<%= base %>/admin/nhat-ky-api?loi=1">Tat ca</a></div>
+      <div class="card-title"><h2>Lỗi API gần đây</h2><a class="small" href="<%= base %>/admin/nhat-ky-api?loi=1">Tất cả</a></div>
       <% if (!recentErrors.length) { %>
-        <p class="muted small">Khong co loi nao. He thong dang ket noi tot.</p>
+        <p class="muted small">Không có lỗi nào. Hệ thống đang kết nối tốt.</p>
       <% } else { %>
         <% recentErrors.forEach(function (l) { %>
           <div style="padding:8px 0; border-bottom:1px solid var(--line)">

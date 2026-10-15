@@ -23,7 +23,7 @@ async function drain(): Promise<void> {
 
       const handler = handlers[job.type];
       if (!handler) {
-        failJob(job, `Khong co handler cho job "${job.type}"`);
+        failJob(job, `Không có handler cho job "${job.type}"`);
         continue;
       }
 

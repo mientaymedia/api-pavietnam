@@ -2,21 +2,21 @@
 <%- include('../partials/header') %>
 <div class="container">
   <%- include('../partials/flash') %>
-  <h1>Quan ly don hang</h1>
+  <h1>Quản lý đơn hàng</h1>
   <%- include('../partials/admin-nav') %>
 
   <div class="card">
     <div class="row" style="margin-bottom:14px">
       <% ['', 'pending_payment', 'paid', 'processing', 'completed', 'failed', 'cancelled'].forEach(function (s) { %>
         <a class="btn btn-sm <%= status === s ? '' : 'btn-outline' %>" href="<%= base %>/admin/don-hang<%= s ? '?status=' + s : '' %>">
-          <%= s === '' ? 'Tat ca' : s %>
+          <%= s === '' ? 'Tất cả' : s %>
         </a>
       <% }); %>
     </div>
 
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Ma don</th><th>Ngay</th><th>Trang thai</th><th class="right">Tong tien</th><th></th></tr></thead>
+        <thead><tr><th>Mã đơn</th><th>Ngày</th><th>Trạng thái</th><th class="right">Tổng tiền</th><th></th></tr></thead>
         <tbody>
           <% orders.forEach(function (o) { %>
             <tr>

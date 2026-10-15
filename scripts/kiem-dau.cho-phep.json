@@ -12,5 +12,13 @@
   { "tep": "src/payments/sepay.ts", "chua": "Token webhook khong hop le", "ly_do": "Thông điệp verifyIpn; webhooks.ts dựa vào chữ \"Token\" để trả 401 (spec 3.2, 3.4)" },
   { "tep": "src/payments/sepay.ts", "chua": "Khong doc duoc du lieu giao dich", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" },
   { "tep": "src/payments/sepay.ts", "chua": "Bo qua giao dich chuyen di", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" },
-  { "tep": "src/payments/sepay.ts", "chua": "Khong tim thay ma don trong noi dung chuyen khoan", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" }
+  { "tep": "src/payments/sepay.ts", "chua": "Khong tim thay ma don trong noi dung chuyen khoan", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" },
+  { "tep": "src/services/reports.ts", "chua": "Doanh thu", "ly_do": "Đúng chính tả: \"Doanh thu\" vốn không có dấu" },
+  { "tep": "src/views/admin/reports.ejs", "chua": "Doanh thu", "ly_do": "Đúng chính tả: \"Doanh thu\" vốn không có dấu" },
+  { "tep": "src/pavietnam/client.ts", "chua": "Domain da duoc dang ky", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
+  { "tep": "src/pavietnam/client.ts", "chua": "Thanh cong (sandbox)", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
+  { "tep": "src/pavietnam/client.ts", "chua": "Registrar: P.A Viet Nam (sandbox)", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
+  { "tep": "src/pavietnam/client.ts", "chua": "123 Le Loi", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
+  { "tep": "src/pavietnam/client.ts", "chua": "Da cap nhat thong tin lien he", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
+  { "tep": "src/pavietnam/client.ts", "chua": "Da cap nhat trang thai khoa", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" }
 ]

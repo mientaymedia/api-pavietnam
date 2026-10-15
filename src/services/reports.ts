@@ -251,7 +251,7 @@ export function xuatDonHang(): string {
     .all() as Record<string, string | number>[];
 
   return toCsv(
-    ['Ma don', 'Ngay tao', 'Ngay thanh toan', 'Trang thai don', 'Email khach', 'Ten mien', 'Dich vu', 'So nam', 'Thanh tien', 'Trang thai dong'],
+    ['Mã đơn', 'Ngày tạo', 'Ngày thanh toán', 'Trạng thái đơn', 'Email khách', 'Tên miền', 'Dịch vụ', 'Số năm', 'Thành tiền', 'Trạng thái dòng'],
     rows.map((r) => [
       r['code'] ?? '', r['created_at'] ?? '', r['paid_at'] ?? '', r['status'] ?? '', r['email'] ?? '',
       r['domain'] ?? '', r['action'] ?? '', r['years'] ?? '', r['amount'] ?? '', r['trangThaiDong'] ?? '',
@@ -272,10 +272,10 @@ export function xuatTenMien(): string {
     .all() as Record<string, string | number | null>[];
 
   return toCsv(
-    ['Ten mien', 'Duoi', 'Trang thai', 'Ngay dang ky', 'Ngay het han', 'Tu gia han', 'Khoa chuyen doi', 'Email tai khoan', 'Chu the', 'To chuc', 'Ma so thue', 'CMND/CCCD'],
+    ['Tên miền', 'Đuôi', 'Trạng thái', 'Ngày đăng ký', 'Ngày hết hạn', 'Tự gia hạn', 'Khóa chuyển đổi', 'Email tài khoản', 'Chủ thể', 'Tổ chức', 'Mã số thuế', 'CMND/CCCD'],
     rows.map((r) => [
       r['domain'], r['tld'], r['status'], r['registered_at'], r['expires_at'],
-      r['auto_renew'] ? 'Co' : 'Khong', r['transfer_lock'] ? 'Co' : 'Khong',
+      r['auto_renew'] ? 'Có' : 'Không', r['transfer_lock'] ? 'Có' : 'Không',
       r['email'], r['full_name'], r['org_name'], r['tax_code'], r['id_number'],
     ]),
   );
@@ -283,7 +283,7 @@ export function xuatTenMien(): string {
 
 export function xuatDoanhThu(soThang = 24): string {
   return toCsv(
-    ['Thang', 'Doanh thu', 'Gia von', 'Lai', 'Ty le lai (%)', 'So don', 'So ten mien'],
+    ['Tháng', 'Doanh thu', 'Giá vốn', 'Lãi', 'Tỷ lệ lãi (%)', 'Số đơn', 'Số tên miền'],
     doanhThuTheoThang(soThang).map((r) => [
       r.thang, r.doanhThu, r.giaVon, r.lai,
       r.doanhThu > 0 ? Math.round((r.lai / r.doanhThu) * 100) : 0,
