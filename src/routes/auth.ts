@@ -17,7 +17,7 @@ const router = Router();
 
 const registerSchema = z
   .object({
-    full_name: z.string().trim().min(2, 'Vui long nhap ho ten').max(120),
+    full_name: z.string().trim().min(2, 'Vui lòng nhập họ tên').max(120),
     email: emailSchema,
     phone: phoneSchema,
     password: passwordSchema,
@@ -25,7 +25,7 @@ const registerSchema = z
   })
   .refine((v) => v.password === v.password_confirm, {
     path: ['password_confirm'],
-    message: 'Mat khau nhap lai khong khop',
+    message: 'Mật khẩu nhập lại không khớp',
   });
 
 /**
@@ -60,17 +60,17 @@ function safeNext(value: unknown): string {
 
 router.get('/dang-ky', (req, res) => {
   if (req.currentUser) return res.redirect('/dashboard');
-  res.render('auth/register', { title: 'Dang ky tai khoan', values: {}, errors: {} });
+  res.render('auth/register', { title: 'Đăng ký tài khoản', values: {}, errors: {} });
 });
 
 router.post(
   '/dang-ky',
-  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Qua nhieu lan dang ky tu IP nay. Vui long thu lai sau.' }),
+  rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Quá nhiều lần đăng ký từ IP này. Vui lòng thử lại sau.' }),
   wrap(async (req, res) => {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
       res.status(422).render('auth/register', {
-        title: 'Dang ky tai khoan',
+        title: 'Đăng ký tài khoản',
         values: req.body,
         errors: fieldErrors(parsed.error),
       });
@@ -81,9 +81,9 @@ router.post(
     const exists = db.prepare('SELECT 1 FROM users WHERE email = ? COLLATE NOCASE').get(email);
     if (exists) {
       res.status(422).render('auth/register', {
-        title: 'Dang ky tai khoan',
+        title: 'Đăng ký tài khoản',
         values: req.body,
-        errors: { email: 'Email nay da duoc dang ky' },
+        errors: { email: 'Email này đã được đăng ký' },
       });
       return;
     }
@@ -106,14 +106,14 @@ router.post(
     // -> khach khong nhan hai email cung luc.
     void sendEmailVerification({ id: userId, email, full_name }, issueToken({ id: userId, email }));
 
-    flash(req, 'success', `Tao tai khoan thanh cong. Chung toi da gui email xac thuc toi ${email}.`);
+    flash(req, 'success', `Tạo tài khoản thành công. Chúng tôi đã gửi email xác thực tới ${email}.`);
     res.redirect(safeNext(req.body?.next));
   }),
 );
 
 router.get('/dang-nhap', (req, res) => {
   if (req.currentUser) return res.redirect('/dashboard');
-  res.render('auth/login', { title: 'Dang nhap', values: {}, errors: {}, next: req.query['next'] ?? '' });
+  res.render('auth/login', { title: 'Đăng nhập', values: {}, errors: {}, next: req.query['next'] ?? '' });
 });
 
 router.post(
@@ -122,7 +122,7 @@ router.post(
     windowMs: 15 * 60_000,
     max: 15,
     key: (req) => `${req.ip}:${String((req.body as Record<string, unknown>)?.['email'] ?? '')}`,
-    message: 'Sai thong tin dang nhap qua nhieu lan. Vui long thu lai sau 15 phut.',
+    message: 'Sai thông tin đăng nhập quá nhiều lần. Vui lòng thử lại sau 15 phút.',
   }),
   wrap(async (req, res) => {
     const email = String(req.body?.email ?? '').trim().toLowerCase();
@@ -135,9 +135,9 @@ router.post(
     // Thong bao chung chung: khong tiet lo email nao ton tai
     if (!user || !verifyPassword(password, user.password_hash)) {
       res.status(401).render('auth/login', {
-        title: 'Dang nhap',
+        title: 'Đăng nhập',
         values: { email },
-        errors: { _: 'Email hoac mat khau khong dung' },
+        errors: { _: 'Email hoặc mật khẩu không đúng' },
         next: req.body?.next ?? '',
       });
       return;
@@ -145,9 +145,9 @@ router.post(
 
     if (user.status === 'suspended') {
       res.status(403).render('auth/login', {
-        title: 'Dang nhap',
+        title: 'Đăng nhập',
         values: { email },
-        errors: { _: 'Tai khoan da bi tam khoa. Vui long lien he ho tro.' },
+        errors: { _: 'Tài khoản đã bị tạm khóa. Vui lòng liên hệ hỗ trợ.' },
         next: '',
       });
       return;
@@ -194,10 +194,10 @@ function layChoXacThuc(req: import('express').Request): ChoXacThuc | null {
 router.get('/dang-nhap/hai-lop', (req, res) => {
   if (req.currentUser) return res.redirect('/dashboard');
   if (!layChoXacThuc(req)) {
-    flash(req, 'error', 'Phien xac thuc da het han. Vui long dang nhap lai.');
+    flash(req, 'error', 'Phiên xác thực đã hết hạn. Vui lòng đăng nhập lại.');
     return res.redirect('/dang-nhap');
   }
-  res.render('auth/two-factor', { title: 'Xac thuc hai lop', errors: {} });
+  res.render('auth/two-factor', { title: 'Xác thực hai lớp', errors: {} });
 });
 
 router.post(
@@ -206,12 +206,12 @@ router.post(
     windowMs: 15 * 60_000,
     max: 10,
     key: (req) => `${req.ip}:${String((req.session?.pending2fa as ChoXacThuc | undefined)?.userId ?? '')}`,
-    message: 'Nhap sai ma qua nhieu lan. Vui long thu lai sau 15 phut.',
+    message: 'Nhập sai mã quá nhiều lần. Vui lòng thử lại sau 15 phút.',
   }),
   wrap(async (req, res) => {
     const cho = layChoXacThuc(req);
     if (!cho) {
-      flash(req, 'error', 'Phien xac thuc da het han. Vui long dang nhap lai.');
+      flash(req, 'error', 'Phiên xác thực đã hết hạn. Vui lòng đăng nhập lại.');
       return res.redirect('/dang-nhap');
     }
 
@@ -219,8 +219,8 @@ router.post(
     if (!kq.ok) {
       audit({ userId: cho.userId, action: 'user.2fa_failed', entity: 'user', entityId: cho.userId, ip: req.ip });
       res.status(401).render('auth/two-factor', {
-        title: 'Xac thuc hai lop',
-        errors: { _: 'Ma khong dung hoac da het han. Hay lay ma moi nhat trong ung dung.' },
+        title: 'Xác thực hai lớp',
+        errors: { _: 'Mã không đúng hoặc đã hết hạn. Hãy lấy mã mới nhất trong ứng dụng.' },
       });
       return;
     }
@@ -232,7 +232,7 @@ router.post(
     audit({ userId: cho.userId, action: 'user.login', entity: 'user', entityId: cho.userId, ip: req.ip, meta: { twoFactor: kq.duPhong ? 'ma_du_phong' : 'ung_dung' } });
 
     if (kq.duPhong) {
-      flash(req, 'info', `Ban vua dung mot ma du phong, con lai ${kq.conLai ?? 0} ma. Nen tao bo ma moi trong muc Bao mat.`);
+      flash(req, 'info', `Bạn vừa dùng một mã dự phòng, còn lại ${kq.conLai ?? 0} mã. Nên tạo bộ mã mới trong mục Bảo mật.`);
     }
     res.redirect(cho.next || '/dashboard');
   }),
@@ -246,7 +246,7 @@ router.post('/dang-xuat', (req, res) => {
 });
 
 router.get('/quen-mat-khau', (_req, res) => {
-  res.render('auth/forgot', { title: 'Quen mat khau', sent: false });
+  res.render('auth/forgot', { title: 'Quên mật khẩu', sent: false });
 });
 
 router.post(
@@ -266,12 +266,12 @@ router.post(
     }
 
     // Luon bao da gui, du email co ton tai hay khong
-    res.render('auth/forgot', { title: 'Quen mat khau', sent: true });
+    res.render('auth/forgot', { title: 'Quên mật khẩu', sent: true });
   }),
 );
 
 router.get('/dat-lai-mat-khau', (req, res) => {
-  res.render('auth/reset', { title: 'Dat lai mat khau', token: String(req.query['token'] ?? ''), errors: {} });
+  res.render('auth/reset', { title: 'Đặt lại mật khẩu', token: String(req.query['token'] ?? ''), errors: {} });
 });
 
 router.post(
@@ -283,18 +283,18 @@ router.post(
     const confirm = String(req.body?.password_confirm ?? '');
 
     const render = (message: string) =>
-      res.status(422).render('auth/reset', { title: 'Dat lai mat khau', token, errors: { _: message } });
+      res.status(422).render('auth/reset', { title: 'Đặt lại mật khẩu', token, errors: { _: message } });
 
     const check = passwordSchema.safeParse(password);
-    if (!check.success) return render(check.error.issues[0]?.message ?? 'Mat khau khong hop le');
-    if (password !== confirm) return render('Mat khau nhap lai khong khop');
+    if (!check.success) return render(check.error.issues[0]?.message ?? 'Mật khẩu không hợp lệ');
+    if (password !== confirm) return render('Mật khẩu nhập lại không khớp');
 
     const row = db
       .prepare('SELECT id, user_id, expires_at, used_at FROM password_resets WHERE token_hash = ?')
       .get(sha256(token)) as { id: number; user_id: number; expires_at: string; used_at: string | null } | undefined;
 
     if (!row || row.used_at || row.expires_at < nowIso()) {
-      return render('Lien ket khong hop le hoac da het han. Vui long yeu cau lai.');
+      return render('Liên kết không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu lại.');
     }
 
     db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?')
@@ -304,7 +304,7 @@ router.post(
     db.prepare('DELETE FROM sessions WHERE user_id = ?').run(row.user_id);
 
     audit({ userId: row.user_id, action: 'user.password_reset', entity: 'user', entityId: row.user_id, ip: req.ip });
-    flash(req, 'success', 'Doi mat khau thanh cong. Vui long dang nhap lai.');
+    flash(req, 'success', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
     res.redirect('/dang-nhap');
   }),
 );
@@ -326,7 +326,7 @@ router.get(
 
     res.status(outcome.status === 'ok' || outcome.status === 'already_verified' ? 200 : 400);
     res.render('auth/verify-result', {
-      title: 'Xac thuc email',
+      title: 'Xác thực email',
       outcome: outcome.status,
       loggedIn: Boolean(req.currentUser),
     });
@@ -336,18 +336,18 @@ router.get(
 router.post(
   '/gui-lai-xac-thuc',
   requireAuth,
-  rateLimit({ windowMs: 3600_000, max: 10, message: 'Ban da yeu cau gui lai qua nhieu lan. Vui long thu lai sau.' }),
+  rateLimit({ windowMs: 3600_000, max: 10, message: 'Bạn đã yêu cầu gửi lại quá nhiều lần. Vui lòng thử lại sau.' }),
   wrap(async (req, res) => {
     const user = req.currentUser!;
 
     if (isVerified(user.id)) {
-      flash(req, 'info', 'Email cua ban da duoc xac thuc roi.');
+      flash(req, 'info', 'Email của bạn đã được xác thực rồi.');
       return res.redirect('/tai-khoan');
     }
 
     const { allowed, sentLastHour } = canResend(user.id);
     if (!allowed) {
-      flash(req, 'error', `Da gui ${sentLastHour} email xac thuc trong mot gio qua. Vui long doi roi thu lai.`);
+      flash(req, 'error', `Đã gửi ${sentLastHour} email xác thực trong một giờ qua. Vui lòng đợi rồi thử lại.`);
       return res.redirect('/tai-khoan');
     }
 
@@ -360,8 +360,8 @@ router.post(
       req,
       sent ? 'success' : 'error',
       sent
-        ? `Da gui lai email xac thuc toi ${user.email}. Kiem tra ca thu muc spam giup chung toi.`
-        : 'Khong gui duoc email. Vui long lien he ho tro hoac kiem tra cau hinh SMTP.',
+        ? `Đã gửi lại email xác thực tới ${user.email}. Kiểm tra cả thư mục spam giúp chúng tôi.`
+        : 'Không gửi được email. Vui lòng liên hệ hỗ trợ hoặc kiểm tra cấu hình SMTP.',
     );
     res.redirect('/tai-khoan');
   }),

@@ -81,12 +81,12 @@ test('chua bat dau ma xac nhan luon thi bao loi ro rang', () => {
   const u = taoNguoiDung();
   const kq = confirmSetup(u.id, '123456');
   assert.equal(kq.ok, false);
-  assert.match(kq.loi ?? '', /Chua bat dau/);
+  assert.match(kq.loi ?? '', /Chưa bắt đầu/);
 });
 
 test('khong the ghi de khi 2FA da bat', () => {
   const u = batXong();
-  assert.throws(() => beginSetup(u.id, u.email), /dang bat/);
+  assert.throws(() => beginSetup(u.id, u.email), /đang bật/);
   assert.equal(getPendingSetup(u.id, u.email), null);
 });
 
@@ -217,7 +217,7 @@ test('tat khi chua bat thi bao loi', () => {
   const u = taoNguoiDung();
   const kq = disable(u.id, '123456');
   assert.equal(kq.ok, false);
-  assert.match(kq.loi ?? '', /chua duoc bat/);
+  assert.match(kq.loi ?? '', /chưa được bật/);
 });
 
 test('bat lai duoc sau khi tat, va khoa moi khac khoa cu', () => {

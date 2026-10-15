@@ -2,22 +2,22 @@
 <%- include('../partials/header') %>
 <div class="container container-narrow">
   <div class="card">
-    <h1>Dat lai mat khau</h1>
+    <h1>Đặt lại mật khẩu</h1>
     <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
 
     <form method="post" action="<%= base %>/dat-lai-mat-khau">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="token" value="<%= token %>">
       <div class="field">
-        <label for="password"><span class="field-name">Mat khau moi</span>
+        <label for="password"><span class="field-name">Mật khẩu mới</span>
         <input id="password" type="password" name="password" required autofocus autocomplete="new-password"></label>
-        <div class="hint">Toi thieu 8 ky tu.</div>
+        <div class="hint">Tối thiểu 8 ký tự.</div>
       </div>
       <div class="field">
-        <label for="password_confirm"><span class="field-name">Nhap lai mat khau moi</span>
+        <label for="password_confirm"><span class="field-name">Nhập lại mật khẩu mới</span>
         <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password"></label>
       </div>
-      <button class="btn btn-block" type="submit">Doi mat khau</button>
+      <button class="btn btn-block" type="submit">Đổi mật khẩu</button>
     </form>
   </div>
 </div>

@@ -3,14 +3,14 @@
 <div class="container container-narrow">
   <%- include('../partials/flash') %>
   <div class="card">
-    <h1>Dang ky tai khoan</h1>
-    <p class="muted small">Tao tai khoan de dang ky va quan ly ten mien.</p>
+    <h1>Đăng ký tài khoản</h1>
+    <p class="muted small">Tạo tài khoản để đăng ký và quản lý tên miền.</p>
 
     <form method="post" action="<%= base %>/dang-ky">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <div class="field <%= errors.full_name ? 'field-error' : '' %>">
-        <label for="full_name"><span class="field-name">Ho va ten</span>
+        <label for="full_name"><span class="field-name">Họ và tên</span>
         <input id="full_name" type="text" name="full_name" value="<%= values.full_name || '' %>" required autofocus></label>
         <% if (errors.full_name) { %><div class="error-text"><%= errors.full_name %></div><% } %>
       </div>
@@ -22,28 +22,28 @@
       </div>
 
       <div class="field <%= errors.phone ? 'field-error' : '' %>">
-        <label for="phone"><span class="field-name">So dien thoai</span>
+        <label for="phone"><span class="field-name">Số điện thoại</span>
         <input id="phone" type="text" name="phone" value="<%= values.phone || '' %>" required></label>
         <% if (errors.phone) { %><div class="error-text"><%= errors.phone %></div><% } %>
       </div>
 
       <div class="field <%= errors.password ? 'field-error' : '' %>">
-        <label for="password"><span class="field-name">Mat khau</span>
+        <label for="password"><span class="field-name">Mật khẩu</span>
         <input id="password" type="password" name="password" required autocomplete="new-password"></label>
-        <div class="hint">Toi thieu 8 ky tu.</div>
+        <div class="hint">Tối thiểu 8 ký tự.</div>
         <% if (errors.password) { %><div class="error-text"><%= errors.password %></div><% } %>
       </div>
 
       <div class="field <%= errors.password_confirm ? 'field-error' : '' %>">
-        <label for="password_confirm"><span class="field-name">Nhap lai mat khau</span>
+        <label for="password_confirm"><span class="field-name">Nhập lại mật khẩu</span>
         <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password"></label>
         <% if (errors.password_confirm) { %><div class="error-text"><%= errors.password_confirm %></div><% } %>
       </div>
 
-      <button class="btn btn-block btn-lg" type="submit">Tao tai khoan</button>
+      <button class="btn btn-block btn-lg" type="submit">Tạo tài khoản</button>
     </form>
 
-    <p class="small muted center" style="margin:16px 0 0">Da co tai khoan? <a href="<%= base %>/dang-nhap">Dang nhap</a></p>
+    <p class="small muted center" style="margin:16px 0 0">Đã có tài khoản? <a href="<%= base %>/dang-nhap">Đăng nhập</a></p>
   </div>
 </div>
 <%- include('../partials/footer') %>

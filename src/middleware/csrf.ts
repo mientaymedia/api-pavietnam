@@ -22,11 +22,11 @@ export function csrfMiddleware(req: Request, res: Response, next: NextFunction):
     res.status(403);
     if (!req.path.startsWith('/api/') && req.accepts('html')) {
       res.render('error', {
-        title: 'Phien lam viec het han',
-        message: 'Yeu cau khong hop le hoac phien da het han. Vui long tai lai trang va thu lai.',
+        title: 'Phiên làm việc hết hạn',
+        message: 'Yêu cầu không hợp lệ hoặc phiên đã hết hạn. Vui lòng tải lại trang và thử lại.',
       });
     } else {
-      res.json({ error: 'CSRF token khong hop le' });
+      res.json({ error: 'CSRF token không hợp lệ' });
     }
     return;
   }

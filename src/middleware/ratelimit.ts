@@ -28,9 +28,9 @@ export function rateLimit(opts: { windowMs: number; max: number; key?: (req: Req
       const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
       res.setHeader('Retry-After', String(retryAfter));
       res.status(429);
-      const message = opts.message ?? `Ban thao tac qua nhanh. Vui long thu lai sau ${retryAfter} giay.`;
+      const message = opts.message ?? `Bạn thao tác quá nhanh. Vui lòng thử lại sau ${retryAfter} giây.`;
       const isMachinePath = req.path.startsWith('/api/') || req.path.startsWith('/webhooks/');
-      if (!isMachinePath && req.accepts('html')) res.render('error', { title: 'Qua nhieu yeu cau', message });
+      if (!isMachinePath && req.accepts('html')) res.render('error', { title: 'Quá nhiều yêu cầu', message });
       else res.json({ error: message });
       return;
     }

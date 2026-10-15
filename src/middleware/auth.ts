@@ -8,7 +8,7 @@ import { isEnabled as twoFactorEnabled, requires2FA } from '../services/twoFacto
 /** Bat buoc dang nhap; chua dang nhap thi chuyen sang trang dang nhap kem duong dan quay lai. */
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
   if (req.currentUser) return next();
-  flash(req, 'error', 'Vui long dang nhap de tiep tuc.');
+  flash(req, 'error', 'Vui lòng đăng nhập để tiếp tục.');
   // originalUrl con tien to BASE_PATH; next phai la duong dan BEN TRONG app vi
   // redirect se them tien to dung mot lan nua.
   res.redirect(`/dang-nhap?next=${encodeURIComponent(stripBase(req.originalUrl) ?? '/dashboard')}`);
@@ -18,8 +18,8 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
   const user = req.currentUser;
   if (!user || (user.role !== 'admin' && user.role !== 'staff')) {
     res.status(403).render('error', {
-      title: 'Khong co quyen truy cap',
-      message: 'Ban khong co quyen vao khu vuc quan tri.',
+      title: 'Không có quyền truy cập',
+      message: 'Bạn không có quyền vào khu vực quản trị.',
     });
     return;
   }
@@ -28,7 +28,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
   // du lieu ca nhan cua khach. Chi mot lop mat khau la khong du, nen tai khoan
   // quan tri phai bat xac thuc hai lop truoc khi vao duoc.
   if (requires2FA(user.role) && !twoFactorEnabled(user.id)) {
-    flash(req, 'error', 'Tai khoan quan tri phai bat xac thuc hai lop truoc khi vao khu vuc quan tri.');
+    flash(req, 'error', 'Tài khoản quản trị phải bật xác thực hai lớp trước khi vào khu vực quản trị.');
     res.redirect('/tai-khoan/bao-mat');
     return;
   }
@@ -41,7 +41,7 @@ export function requireApiToken(req: Request, res: Response, next: NextFunction)
   const header = req.get('authorization') ?? '';
   const token = header.replace(/^Bearer\s+/i, '').trim();
   if (!token) {
-    res.status(401).json({ error: 'Thieu API token. Gui header: Authorization: Bearer <token>' });
+    res.status(401).json({ error: 'Thiếu API token. Gửi header: Authorization: Bearer <token>' });
     return;
   }
 
@@ -56,7 +56,7 @@ export function requireApiToken(req: Request, res: Response, next: NextFunction)
     | undefined;
 
   if (!row || row.status === 'suspended') {
-    res.status(401).json({ error: 'API token khong hop le hoac da bi thu hoi' });
+    res.status(401).json({ error: 'API token không hợp lệ hoặc đã bị thu hồi' });
     return;
   }
 

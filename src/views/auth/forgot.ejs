@@ -2,22 +2,22 @@
 <%- include('../partials/header') %>
 <div class="container container-narrow">
   <div class="card">
-    <h1>Quen mat khau</h1>
+    <h1>Quên mật khẩu</h1>
     <% if (sent) { %>
       <div class="alert alert-success">
-        Neu email ton tai trong he thong, chung toi da gui huong dan dat lai mat khau.
-        Vui long kiem tra hop thu (ke ca thu muc spam).
+        Nếu email tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.
+        Vui lòng kiểm tra hộp thư (kể cả thư mục spam).
       </div>
-      <a class="btn btn-outline" href="<%= base %>/dang-nhap">Ve trang dang nhap</a>
+      <a class="btn btn-outline" href="<%= base %>/dang-nhap">Về trang đăng nhập</a>
     <% } else { %>
-      <p class="muted small">Nhap email dang ky, chung toi se gui lien ket dat lai mat khau.</p>
+      <p class="muted small">Nhập email đăng ký, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.</p>
       <form method="post" action="<%= base %>/quen-mat-khau">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="field">
           <label for="email"><span class="field-name">Email</span>
           <input id="email" type="email" name="email" required autofocus></label>
         </div>
-        <button class="btn btn-block" type="submit">Gui lien ket</button>
+        <button class="btn btn-block" type="submit">Gửi liên kết</button>
       </form>
     <% } %>
   </div>

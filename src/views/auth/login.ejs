@@ -3,7 +3,7 @@
 <div class="container container-narrow">
   <%- include('../partials/flash') %>
   <div class="card">
-    <h1>Dang nhap</h1>
+    <h1>Đăng nhập</h1>
     <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
 
     <form method="post" action="<%= base %>/dang-nhap">
@@ -15,15 +15,15 @@
         <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autofocus autocomplete="email"></label>
       </div>
       <div class="field">
-        <label for="password"><span class="field-name">Mat khau</span>
+        <label for="password"><span class="field-name">Mật khẩu</span>
         <input id="password" type="password" name="password" required autocomplete="current-password"></label>
       </div>
 
-      <button class="btn btn-block btn-lg" type="submit">Dang nhap</button>
+      <button class="btn btn-block btn-lg" type="submit">Đăng nhập</button>
     </form>
 
     <p class="small muted center" style="margin:16px 0 0">
-      <a href="<%= base %>/quen-mat-khau">Quen mat khau?</a> &middot; Chua co tai khoan? <a href="<%= base %>/dang-ky">Dang ky</a>
+      <a href="<%= base %>/quen-mat-khau">Quên mật khẩu?</a> &middot; Chưa có tài khoản? <a href="<%= base %>/dang-ky">Đăng ký</a>
     </p>
   </div>
 </div>

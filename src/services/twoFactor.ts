@@ -84,7 +84,7 @@ export interface BuocCaiDat {
  */
 export function beginSetup(userId: number, email: string): BuocCaiDat {
   const hang = layHang(userId);
-  if (hang?.confirmed_at) throw new Error('Xac thuc hai lop dang bat. Hay tat truoc khi cai dat lai.');
+  if (hang?.confirmed_at) throw new Error('Xác thực hai lớp đang bật. Hãy tắt trước khi cài đặt lại.');
 
   const secret = generateSecret();
   const bayGio = nowIso();
@@ -114,8 +114,8 @@ export function getPendingSetup(userId: number, email: string): BuocCaiDat | nul
 
 /** Ten hien trong ung dung xac thuc. Cat ngan de dia chi otpauth khong qua dai. */
 function tenNhaCungCap(): string {
-  const ten = (settings.site().name || 'Ten mien').replace(/[:?#&/]/g, ' ').trim();
-  return ten.slice(0, 40) || 'Ten mien';
+  const ten = (settings.site().name || 'Tên miền').replace(/[:?#&/]/g, ' ').trim();
+  return ten.slice(0, 40) || 'Tên miền';
 }
 
 export interface KetQuaXacNhan {
@@ -128,11 +128,11 @@ export interface KetQuaXacNhan {
 /** Xac nhan da quet dung ma QR roi bat that, dong thoi phat ma du phong. */
 export function confirmSetup(userId: number, code: string, ip?: string): KetQuaXacNhan {
   const hang = layHang(userId);
-  if (!hang) return { ok: false, loi: 'Chua bat dau cai dat. Vui long tai lai trang.' };
-  if (hang.confirmed_at) return { ok: false, loi: 'Xac thuc hai lop da duoc bat truoc do.' };
+  if (!hang) return { ok: false, loi: 'Chưa bắt đầu cài đặt. Vui lòng tải lại trang.' };
+  if (hang.confirmed_at) return { ok: false, loi: 'Xác thực hai lớp đã được bật trước đó.' };
 
   const kq = verifyTotp(giaiMaKhoa(hang), code);
-  if (!kq.ok) return { ok: false, loi: 'Ma khong dung. Kiem tra lai gio tren dien thoai roi thu ma moi nhat.' };
+  if (!kq.ok) return { ok: false, loi: 'Mã không đúng. Kiểm tra lại giờ trên điện thoại rồi thử mã mới nhất.' };
 
   const codes = taoMaDuPhong();
   tx(() => {
@@ -150,9 +150,9 @@ export function confirmSetup(userId: number, code: string, ip?: string): KetQuaX
  * tat - neu khong, ke chiem duoc phien dang nhap co the tu go lop bao ve nay.
  */
 export function disable(userId: number, code: string, ip?: string): { ok: boolean; loi?: string } {
-  if (!isEnabled(userId)) return { ok: false, loi: 'Xac thuc hai lop chua duoc bat.' };
+  if (!isEnabled(userId)) return { ok: false, loi: 'Xác thực hai lớp chưa được bật.' };
   const kq = verifyLogin(userId, code);
-  if (!kq.ok) return { ok: false, loi: 'Ma khong dung.' };
+  if (!kq.ok) return { ok: false, loi: 'Mã không đúng.' };
 
   tx(() => {
     db.prepare('DELETE FROM two_factor WHERE user_id = ?').run(userId);
@@ -258,7 +258,7 @@ function giaiMaKhoa(hang: HangTwoFactor): string {
   } catch (err) {
     // Xay ra khi ENCRYPTION_KEY bi doi ma CSDL van con ban ghi cu.
     log.error('2fa_secret_undecryptable', { userId: hang.user_id, error: String(err) });
-    throw new Error('Khong doc duoc khoa xac thuc hai lop. Vui long lien he quan tri he thong.');
+    throw new Error('Không đọc được khóa xác thực hai lớp. Vui lòng liên hệ quản trị hệ thống.');
   }
 }
 
