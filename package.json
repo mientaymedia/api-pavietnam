@@ -35,5 +35,9 @@
     "@types/nodemailer": "^6.4.17",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "esbuild@0.28.2": true
   }
 }
