@@ -17,12 +17,12 @@
       </div>
     </div>
     <div class="row">
-      <a class="btn btn-outline btn-sm" href="/control-panel/<%= domain.domain %>/whois">WHOIS</a>
-      <form method="post" action="/control-panel/<%= domain.domain %>/dong-bo">
+      <a class="btn btn-outline btn-sm" href="<%= base %>/control-panel/<%= domain.domain %>/whois">WHOIS</a>
+      <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dong-bo">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn btn-outline btn-sm" type="submit">Dong bo</button>
       </form>
-      <a class="btn btn-outline btn-sm" href="/control-panel">Danh sach</a>
+      <a class="btn btn-outline btn-sm" href="<%= base %>/control-panel">Danh sach</a>
     </div>
   </div>
 
@@ -68,7 +68,7 @@
                     <td class="right nowrap">
                       <details>
                         <summary class="btn-link tiny" style="cursor:pointer">Sua</summary>
-                        <form method="post" action="/control-panel/<%= domain.domain %>/dns/sua/<%= idx %>" style="margin-top:8px; text-align:left; min-width:260px">
+                        <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dns/sua/<%= idx %>" style="margin-top:8px; text-align:left; min-width:260px">
                           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                           <div class="field">
                             <label><span class="field-name">Loai</span>
@@ -87,7 +87,7 @@
                           <button class="btn btn-sm btn-block" type="submit" <%= dns.stale ? 'disabled' : '' %>>Luu</button>
                         </form>
                       </details>
-                      <form method="post" action="/control-panel/<%= domain.domain %>/dns/xoa/<%= idx %>"
+                      <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dns/xoa/<%= idx %>"
                             data-confirm="Xoa ban ghi <%= r.type %> <%= r.name %>?" style="display:inline">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn-link tiny" type="submit" style="color:var(--danger)" <%= dns.stale ? 'disabled' : '' %>>Xoa</button>
@@ -101,7 +101,7 @@
         <% } %>
 
         <h3 class="section-heading">Them ban ghi moi</h3>
-        <form method="post" action="/control-panel/<%= domain.domain %>/dns/them">
+        <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/dns/them">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:120px; margin:0">
@@ -139,7 +139,7 @@
       <!-- ------------------------------------------------ nameserver -->
       <div class="card">
         <div class="card-title"><h2>Nameserver</h2></div>
-        <form method="post" action="/control-panel/<%= domain.domain %>/nameservers">
+        <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/nameservers">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
             <label><span class="field-name">Danh sach nameserver (moi dong mot ten)</span>
@@ -159,7 +159,7 @@
             <span class="value"><%= formatVnd(renewPrice.total) %></span>
           </div>
         <% } %>
-        <form method="post" action="/control-panel/<%= domain.domain %>/gia-han" style="margin-top:12px">
+        <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/gia-han" style="margin-top:12px">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="field">
             <label><span class="field-name">So nam gia han</span>
@@ -170,7 +170,7 @@
           <button class="btn btn-block" type="submit">Them vao gio hang</button>
         </form>
 
-        <form method="post" action="/control-panel/<%= domain.domain %>/tu-dong-gia-han" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line)">
+        <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/tu-dong-gia-han" style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line)">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="auto_renew" value="<%= domain.auto_renew ? '0' : '1' %>">
           <div class="row-between">
@@ -198,9 +198,9 @@
           Doi email, dien thoai, dia chi cua <strong>cung mot chu the</strong>. Co hieu luc ngay.
         </p>
         <% if (!hoSoChuThe.length) { %>
-          <p class="small muted">Ban chua co ho so chu the nao. <a href="/tai-khoan/ho-so">Tao ho so</a> truoc.</p>
+          <p class="small muted">Ban chua co ho so chu the nao. <a href="<%= base %>/tai-khoan/ho-so">Tao ho so</a> truoc.</p>
         <% } else { %>
-          <form method="post" action="/control-panel/<%= domain.domain %>/chu-the">
+          <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/chu-the">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field">
               <label><span class="field-name">Ap dung ho so</span>
@@ -211,7 +211,7 @@
                   </option>
                 <% }); %>
               </select></label>
-              <div class="hint"><a href="/tai-khoan/ho-so">Sua noi dung ho so</a> roi quay lai day de day len nha dang ky.</div>
+              <div class="hint"><a href="<%= base %>/tai-khoan/ho-so">Sua noi dung ho so</a> roi quay lai day de day len nha dang ky.</div>
             </div>
             <button class="btn btn-block" type="submit">Cap nhat len nha dang ky</button>
           </form>
@@ -247,7 +247,7 @@
             Nop ho so ben duoi, bo phan nghiep vu se huong dan cu the.
           </div>
           <% if (hoSoChuThe.length) { %>
-            <form method="post" action="/control-panel/<%= domain.domain %>/doi-chu-the"
+            <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/doi-chu-the"
                   data-confirm="Nop ho so doi chu the cho <%= domain.domain %>?">
               <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <div class="field">
@@ -282,7 +282,7 @@
           Can hai buoc: <strong>mo khoa</strong> roi <strong>lay ma EPP</strong>.
         </p>
 
-        <form method="post" action="/control-panel/<%= domain.domain %>/khoa-chuyen-doi"
+        <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/khoa-chuyen-doi"
               <% if (domain.transfer_lock) { %>data-confirm="Mo khoa se cho phep chuyen ten mien di neu ai do co ma EPP. Tiep tuc?"<% } %>>
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="locked" value="<%= domain.transfer_lock ? '0' : '1' %>">
@@ -292,7 +292,7 @@
         </form>
 
         <% if (!domain.transfer_lock) { %>
-          <form method="post" action="/control-panel/<%= domain.domain %>/ma-chuyen-doi"
+          <form method="post" action="<%= base %>/control-panel/<%= domain.domain %>/ma-chuyen-doi"
                 data-confirm="Lay ma EPP? Chung toi se gui email canh bao ve tai khoan cua ban."
                 style="margin-top:10px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">

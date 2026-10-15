@@ -30,7 +30,7 @@
                 <td class="right"><%= formatVnd(priceFor(t, 'renew', 1).total) %></td>
                 <td class="right"><%= t.price_transfer ? formatVnd(priceFor(t, 'transfer', 1).total) : '-' %></td>
                 <td class="right nowrap"><%= t.min_years %>-<%= t.max_years %> nam</td>
-                <td class="right"><a class="btn btn-sm btn-outline" href="/tim-kiem?q=<%= encodeURIComponent('ten-mien.' + t.tld) %>">Kiem tra</a></td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/tim-kiem?q=<%= encodeURIComponent('ten-mien.' + t.tld) %>">Kiem tra</a></td>
               </tr>
             <% }); %>
           </tbody>

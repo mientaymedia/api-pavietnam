@@ -10,7 +10,7 @@
     </p>
     <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
 
-    <form method="post" action="/dang-nhap/hai-lop">
+    <form method="post" action="<%= base %>/dang-nhap/hai-lop">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field">
         <label for="code"><span class="field-name">Ma xac thuc</span>
@@ -24,7 +24,7 @@
 
     <p class="small muted center" style="margin:16px 0 0">
       Mat dien thoai? Nhap mot <strong>ma du phong</strong> vao o tren.
-      &middot; <a href="/dang-nhap">Dang nhap bang tai khoan khac</a>
+      &middot; <a href="<%= base %>/dang-nhap">Dang nhap bang tai khoan khac</a>
     </p>
   </div>
 </div>

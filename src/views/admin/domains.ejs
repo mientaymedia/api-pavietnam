@@ -6,7 +6,7 @@
   <%- include('../partials/admin-nav') %>
 
   <div class="card">
-    <form method="get" action="/admin/ten-mien" style="margin-bottom:14px">
+    <form method="get" action="<%= base %>/admin/ten-mien" style="margin-bottom:14px">
       <div class="row">
         <div style="flex:1"><input type="search" name="q" value="<%= q %>" aria-label="Tim theo ten mien" placeholder="Tim theo ten mien"></div>
         <button class="btn btn-outline" type="submit">Tim</button>
@@ -25,7 +25,7 @@
               <td class="small"><%= d.expires_at ? d.expires_at.slice(0, 10) : '-' %></td>
               <td><span class="badge <%= d.auto_renew ? 'badge-ok' : 'badge-muted' %>"><%= d.auto_renew ? 'Bat' : 'Tat' %></span></td>
               <td class="right">
-                <form method="post" action="/admin/ten-mien/<%= d.id %>/dong-bo">
+                <form method="post" action="<%= base %>/admin/ten-mien/<%= d.id %>/dong-bo">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button class="btn btn-sm btn-outline" type="submit">Dong bo</button>
                 </form>

@@ -5,7 +5,7 @@
   <%- include('partials/flash') %>
   <div class="row-between">
     <h1>Xin chao, <%= currentUser.full_name || currentUser.email %></h1>
-    <a class="btn" href="/">Dang ky ten mien moi</a>
+    <a class="btn" href="<%= base %>/">Dang ky ten mien moi</a>
   </div>
 
   <div class="grid grid-4" style="margin:18px 0">
@@ -16,9 +16,9 @@
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Ten mien cua ban</h2><a class="small" href="/control-panel">Xem tat ca</a></div>
+    <div class="card-title"><h2>Ten mien cua ban</h2><a class="small" href="<%= base %>/control-panel">Xem tat ca</a></div>
     <% if (!domains.length) { %>
-      <p class="muted">Ban chua co ten mien nao. <a href="/">Tim va dang ky ngay</a>.</p>
+      <p class="muted">Ban chua co ten mien nao. <a href="<%= base %>/">Tim va dang ky ngay</a>.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
@@ -36,7 +36,7 @@
                     <div class="tiny" style="color:var(--warn)"><%= d.daysLeft >= 0 ? 'Con ' + d.daysLeft + ' ngay' : 'Da het han' %></div>
                   <% } %>
                 </td>
-                <td class="right"><a class="btn btn-sm btn-outline" href="/control-panel/<%= d.domain %>">Quan ly</a></td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/control-panel/<%= d.domain %>">Quan ly</a></td>
               </tr>
             <% }); %>
           </tbody>
@@ -46,7 +46,7 @@
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Don hang gan day</h2><a class="small" href="/don-hang">Xem tat ca</a></div>
+    <div class="card-title"><h2>Don hang gan day</h2><a class="small" href="<%= base %>/don-hang">Xem tat ca</a></div>
     <% if (!orders.length) { %>
       <p class="muted">Chua co don hang nao.</p>
     <% } else { %>
@@ -60,7 +60,7 @@
                 <td class="small"><%= o.created_at.slice(0, 10) %></td>
                 <td><%- include('partials/order-status', { status: o.status }) %></td>
                 <td class="right"><%= formatVnd(o.total) %></td>
-                <td class="right"><a class="btn btn-sm btn-outline" href="/don-hang/<%= o.code %>">Chi tiet</a></td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/don-hang/<%= o.code %>">Chi tiet</a></td>
               </tr>
             <% }); %>
           </tbody>

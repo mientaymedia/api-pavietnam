@@ -76,6 +76,17 @@ test('trang chu va tai nguyen tinh nam duoi tien to', async () => {
   assert.equal((await lay(`${B}/js/app.js`)).status, 200);
 });
 
+test('moi link noi bo trong trang deu co tien to', async () => {
+  for (const p of ['/', '/bang-gia', '/dang-nhap', '/dang-ky', '/chuyen-ten-mien', '/whois', '/gio-hang']) {
+    const html = await (await lay(B + p)).text();
+    assert.match(html, /<body data-base="\/ten-mien">/, p);
+    const thieu = [...html.matchAll(/\s(href|action|src)="(\/[^"]*)"/g)]
+      .map((m) => m[2]!)
+      .filter((v) => !v.startsWith('//') && v !== B && !v.startsWith(`${B}/`));
+    assert.deepEqual(thieu, [], `${p} con link thieu tien to`);
+  }
+});
+
 test('ngoai tien to: goc chuyen vao app, con lai 404', async () => {
   const r = await lay('/');
   assert.equal(r.status, 302);

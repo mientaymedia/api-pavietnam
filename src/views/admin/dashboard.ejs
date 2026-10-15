@@ -13,7 +13,7 @@
     <div class="stat"><div class="stat-value" style="color:<%= stats.failedItems ? 'var(--danger)' : 'inherit' %>"><%= stats.failedItems %></div><div class="stat-label">Dong don that bai</div></div>
     <div class="stat">
       <div class="stat-value" style="color:<%= stats.ownershipPending ? 'var(--warn)' : 'inherit' %>"><%= stats.ownershipPending %></div>
-      <div class="stat-label"><a href="/admin/doi-chu-the">Ho so doi chu the cho xu ly</a></div>
+      <div class="stat-label"><a href="<%= base %>/admin/doi-chu-the">Ho so doi chu the cho xu ly</a></div>
     </div>
     <div class="stat">
       <div class="stat-value"><%= jobs.queued %></div>
@@ -23,14 +23,14 @@
 
   <div class="grid grid-2" style="margin-top:18px">
     <div class="card">
-      <div class="card-title"><h2>Don hang moi</h2><a class="small" href="/admin/don-hang">Tat ca</a></div>
+      <div class="card-title"><h2>Don hang moi</h2><a class="small" href="<%= base %>/admin/don-hang">Tat ca</a></div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Ma don</th><th>Trang thai</th><th class="right">Tien</th></tr></thead>
           <tbody>
             <% recentOrders.forEach(function (o) { %>
               <tr>
-                <td><a class="mono" href="/admin/don-hang/<%= o.id %>"><%= o.code %></a></td>
+                <td><a class="mono" href="<%= base %>/admin/don-hang/<%= o.id %>"><%= o.code %></a></td>
                 <td><%- include('../partials/order-status', { status: o.status }) %></td>
                 <td class="right"><%= formatVnd(o.total) %></td>
               </tr>
@@ -41,7 +41,7 @@
     </div>
 
     <div class="card">
-      <div class="card-title"><h2>Loi API gan day</h2><a class="small" href="/admin/nhat-ky-api?loi=1">Tat ca</a></div>
+      <div class="card-title"><h2>Loi API gan day</h2><a class="small" href="<%= base %>/admin/nhat-ky-api?loi=1">Tat ca</a></div>
       <% if (!recentErrors.length) { %>
         <p class="muted small">Khong co loi nao. He thong dang ket noi tot.</p>
       <% } else { %>

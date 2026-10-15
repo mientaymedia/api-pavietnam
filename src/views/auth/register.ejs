@@ -6,7 +6,7 @@
     <h1>Dang ky tai khoan</h1>
     <p class="muted small">Tao tai khoan de dang ky va quan ly ten mien.</p>
 
-    <form method="post" action="/dang-ky">
+    <form method="post" action="<%= base %>/dang-ky">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <div class="field <%= errors.full_name ? 'field-error' : '' %>">
@@ -43,7 +43,7 @@
       <button class="btn btn-block btn-lg" type="submit">Tao tai khoan</button>
     </form>
 
-    <p class="small muted center" style="margin:16px 0 0">Da co tai khoan? <a href="/dang-nhap">Dang nhap</a></p>
+    <p class="small muted center" style="margin:16px 0 0">Da co tai khoan? <a href="<%= base %>/dang-nhap">Dang nhap</a></p>
   </div>
 </div>
 <%- include('../partials/footer') %>

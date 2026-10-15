@@ -8,7 +8,7 @@
   <div class="card">
     <div class="row" style="margin-bottom:14px">
       <% ['', 'pending_payment', 'paid', 'processing', 'completed', 'failed', 'cancelled'].forEach(function (s) { %>
-        <a class="btn btn-sm <%= status === s ? '' : 'btn-outline' %>" href="/admin/don-hang<%= s ? '?status=' + s : '' %>">
+        <a class="btn btn-sm <%= status === s ? '' : 'btn-outline' %>" href="<%= base %>/admin/don-hang<%= s ? '?status=' + s : '' %>">
           <%= s === '' ? 'Tat ca' : s %>
         </a>
       <% }); %>
@@ -24,7 +24,7 @@
               <td class="small"><%= o.created_at.replace('T', ' ').slice(0, 16) %></td>
               <td><%- include('../partials/order-status', { status: o.status }) %></td>
               <td class="right"><%= formatVnd(o.total) %></td>
-              <td class="right"><a class="btn btn-sm btn-outline" href="/admin/don-hang/<%= o.id %>">Xem</a></td>
+              <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/admin/don-hang/<%= o.id %>">Xem</a></td>
             </tr>
           <% }); %>
         </tbody>

@@ -5,7 +5,7 @@
   <%- include('partials/flash') %>
   <h1>Tra cuu WHOIS</h1>
 
-  <form class="card" action="/whois" method="get">
+  <form class="card" action="<%= base %>/whois" method="get">
     <div class="row">
       <div style="flex:1; min-width:240px">
         <input type="search" name="domain" value="<%= domain %>" aria-label="Ten mien can tra cuu" placeholder="vidu.com hoac vidu.vn" required>
@@ -40,7 +40,7 @@
         </div>
 
         <% if (!result.registered) { %>
-          <form method="post" action="/gio-hang/them" style="margin-top:16px">
+          <form method="post" action="<%= base %>/gio-hang/them" style="margin-top:16px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="domain" value="<%= result.domain %>">
             <input type="hidden" name="years" value="1">

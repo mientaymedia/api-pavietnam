@@ -16,7 +16,7 @@
     <div class="card-title"><h2>Chay tac vu dinh ky ngay</h2></div>
     <div class="row">
       <% ['send_renewal_reminders', 'auto_renew_domains', 'expire_stale_orders', 'reconcile_sepay', 'sync_domains_due'].forEach(function (t) { %>
-        <form method="post" action="/admin/hang-doi/chay-ngay">
+        <form method="post" action="<%= base %>/admin/hang-doi/chay-ngay">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="type" value="<%= t %>">
           <button class="btn btn-sm btn-outline" type="submit"><%= t %></button>
@@ -42,7 +42,7 @@
               <td class="tiny" style="max-width:280px; word-break:break-all; color:var(--danger)"><%= j.last_error %></td>
               <td class="right">
                 <% if (j.status === 'failed') { %>
-                  <form method="post" action="/admin/hang-doi/<%= j.id %>/chay-lai">
+                  <form method="post" action="<%= base %>/admin/hang-doi/<%= j.id %>/chay-lai">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn-sm btn-outline" type="submit">Chay lai</button>
                   </form>

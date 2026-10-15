@@ -4,7 +4,7 @@
 <div class="container">
   <%- include('partials/flash') %>
 
-  <form class="card" action="/tim-kiem" method="get" style="margin-bottom:18px">
+  <form class="card" action="<%= base %>/tim-kiem" method="get" style="margin-bottom:18px">
     <div class="row">
       <div style="flex:1; min-width:240px">
         <input type="search" name="q" value="<%= q %>" aria-label="Ten mien can tim" placeholder="Nhap ten mien" required>
@@ -31,7 +31,7 @@
     <div class="alert alert-warn">
       Khong kiem tra duoc <%= unknownCount %> ten mien do chua ket noi duoc API nha dang ky.
       <% if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) { %>
-        Kiem tra <a href="/admin/cau-hinh">cau hinh API</a> va IP whitelist.
+        Kiem tra <a href="<%= base %>/admin/cau-hinh">cau hinh API</a> va IP whitelist.
       <% } %>
     </div>
   <% } %>
@@ -56,7 +56,7 @@
         <% if (r.available && r.price) { %>
           <div class="result-price"><%= formatVnd(r.price.total) %></div>
           <div class="tiny muted"><%= years %> nam<%= r.price.vat ? ' (da gom VAT)' : '' %></div>
-          <form method="post" action="/gio-hang/them" style="margin-top:6px">
+          <form method="post" action="<%= base %>/gio-hang/them" style="margin-top:6px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="domain" value="<%= r.domain %>">
             <input type="hidden" name="years" value="<%= years %>">
@@ -64,7 +64,7 @@
             <button class="btn btn-sm" type="submit">Them vao gio</button>
           </form>
         <% } else if (!r.unknown) { %>
-          <a class="btn btn-sm btn-outline" href="/whois?domain=<%= encodeURIComponent(r.domain) %>">Xem WHOIS</a>
+          <a class="btn btn-sm btn-outline" href="<%= base %>/whois?domain=<%= encodeURIComponent(r.domain) %>">Xem WHOIS</a>
         <% } %>
       </div>
     </div>
@@ -74,7 +74,7 @@
     <h3>Kiem tra them duoi khac</h3>
     <div class="row">
       <% allTlds.forEach(function (t) { %>
-        <a class="btn btn-sm btn-outline" href="/tim-kiem?q=<%= encodeURIComponent(search.sld + '.' + t.tld) %>&years=<%= years %>">.<%= t.tld %></a>
+        <a class="btn btn-sm btn-outline" href="<%= base %>/tim-kiem?q=<%= encodeURIComponent(search.sld + '.' + t.tld) %>&years=<%= years %>">.<%= t.tld %></a>
       <% }); %>
     </div>
   </div>

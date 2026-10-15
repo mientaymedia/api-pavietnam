@@ -9,7 +9,7 @@
     <div class="card-title"><h2>Tao / cap nhat ma</h2></div>
     <p class="muted small" style="margin-top:-6px">Nhap lai mot ma da co se cap nhat ma do.</p>
 
-    <form method="post" action="/admin/ma-giam-gia">
+    <form method="post" action="<%= base %>/admin/ma-giam-gia">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
       <div class="grid grid-4" style="gap:0 14px">
@@ -103,7 +103,7 @@
                 <td class="small"><%= c.used_count %><%= c.max_uses ? ' / ' + c.max_uses : '' %></td>
                 <td><span class="badge <%= c.is_active ? 'badge-ok' : 'badge-muted' %>"><%= c.is_active ? 'Dang chay' : 'Tam tat' %></span></td>
                 <td class="right">
-                  <form method="post" action="/admin/ma-giam-gia/<%= c.id %>/trang-thai">
+                  <form method="post" action="<%= base %>/admin/ma-giam-gia/<%= c.id %>/trang-thai">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn btn-sm btn-outline" type="submit"><%= c.is_active ? 'Tat' : 'Bat' %></button>
                   </form>

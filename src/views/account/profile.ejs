@@ -5,11 +5,11 @@
   <h1>Tai khoan cua toi</h1>
 
   <div class="tabs">
-    <a href="/tai-khoan" class="active">Thong tin</a>
-    <a href="/tai-khoan/bao-mat">Bao mat</a>
-    <a href="/tai-khoan/ho-so">Ho so chu the</a>
-    <a href="/control-panel">Ten mien</a>
-    <a href="/don-hang">Don hang</a>
+    <a href="<%= base %>/tai-khoan" class="active">Thong tin</a>
+    <a href="<%= base %>/tai-khoan/bao-mat">Bao mat</a>
+    <a href="<%= base %>/tai-khoan/ho-so">Ho so chu the</a>
+    <a href="<%= base %>/control-panel">Ten mien</a>
+    <a href="<%= base %>/don-hang">Don hang</a>
   </div>
 
   <% if (newToken) { %>
@@ -24,7 +24,7 @@
 
   <div class="card">
     <div class="card-title"><h2>Thong tin ca nhan</h2></div>
-    <form method="post" action="/tai-khoan/thong-tin">
+    <form method="post" action="<%= base %>/tai-khoan/thong-tin">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="grid grid-2" style="gap:0 14px">
         <div class="field"><label><span class="field-name">Ho va ten</span><input type="text" name="full_name" value="<%= user.full_name %>"></label></div>
@@ -37,7 +37,7 @@
 
   <div class="card">
     <div class="card-title"><h2>Doi mat khau</h2></div>
-    <form method="post" action="/tai-khoan/doi-mat-khau">
+    <form method="post" action="<%= base %>/tai-khoan/doi-mat-khau">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="field"><label><span class="field-name">Mat khau hien tai</span><input type="password" name="current_password" required autocomplete="current-password"></label></div>
       <div class="grid grid-2" style="gap:0 14px">
@@ -67,7 +67,7 @@
                 <td><span class="badge badge-muted"><%= t.scopes %></span></td>
                 <td class="small muted"><%= t.last_used_at ? t.last_used_at.replace('T', ' ').slice(0, 16) : 'Chua dung' %></td>
                 <td class="right">
-                  <form method="post" action="/tai-khoan/api-token/<%= t.id %>/thu-hoi" data-confirm="Thu hoi token nay?">
+                  <form method="post" action="<%= base %>/tai-khoan/api-token/<%= t.id %>/thu-hoi" data-confirm="Thu hoi token nay?">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <button class="btn-link tiny" type="submit" style="color:var(--danger)">Thu hoi</button>
                   </form>
@@ -79,7 +79,7 @@
       </div>
     <% } %>
 
-    <form method="post" action="/tai-khoan/api-token" style="margin-top:14px">
+    <form method="post" action="<%= base %>/tai-khoan/api-token" style="margin-top:14px">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:1; margin:0"><label><span class="field-name">Ten token</span><input type="text" name="name" placeholder="Website ban hang" required></label></div>

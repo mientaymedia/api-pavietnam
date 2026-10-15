@@ -5,11 +5,11 @@
   <h1>Bao mat tai khoan</h1>
 
   <div class="tabs">
-    <a href="/tai-khoan">Thong tin</a>
-    <a href="/tai-khoan/bao-mat" class="active">Bao mat</a>
-    <a href="/tai-khoan/ho-so">Ho so chu the</a>
-    <a href="/control-panel">Ten mien</a>
-    <a href="/don-hang">Don hang</a>
+    <a href="<%= base %>/tai-khoan">Thong tin</a>
+    <a href="<%= base %>/tai-khoan/bao-mat" class="active">Bao mat</a>
+    <a href="<%= base %>/tai-khoan/ho-so">Ho so chu the</a>
+    <a href="<%= base %>/control-panel">Ten mien</a>
+    <a href="<%= base %>/don-hang">Don hang</a>
   </div>
 
   <% if (recoveryCodes) { %>
@@ -54,7 +54,7 @@
         <% } %>
       </p>
 
-      <form method="post" action="/tai-khoan/bao-mat/ma-du-phong" data-confirm="Tao bo ma du phong moi? Bo ma cu se het hieu luc ngay.">
+      <form method="post" action="<%= base %>/tai-khoan/bao-mat/ma-du-phong" data-confirm="Tao bo ma du phong moi? Bo ma cu se het hieu luc ngay.">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn btn-ghost" type="submit">Tao bo ma du phong moi</button>
       </form>
@@ -63,7 +63,7 @@
         <hr style="margin:18px 0; border:0; border-top:1px solid var(--line)">
         <h3 style="margin:0 0 8px; font-size:15px">Tat xac thuc hai lop</h3>
         <p class="muted small">Nhap ma hien tai (hoac mot ma du phong) de xac nhan chinh ban dang thao tac.</p>
-        <form method="post" action="/tai-khoan/bao-mat/tat">
+        <form method="post" action="<%= base %>/tai-khoan/bao-mat/tat">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:200px; margin:0">
@@ -91,7 +91,7 @@
           </div>
           <button class="btn-link tiny" data-copy="<%= setup.secret %>">chep khoa</button>
 
-          <form method="post" action="/tai-khoan/bao-mat/xac-nhan" style="margin-top:16px">
+          <form method="post" action="<%= base %>/tai-khoan/bao-mat/xac-nhan" style="margin-top:16px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field">
               <label><span class="field-name">Ma 6 so tu ung dung</span>
@@ -106,7 +106,7 @@
       </div>
 
     <% } else { %>
-      <form method="post" action="/tai-khoan/bao-mat/bat-dau">
+      <form method="post" action="<%= base %>/tai-khoan/bao-mat/bat-dau">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <button class="btn" type="submit">Bat xac thuc hai lop</button>
       </form>

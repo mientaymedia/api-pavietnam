@@ -28,7 +28,7 @@
                     <% if (i.error) { %><div class="tiny" style="color:var(--danger)"><%= i.error %></div><% } %>
                     <% if (i.attempts) { %><div class="tiny muted">Da thu <%= i.attempts %> lan</div><% } %>
                     <% if (i.status === 'failed') { %>
-                      <form method="post" action="/admin/don-hang/<%= order.id %>/hoan-tien/<%= i.id %>"
+                      <form method="post" action="<%= base %>/admin/don-hang/<%= order.id %>/hoan-tien/<%= i.id %>"
                             data-confirm="Hoan tien dong nay vao so du khach hang?" style="margin-top:6px">
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <button class="btn btn-sm btn-outline" type="submit">Hoan tien vao vi</button>
@@ -86,7 +86,7 @@
         <div class="card-title"><h3>Thao tac</h3></div>
 
         <% if (order.status === 'pending_payment') { %>
-          <form method="post" action="/admin/don-hang/<%= order.id %>/xac-nhan-thanh-toan"
+          <form method="post" action="<%= base %>/admin/don-hang/<%= order.id %>/xac-nhan-thanh-toan"
                 data-confirm="Xac nhan da nhan du <%= formatVnd(order.total) %> cho don nay? He thong se dang ky ten mien ngay.">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field"><label><span class="field-name">Ghi chu doi soat</span><input type="text" name="note" placeholder="VD: CK Techcombank luc 10:23"></label></div>
@@ -97,7 +97,7 @@
 
         <% var soDongThatBai = items.filter(function (i) { return i.status === 'failed'; }).length; %>
         <% if (soDongThatBai > 1) { %>
-          <form method="post" action="/admin/don-hang/<%= order.id %>/hoan-tien-tat-ca"
+          <form method="post" action="<%= base %>/admin/don-hang/<%= order.id %>/hoan-tien-tat-ca"
                 data-confirm="Hoan tien <%= soDongThatBai %> dong da that bai?" style="margin-top:12px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="field"><label><span class="field-name">Ly do hoan tien</span><input type="text" name="reason" placeholder="VD: ten mien da co nguoi dang ky"></label></div>
@@ -106,7 +106,7 @@
         <% } %>
 
         <% if (['paid','processing','failed','partially_completed'].indexOf(order.status) >= 0) { %>
-          <form method="post" action="/admin/don-hang/<%= order.id %>/cap-phat-lai"
+          <form method="post" action="<%= base %>/admin/don-hang/<%= order.id %>/cap-phat-lai"
                 data-confirm="Chay lai cap phat cho cac dong that bai?" style="margin-top:12px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button class="btn btn-outline btn-block" type="submit">Chay lai cap phat</button>

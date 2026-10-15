@@ -8,10 +8,10 @@
         Neu email ton tai trong he thong, chung toi da gui huong dan dat lai mat khau.
         Vui long kiem tra hop thu (ke ca thu muc spam).
       </div>
-      <a class="btn btn-outline" href="/dang-nhap">Ve trang dang nhap</a>
+      <a class="btn btn-outline" href="<%= base %>/dang-nhap">Ve trang dang nhap</a>
     <% } else { %>
       <p class="muted small">Nhap email dang ky, chung toi se gui lien ket dat lai mat khau.</p>
-      <form method="post" action="/quen-mat-khau">
+      <form method="post" action="<%= base %>/quen-mat-khau">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="field">
           <label for="email"><span class="field-name">Email</span>

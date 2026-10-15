@@ -5,9 +5,9 @@
   <div class="row-between">
     <h1>Bao cao kinh doanh</h1>
     <div class="row">
-      <a class="btn btn-sm btn-outline" href="/admin/xuat/doanh-thu">Xuat doanh thu</a>
-      <a class="btn btn-sm btn-outline" href="/admin/xuat/don-hang">Xuat don hang</a>
-      <a class="btn btn-sm btn-outline" href="/admin/xuat/ten-mien">Xuat ten mien</a>
+      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/doanh-thu">Xuat doanh thu</a>
+      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/don-hang">Xuat don hang</a>
+      <a class="btn btn-sm btn-outline" href="<%= base %>/admin/xuat/ten-mien">Xuat ten mien</a>
     </div>
   </div>
   <%- include('../partials/admin-nav') %>
@@ -42,7 +42,7 @@
   <div class="card viz" style="margin-top:18px">
     <div class="card-title">
       <h2>Doanh thu 12 thang gan nhat</h2>
-      <a class="small" href="/admin/xuat/doanh-thu">Tai CSV</a>
+      <a class="small" href="<%= base %>/admin/xuat/doanh-thu">Tai CSV</a>
     </div>
 
     <% if (!theoThang.length) { %>

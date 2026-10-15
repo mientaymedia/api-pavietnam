@@ -8,7 +8,7 @@
   <div class="card">
     <div class="card-title"><h2>Them / cap nhat duoi ten mien</h2></div>
     <p class="muted small">Nhap lai mot duoi da co se cap nhat gia cua duoi do. Gia nhap la <strong>gia goc</strong>; he thong tu cong markup va VAT theo cau hinh.</p>
-    <form method="post" action="/admin/bang-gia">
+    <form method="post" action="<%= base %>/admin/bang-gia">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="grid grid-4" style="gap:0 14px">
         <div class="field"><label><span class="field-name">Duoi (khong dau cham)</span><input type="text" name="tld" placeholder="com.vn" required></label></div>

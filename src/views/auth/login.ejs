@@ -6,7 +6,7 @@
     <h1>Dang nhap</h1>
     <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
 
-    <form method="post" action="/dang-nhap">
+    <form method="post" action="<%= base %>/dang-nhap">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="next" value="<%= next %>">
 
@@ -23,7 +23,7 @@
     </form>
 
     <p class="small muted center" style="margin:16px 0 0">
-      <a href="/quen-mat-khau">Quen mat khau?</a> &middot; Chua co tai khoan? <a href="/dang-ky">Dang ky</a>
+      <a href="<%= base %>/quen-mat-khau">Quen mat khau?</a> &middot; Chua co tai khoan? <a href="<%= base %>/dang-ky">Dang ky</a>
     </p>
   </div>
 </div>

@@ -1,6 +1,6 @@
 <header class="site-header">
   <div class="container">
-    <a class="brand" href="/">
+    <a class="brand" href="<%= base %>/">
       <% if (site.logoUrl) { %>
         <img src="<%= site.logoUrl %>" alt="<%= site.name %>" style="height:30px">
       <% } else { %>
@@ -33,36 +33,36 @@
       <summary aria-label="Mo menu"><span class="nav-icon"></span></summary>
       <nav class="nav nav-mobile">
         <% menu.forEach(function (m) { %>
-          <a href="<%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
+          <a href="<%= base %><%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
         <% }); %>
-        <a href="/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+        <a href="<%= base %>/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
         <% if (currentUser) { %>
-          <a href="/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
-          <form method="post" action="/dang-xuat">
+          <a href="<%= base %>/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
+          <form method="post" action="<%= base %>/dang-xuat">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button type="submit">Thoat</button>
           </form>
         <% } else { %>
-          <a href="/dang-nhap">Dang nhap</a>
-          <a href="/dang-ky">Dang ky</a>
+          <a href="<%= base %>/dang-nhap">Dang nhap</a>
+          <a href="<%= base %>/dang-ky">Dang ky</a>
         <% } %>
       </nav>
     </details>
 
     <nav class="nav nav-desktop">
       <% menu.forEach(function (m) { %>
-        <a href="<%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
+        <a href="<%= base %><%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
       <% }); %>
-      <a href="/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
+      <a href="<%= base %>/gio-hang">Gio hang<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
       <% if (currentUser) { %>
-        <a href="/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
-        <form method="post" action="/dang-xuat" style="display:inline">
+        <a href="<%= base %>/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
+        <form method="post" action="<%= base %>/dang-xuat" style="display:inline">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit">Thoat</button>
         </form>
       <% } else { %>
-        <a href="/dang-nhap">Dang nhap</a>
-        <a href="/dang-ky" class="btn btn-sm">Dang ky</a>
+        <a href="<%= base %>/dang-nhap">Dang nhap</a>
+        <a href="<%= base %>/dang-ky" class="btn btn-sm">Dang ky</a>
       <% } %>
     </nav>
   </div>
@@ -75,7 +75,7 @@
           Dia chi email <strong><%= currentUser.email %></strong> chua duoc xac thuc.
           He thong dung email nay de gui thong tin quan tri ten mien.
         </span>
-        <form method="post" action="/gui-lai-xac-thuc" style="margin:0">
+        <form method="post" action="<%= base %>/gui-lai-xac-thuc" style="margin:0">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button class="btn btn-sm" type="submit">Gui lai email xac thuc</button>
         </form>

@@ -6,7 +6,7 @@
     <h1>Dang ky ten mien Viet Nam &amp; Quoc te</h1>
     <p><%= site.tagline %></p>
 
-    <form class="search-box" action="/tim-kiem" method="get">
+    <form class="search-box" action="<%= base %>/tim-kiem" method="get">
       <input type="search" name="q" aria-label="Ten mien can tim" placeholder="Nhap ten mien ban muon, vi du: congtyabc" required autofocus>
       <button class="btn btn-lg" type="submit">Kiem tra</button>
     </form>
@@ -53,13 +53,13 @@
               <td><span class="badge badge-muted"><%= t.kind === 'vn' ? 'Viet Nam' : 'Quoc te' %></span></td>
               <td class="right"><strong><%= formatVnd(priceFor(t, 'register', 1).total) %></strong></td>
               <td class="right"><%= formatVnd(priceFor(t, 'renew', 1).total) %></td>
-              <td class="right"><a class="btn btn-sm btn-outline" href="/tim-kiem?q=<%= encodeURIComponent('ten-mien-cua-ban.' + t.tld) %>">Kiem tra</a></td>
+              <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/tim-kiem?q=<%= encodeURIComponent('ten-mien-cua-ban.' + t.tld) %>">Kiem tra</a></td>
             </tr>
           <% }); %>
         </tbody>
       </table>
     </div>
-    <p class="tiny muted" style="margin:14px 0 0">Gia da bao gom VAT neu duoc cau hinh. Xem day du tai <a href="/bang-gia">bang gia</a>.</p>
+    <p class="tiny muted" style="margin:14px 0 0">Gia da bao gom VAT neu duoc cau hinh. Xem day du tai <a href="<%= base %>/bang-gia">bang gia</a>.</p>
   </div>
 </div>
 

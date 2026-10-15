@@ -13,9 +13,9 @@
     </div>
     <div class="row">
       <% if (order.status !== 'pending_payment' && order.status !== 'cancelled') { %>
-        <a class="btn btn-outline" href="/don-hang/<%= order.code %>/hoa-don" target="_blank" rel="noopener">Phieu thanh toan</a>
+        <a class="btn btn-outline" href="<%= base %>/don-hang/<%= order.code %>/hoa-don" target="_blank" rel="noopener">Phieu thanh toan</a>
       <% } %>
-      <a class="btn btn-outline" href="/don-hang">Tat ca don hang</a>
+      <a class="btn btn-outline" href="<%= base %>/don-hang">Tat ca don hang</a>
     </div>
   </div>
 
@@ -54,7 +54,7 @@
           <p class="muted small">Ten mien da kich hoat. Ban co the cau hinh DNS va nameserver ngay bay gio.</p>
           <div class="row">
             <% items.filter(function (i) { return i.status === 'active'; }).forEach(function (i) { %>
-              <a class="btn btn-sm btn-outline" href="/control-panel/<%= i.domain %>"><%= i.domain %></a>
+              <a class="btn btn-sm btn-outline" href="<%= base %>/control-panel/<%= i.domain %>"><%= i.domain %></a>
             <% }); %>
           </div>
         </div>
@@ -93,7 +93,7 @@
           <div class="card-title"><h2>Phuong thuc thanh toan</h2></div>
           <div class="stack">
             <% providers.forEach(function (p) { %>
-              <form method="post" action="/don-hang/<%= order.code %>/thanh-toan">
+              <form method="post" action="<%= base %>/don-hang/<%= order.code %>/thanh-toan">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <input type="hidden" name="provider" value="<%= p.id %>">
                 <button class="btn btn-outline btn-block" type="submit"
@@ -106,7 +106,7 @@
             <% }); %>
           </div>
 
-          <form method="post" action="/don-hang/<%= order.code %>/huy" data-confirm="Huy don hang nay?" style="margin-top:16px">
+          <form method="post" action="<%= base %>/don-hang/<%= order.code %>/huy" data-confirm="Huy don hang nay?" style="margin-top:16px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button class="btn-link small" type="submit">Huy don hang</button>
           </form>

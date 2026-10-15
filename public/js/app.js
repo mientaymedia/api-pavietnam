@@ -55,10 +55,12 @@
   if (poll) {
     var code = poll.getAttribute('data-poll-order');
     var tries = 0;
+    // Tien to BASE_PATH (vd /ten-mien) do may chu dat tren <body>; khong dung script noi tuyen vi CSP
+    var base = document.body.getAttribute('data-base') || '';
     var timer = setInterval(function () {
       tries++;
       if (tries > 120) return clearInterval(timer); // dung sau ~10 phut
-      fetch('/don-hang/' + encodeURIComponent(code) + '/trang-thai', { headers: { accept: 'application/json' } })
+      fetch(base + '/don-hang/' + encodeURIComponent(code) + '/trang-thai', { headers: { accept: 'application/json' } })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (data) {
           if (data && data.paid) { clearInterval(timer); window.location.reload(); }

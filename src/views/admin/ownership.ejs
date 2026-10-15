@@ -14,7 +14,7 @@
   <div class="card">
     <div class="row" style="margin-bottom:14px">
       <% ['', 'pending', 'in_review', 'need_documents', 'approved', 'completed', 'rejected'].forEach(function (s) { %>
-        <a class="btn btn-sm <%= status === s ? '' : 'btn-outline' %>" href="/admin/doi-chu-the<%= s ? '?status=' + s : '' %>">
+        <a class="btn btn-sm <%= status === s ? '' : 'btn-outline' %>" href="<%= base %>/admin/doi-chu-the<%= s ? '?status=' + s : '' %>">
           <%= s === '' ? 'Tat ca' : s %>
         </a>
       <% }); %>
@@ -70,7 +70,7 @@
           <div class="tiny muted" style="margin-top:4px"><strong>Ghi chu xu ly:</strong> <%= r.admin_note %></div>
         <% } %>
 
-        <form method="post" action="/admin/doi-chu-the/<%= r.id %>/trang-thai" style="margin-top:10px">
+        <form method="post" action="<%= base %>/admin/doi-chu-the/<%= r.id %>/trang-thai" style="margin-top:10px">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <div class="row" style="align-items:flex-end">
             <div class="field" style="width:190px; margin:0">

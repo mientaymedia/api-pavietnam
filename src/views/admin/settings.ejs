@@ -10,7 +10,7 @@
     khong can khoi dong lai server. O nhap bi mat hien thi dang che (<code>abcd****wxyz</code>) - de trong neu khong doi.
   </div>
 
-  <form method="post" action="/admin/cau-hinh">
+  <form method="post" action="<%= base %>/admin/cau-hinh">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
     <%
@@ -92,7 +92,7 @@
   <div class="card">
     <div class="card-title"><h2>Gui thu email (kiem tra SMTP)</h2></div>
     <p class="muted small">Gui mot email that de xac nhan host, port, tai khoan va mat khau ung dung da dung.</p>
-    <form method="post" action="/admin/cau-hinh/kiem-tra-smtp">
+    <form method="post" action="<%= base %>/admin/cau-hinh/kiem-tra-smtp">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:1; margin:0">
@@ -122,7 +122,7 @@
       sai ten thi Zalo tra loi <code>-213</code>.
     </p>
 
-    <form method="post" action="/admin/cau-hinh/zns-template">
+    <form method="post" action="<%= base %>/admin/cau-hinh/zns-template">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="table-wrap">
         <table>
@@ -148,7 +148,7 @@
     <p class="muted small">
       Zalo chi gui duoc toi so da tung tuong tac voi Official Account cua ban va chua chan OA.
     </p>
-    <form method="post" action="/admin/cau-hinh/kiem-tra-zns">
+    <form method="post" action="<%= base %>/admin/cau-hinh/kiem-tra-zns">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="width:200px; margin:0">
@@ -166,13 +166,13 @@
         <button class="btn btn-outline" type="submit">Gui ZNS thu</button>
       </div>
     </form>
-    <p class="tiny muted" style="margin:10px 0 0">Ket qua chi tiet xem tai <a href="/admin/zns">Nhat ky ZNS</a>.</p>
+    <p class="tiny muted" style="margin:10px 0 0">Ket qua chi tiet xem tai <a href="<%= base %>/admin/zns">Nhat ky ZNS</a>.</p>
   </div>
 
   <div class="card">
     <div class="card-title"><h2>Kiem tra ket noi API P.A</h2></div>
     <p class="muted small">Goi thu mot lenh chi doc (check ten mien) de xac nhan username, API Key va IP whitelist da dung.</p>
-    <form method="post" action="/admin/cau-hinh/kiem-tra-api">
+    <form method="post" action="<%= base %>/admin/cau-hinh/kiem-tra-api">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:1; margin:0">

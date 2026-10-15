@@ -5,7 +5,7 @@
   <%- include('../partials/flash') %>
   <h1>Thanh toan</h1>
 
-  <form method="post" action="/thanh-toan">
+  <form method="post" action="<%= base %>/thanh-toan">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <input type="hidden" name="coupon" value="<%= coupon %>">
 
@@ -88,7 +88,7 @@
     </div>
   </form>
 
-  <form class="card" method="post" action="/thanh-toan/ma-giam-gia" style="max-width:420px">
+  <form class="card" method="post" action="<%= base %>/thanh-toan/ma-giam-gia" style="max-width:420px">
     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
     <label>Ma giam gia</label>
     <div class="row">

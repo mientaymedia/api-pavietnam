@@ -5,7 +5,7 @@
     <h1>Dat lai mat khau</h1>
     <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
 
-    <form method="post" action="/dat-lai-mat-khau">
+    <form method="post" action="<%= base %>/dat-lai-mat-khau">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="token" value="<%= token %>">
       <div class="field">
