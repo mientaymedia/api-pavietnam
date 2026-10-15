@@ -12,7 +12,7 @@ const router = Router();
 router.get('/', (_req, res) => {
   const tlds = listTlds({ activeOnly: true });
   res.render('home', {
-    title: 'Dang ky ten mien Viet Nam & Quoc te',
+    title: 'Đăng ký tên miền Việt Nam & Quốc tế',
     featured: tlds.filter((t) => t.is_featured).slice(0, 8),
     tlds,
     priceFor,
@@ -21,7 +21,7 @@ router.get('/', (_req, res) => {
 
 router.get(
   '/tim-kiem',
-  rateLimit({ windowMs: 60_000, max: 30, message: 'Ban tim kiem qua nhanh, vui long cho mot chut.' }),
+  rateLimit({ windowMs: 60_000, max: 30, message: 'Bạn tìm kiếm quá nhanh, vui lòng chờ một chút.' }),
   wrap(async (req, res) => {
     const q = String(req.query['q'] ?? '').trim();
     const years = Math.max(1, Math.min(10, Number(req.query['years'] ?? 1) || 1));
@@ -33,7 +33,7 @@ router.get(
 
     const search = await searchDomains(q, { years });
     res.render('search', {
-      title: `Ket qua tim kiem: ${q}`,
+      title: `Kết quả tìm kiếm: ${q}`,
       q,
       years,
       search,
@@ -48,7 +48,7 @@ router.get(
   wrap(async (req, res) => {
     const domain = normalizeDomain(String(req.query['domain'] ?? ''));
     const result = domain ? await lookupWhois(domain) : null;
-    res.render('whois', { title: 'Tra cuu WHOIS', domain, result });
+    res.render('whois', { title: 'Tra cứu WHOIS', domain, result });
   }),
 );
 
@@ -56,7 +56,7 @@ router.get(
 router.get('/chuyen-ten-mien', (_req, res) => {
   const tlds = listTlds({ activeOnly: true }).filter((t) => t.price_transfer > 0);
   res.render('transfer', {
-    title: 'Chuyen ten mien ve',
+    title: 'Chuyển tên miền về',
     tlds,
     priceFor,
     values: {},
@@ -66,7 +66,7 @@ router.get('/chuyen-ten-mien', (_req, res) => {
 router.get('/bang-gia', (_req, res) => {
   const tlds = listTlds({ activeOnly: true });
   res.render('pricing', {
-    title: 'Bang gia ten mien',
+    title: 'Bảng giá tên miền',
     vn: tlds.filter((t) => t.kind === 'vn'),
     intl: tlds.filter((t) => t.kind === 'intl'),
     priceFor,

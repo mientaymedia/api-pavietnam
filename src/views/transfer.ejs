@@ -3,60 +3,60 @@
 
 <div class="container container-mid">
   <%- include('partials/flash') %>
-  <h1>Chuyen ten mien ve</h1>
-  <p class="muted">Chuyen ten mien dang o nha dang ky khac ve quan ly tai day. Thoi han su dung con lai duoc giu nguyen va cong them thoi gian ban mua.</p>
+  <h1>Chuyển tên miền về</h1>
+  <p class="muted">Chuyển tên miền đang ở nhà đăng ký khác về quản lý tại đây. Thời hạn sử dụng còn lại được giữ nguyên và cộng thêm thời gian bạn mua.</p>
 
   <div class="card">
-    <div class="card-title"><h2>Thong tin ten mien</h2></div>
+    <div class="card-title"><h2>Thông tin tên miền</h2></div>
     <form method="post" action="<%= base %>/gio-hang/them">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <input type="hidden" name="action" value="transfer">
 
       <div class="field">
-        <label for="domain"><span class="field-name">Ten mien can chuyen</span>
+        <label for="domain"><span class="field-name">Tên miền cần chuyển</span>
         <input id="domain" type="text" name="domain" value="<%= values.domain || '' %>" placeholder="tenmien-cua-ban.com" required autofocus>
       </div>
 
       <div class="field">
-        <label for="auth_code"><span class="field-name">Ma xac thuc (EPP / Auth Code)</span>
+        <label for="auth_code"><span class="field-name">Mã xác thực (EPP / Auth Code)</span>
         <input id="auth_code" type="text" name="auth_code" class="mono" required></label>
-        <div class="hint">Lay tai trang quan ly cua nha dang ky <strong>hien tai</strong>. Moi noi goi mot ten: EPP Code, Auth Code, Transfer Key hoac Ma chuyen doi.</div>
+        <div class="hint">Lấy tại trang quản lý của nhà đăng ký <strong>hiện tại</strong>. Mỗi nơi gọi một tên: EPP Code, Auth Code, Transfer Key hoặc Mã chuyển đổi.</div>
       </div>
 
       <div class="field" style="max-width:200px">
-        <label for="years"><span class="field-name">Gia han them</span>
+        <label for="years"><span class="field-name">Gia hạn thêm</span>
         <select id="years" name="years"></label>
-          <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> nam</option><% } %>
+          <% for (var y = 1; y <= 10; y++) { %><option value="<%= y %>"><%= y %> năm</option><% } %>
         </select></label>
       </div>
 
-      <button class="btn btn-lg" type="submit">Them vao gio hang</button>
+      <button class="btn btn-lg" type="submit">Thêm vào giỏ hàng</button>
     </form>
   </div>
 
   <div class="card">
-    <div class="card-title"><h2>Truoc khi chuyen, kiem tra 4 dieu</h2></div>
+    <div class="card-title"><h2>Trước khi chuyển, kiểm tra 4 điều</h2></div>
     <ol class="stack" style="padding-left:20px; margin:0">
-      <li><strong>Da qua 60 ngay</strong> ke tu lan dang ky moi hoac lan chuyen gan nhat. Day la quy dinh chung cua ICANN, khong nha dang ky nao bo qua duoc.</li>
-      <li><strong>Ten mien khong bi khoa.</strong> Trang thai <code>clientTransferProhibited</code> phai duoc go tai nha dang ky cu.</li>
-      <li><strong>Email quan tri ten mien con truy cap duoc.</strong> Thu xac nhan se gui vao email dang ky trong WHOIS - khong duyet thi yeu cau tu huy sau 5-7 ngay.</li>
-      <li><strong>Ten mien con han it nhat vai ngay.</strong> Ten mien sap het han nen gia han truoc roi hay chuyen.</li>
+      <li><strong>Đã quá 60 ngày</strong> kể từ lần đăng ký mới hoặc lần chuyển gần nhất. Đây là quy định chung của ICANN, không nhà đăng ký nào bỏ qua được.</li>
+      <li><strong>Tên miền không bị khóa.</strong> Trạng thái <code>clientTransferProhibited</code> phải được gỡ tại nhà đăng ký cũ.</li>
+      <li><strong>Email quản trị tên miền còn truy cập được.</strong> Thư xác nhận sẽ gửi vào email đăng ký trong WHOIS - không duyệt thì yêu cầu tự hủy sau 5-7 ngày.</li>
+      <li><strong>Tên miền còn hạn ít nhất vài ngày.</strong> Tên miền sắp hết hạn nên gia hạn trước rồi hãy chuyển.</li>
     </ol>
-    <p class="tiny muted" style="margin:14px 0 0">Ten mien quoc te thuong mat 5-7 ngay de hoan tat. Ten mien .vn theo qui trinh rieng cua VNNIC.</p>
+    <p class="tiny muted" style="margin:14px 0 0">Tên miền quốc tế thường mất 5-7 ngày để hoàn tất. Tên miền .vn theo qui trình riêng của VNNIC.</p>
   </div>
 
   <% if (tlds.length) { %>
     <div class="card">
-      <div class="card-title"><h2>Phi chuyen ve</h2></div>
+      <div class="card-title"><h2>Phí chuyển về</h2></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Duoi</th><th class="right">Phi chuyen ve</th><th>Bao gom</th></tr></thead>
+          <thead><tr><th>Đuôi</th><th class="right">Phí chuyển về</th><th>Bao gồm</th></tr></thead>
           <tbody>
             <% tlds.forEach(function (t) { %>
               <tr>
                 <td><strong>.<%= t.tld %></strong></td>
                 <td class="right"><strong><%= formatVnd(priceFor(t, 'transfer', 1).total) %></strong></td>
-                <td class="small muted">Cong them 1 nam su dung</td>
+                <td class="small muted">Cộng thêm 1 năm sử dụng</td>
               </tr>
             <% }); %>
           </tbody>
@@ -64,7 +64,7 @@
       </div>
     </div>
   <% } else { %>
-    <div class="alert alert-info">Hien chua co duoi ten mien nao mo dich vu chuyen ve. Vui long lien he de duoc ho tro.</div>
+    <div class="alert alert-info">Hiện chưa có đuôi tên miền nào mở dịch vụ chuyển về. Vui lòng liên hệ để được hỗ trợ.</div>
   <% } %>
 </div>
 

@@ -3,8 +3,8 @@
 
 <div class="container">
   <%- include('partials/flash') %>
-  <h1>Bang gia ten mien</h1>
-  <p class="muted">Gia hien thi la gia ban le da ap dung chinh sach gia cua he thong.</p>
+  <h1>Bảng giá tên miền</h1>
+  <p class="muted">Giá hiển thị là giá bán lẻ đã áp dụng chính sách giá của hệ thống.</p>
 
   <% function priceTable(rows) { %>
     <div class="card">
@@ -12,8 +12,8 @@
         <table>
           <thead>
             <tr>
-              <th>Duoi</th><th class="right">Dang ky (nam dau)</th><th class="right">Gia han</th>
-              <th class="right">Chuyen ve</th><th class="right">Thoi han</th><th></th>
+              <th>Đuôi</th><th class="right">Đăng ký (năm đầu)</th><th class="right">Gia hạn</th>
+              <th class="right">Chuyển về</th><th class="right">Thời hạn</th><th></th>
             </tr>
           </thead>
           <tbody>
@@ -21,16 +21,16 @@
               <tr>
                 <td>
                   <strong>.<%= t.tld %></strong>
-                  <% if (t.requires_vn_contact) { %><span class="badge badge-info" style="margin-left:6px">Can ho so chu the</span><% } %>
+                  <% if (t.requires_vn_contact) { %><span class="badge badge-info" style="margin-left:6px">Cần hồ sơ chủ thể</span><% } %>
                   <% if (t.label) { %><div class="tiny muted"><%= t.label %></div><% } %>
                 </td>
                 <td class="right"><strong><%= formatVnd(priceFor(t, 'register', 1).total) %></strong>
-                  <% if (t.setup_fee) { %><div class="tiny muted">gom phi khoi tao</div><% } %>
+                  <% if (t.setup_fee) { %><div class="tiny muted">gồm phí khởi tạo</div><% } %>
                 </td>
                 <td class="right"><%= formatVnd(priceFor(t, 'renew', 1).total) %></td>
                 <td class="right"><%= t.price_transfer ? formatVnd(priceFor(t, 'transfer', 1).total) : '-' %></td>
-                <td class="right nowrap"><%= t.min_years %>-<%= t.max_years %> nam</td>
-                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/tim-kiem?q=<%= encodeURIComponent('ten-mien.' + t.tld) %>">Kiem tra</a></td>
+                <td class="right nowrap"><%= t.min_years %>-<%= t.max_years %> năm</td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/tim-kiem?q=<%= encodeURIComponent('ten-mien.' + t.tld) %>">Kiểm tra</a></td>
               </tr>
             <% }); %>
           </tbody>
@@ -40,13 +40,13 @@
   <% } %>
 
   <% if (vn.length) { %>
-    <h2 class="section-heading">Ten mien Viet Nam</h2>
+    <h2 class="section-heading">Tên miền Việt Nam</h2>
     <% priceTable(vn); %>
-    <p class="tiny muted">Ten mien .vn bat buoc khai bao ho so chu the theo quy dinh cua VNNIC (CMND/CCCD voi ca nhan, ma so thue voi to chuc).</p>
+    <p class="tiny muted">Tên miền .vn bắt buộc khai báo hồ sơ chủ thể theo quy định của VNNIC (CMND/CCCD với cá nhân, mã số thuế với tổ chức).</p>
   <% } %>
 
   <% if (intl.length) { %>
-    <h2 class="section-heading">Ten mien quoc te</h2>
+    <h2 class="section-heading">Tên miền quốc tế</h2>
     <% priceTable(intl); %>
   <% } %>
 </div>

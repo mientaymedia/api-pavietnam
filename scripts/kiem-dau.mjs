@@ -32,7 +32,7 @@ const TU_DIEN = [
   'hien tai', 'toi thieu', 'toi da',
 ];
 // Chi tinh khi chuoi co tu 2 tu tro len va khong co chu cai mang dau nao.
-const TU_NGAN = new Set(['da', 'se', 'cho', 'nam']);
+const TU_NGAN = new Set(['da', 'se', 'cho', 'nam', 'ngay']); // 'ngay' con la tu dung (lam ngay)
 const CO_DAU = /[àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ]/i;
 const MAU_TU = TU_DIEN.map((tu) => ({
   tu,
@@ -60,7 +60,12 @@ const KIEU_CU = /(?<!q)(?:o[áàảãạ]|o[éèẻẽẹ]|u[ýỳỷỹỵ])(?!
 const BO_QUA_TEP = new Set(['src/preflight.ts', 'src/pavietnam/probe.ts', 'src/server.ts']);
 const DUOI_VAN_BAN = new Set(['.ts', '.ejs', '.js', '.mjs', '.css', '.json', '.sql']);
 
-function timLoi(chuoi) {
+function timLoi(goc) {
+  // Bo duong dan URL va chu noi gach (/tai-khoan, ten-mien-cua-ban.vn): la
+  // chuoi may doc, giu khong dau theo spec 3.4.
+  const chuoi = goc
+    .replace(/(?:https?:\/\/[^\s"'<>]*|\/[A-Za-z0-9_.:?=&%{}$/-]+)/g, ' ')
+    .replace(/(?<![\p{L}\p{N}])[a-z0-9]+(?:-[a-z0-9]+)+(?:\.[a-z0-9.]+)?(?![\p{L}\p{N}])/gu, ' ');
   const soTu = chuoi.trim().split(/\s+/).filter(Boolean).length;
   const coDau = CO_DAU.test(chuoi);
   const tu = [];

@@ -7,31 +7,31 @@
   <form class="card" action="<%= base %>/tim-kiem" method="get" style="margin-bottom:18px">
     <div class="row">
       <div style="flex:1; min-width:240px">
-        <input type="search" name="q" value="<%= q %>" aria-label="Ten mien can tim" placeholder="Nhap ten mien" required>
+        <input type="search" name="q" value="<%= q %>" aria-label="Tên miền cần tìm" placeholder="Nhập tên miền" required>
       </div>
       <div style="width:110px">
-        <select name="years" aria-label="So nam dang ky">
+        <select name="years" aria-label="Số năm đăng ký">
           <% for (var y = 1; y <= 10; y++) { %>
-            <option value="<%= y %>" <%= years === y ? 'selected' : '' %>><%= y %> nam</option>
+            <option value="<%= y %>" <%= years === y ? 'selected' : '' %>><%= y %> năm</option>
           <% } %>
         </select>
       </div>
-      <button class="btn" type="submit">Kiem tra</button>
+      <button class="btn" type="submit">Kiểm tra</button>
     </div>
   </form>
 
   <% if (!search.results.length) { %>
     <div class="card center">
-      <p class="muted">Khong co ket qua cho "<%= q %>". Vui long thu tu khoa khac.</p>
+      <p class="muted">Không có kết quả cho "<%= q %>". Vui lòng thử từ khóa khác.</p>
     </div>
   <% } %>
 
   <% var unknownCount = search.results.filter(function (r) { return r.unknown; }).length; %>
   <% if (unknownCount) { %>
     <div class="alert alert-warn">
-      Khong kiem tra duoc <%= unknownCount %> ten mien do chua ket noi duoc API nha dang ky.
+      Không kiểm tra được <%= unknownCount %> tên miền do chưa kết nối được API nhà đăng ký.
       <% if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) { %>
-        Kiem tra <a href="<%= base %>/admin/cau-hinh">cau hinh API</a> va IP whitelist.
+        Kiểm tra <a href="<%= base %>/admin/cau-hinh">cấu hình API</a> và IP whitelist.
       <% } %>
     </div>
   <% } %>
@@ -42,12 +42,12 @@
         <div class="result-name"><%= r.sld %><span class="tld">.<%= r.tld %></span></div>
         <div class="tiny muted">
           <% if (r.unknown) { %>
-            <span class="badge badge-warn">Chua kiem tra duoc</span> <%= r.message %>
+            <span class="badge badge-warn">Chưa kiểm tra được</span> <%= r.message %>
           <% } else if (r.available) { %>
-            <span class="badge badge-ok">Con trong</span>
-            <% if (r.requiresVnContact) { %> Can ho so chu the (.vn)<% } %>
+            <span class="badge badge-ok">Còn trống</span>
+            <% if (r.requiresVnContact) { %> Cần hồ sơ chủ thể (.vn)<% } %>
           <% } else { %>
-            <span class="badge badge-muted">Da co nguoi dang ky</span>
+            <span class="badge badge-muted">Đã có người đăng ký</span>
           <% } %>
         </div>
       </div>
@@ -55,13 +55,13 @@
       <div class="result-meta">
         <% if (r.available && r.price) { %>
           <div class="result-price"><%= formatVnd(r.price.total) %></div>
-          <div class="tiny muted"><%= years %> nam<%= r.price.vat ? ' (da gom VAT)' : '' %></div>
+          <div class="tiny muted"><%= years %> năm<%= r.price.vat ? ' (đã gồm VAT)' : '' %></div>
           <form method="post" action="<%= base %>/gio-hang/them" style="margin-top:6px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="domain" value="<%= r.domain %>">
             <input type="hidden" name="years" value="<%= years %>">
             <input type="hidden" name="action" value="register">
-            <button class="btn btn-sm" type="submit">Them vao gio</button>
+            <button class="btn btn-sm" type="submit">Thêm vào giỏ</button>
           </form>
         <% } else if (!r.unknown) { %>
           <a class="btn btn-sm btn-outline" href="<%= base %>/whois?domain=<%= encodeURIComponent(r.domain) %>">Xem WHOIS</a>
@@ -71,7 +71,7 @@
   <% }); %>
 
   <div class="card" style="margin-top:18px">
-    <h3>Kiem tra them duoi khac</h3>
+    <h3>Kiểm tra thêm đuôi khác</h3>
     <div class="row">
       <% allTlds.forEach(function (t) { %>
         <a class="btn btn-sm btn-outline" href="<%= base %>/tim-kiem?q=<%= encodeURIComponent(search.sld + '.' + t.tld) %>&years=<%= years %>">.<%= t.tld %></a>
