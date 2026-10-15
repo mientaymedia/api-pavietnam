@@ -38,6 +38,20 @@ const MAU_TU = TU_DIEN.map((tu) => ({
   tu,
   re: new RegExp(`(?<![\\p{L}\\p{N}])${tu.replace(/ /g, '\\s+')}(?![\\p{L}\\p{N}])`, 'iu'),
 }));
+// Tu dien tren chi bat duoc cau co tu "dac trung". Them luat thu hai cho nhan
+// ngan nhu "Ca nhan", "Tong quan", "Hang doi": chuoi khong co dau nao ma tu
+// mot nua so tu tro len (toi thieu 2 tu) la am tiet tieng Viet viet ASCII.
+const AM_TIET = new Set(`
+  ban bao bat buoc cac can cao cau chi chieu chinh chuc chung chuyen co con cong cu cua cuu
+  danh dau den deu dich dien doanh doi don dong du dung duoi duoc gan gia gian gio gui hai han
+  hang hanh hieu hinh hoan hoat hop huong huy huyen kem ket khach khau khoa khoan khong kich
+  kinh ky lam lan lap le lich lien loai loc loi luc luu mat may mien moi mot muc nay neu ngay
+  nghiep nguoi nhan nhanh nhap nhat nhieu nhom nhung phai phan phien pho phu phut qua quan quay
+  quoc sach sau soat sua tai tat thai thang thanh that the theo thoat thoi thong thu thuc thue
+  tiep tien tiet tim tin tinh toan toi tong tra trang tren tro truc truoc tu tuc tuyen vao viec
+  viet voi vui xac xem xoa xu xuat
+`.trim().split(/\s+/));
+
 // Kieu dau cu (dau dat o nguyen am thu hai): chu da chon kieu moi "khóa, hủy,
 // tùy, hóa, thỏa" (spec muc 10, D2). "qu" + y la phu am + nguyen am nen bo qua.
 const KIEU_CU = /(?<!q)(?:o[áàảãạ]|o[éèẻẽẹ]|u[ýỳỷỹỵ])(?!\p{L})/iu;
@@ -53,6 +67,11 @@ function timLoi(chuoi) {
   for (const { tu: w, re } of MAU_TU) {
     if (TU_NGAN.has(w) && (soTu < 2 || coDau)) continue;
     if (re.test(chuoi)) tu.push(w);
+  }
+  if (!tu.length && !coDau) {
+    const cacTu = chuoi.toLowerCase().match(/\p{L}+/gu) ?? [];
+    const trung = cacTu.filter((w) => AM_TIET.has(w)).length;
+    if (cacTu.length >= 2 && trung >= 2 && trung * 2 >= cacTu.length) tu.push('câu không dấu');
   }
   if (KIEU_CU.test(chuoi)) tu.push('kiểu dấu cũ: ' + chuoi.match(KIEU_CU)[0]);
   return tu;
