@@ -20,8 +20,12 @@ import { audit } from './audit.js';
 import { enqueue } from '../jobs/queue.js';
 import { upsertDomainFromProvider } from './domainRepo.js';
 import { autoRefundEnabled, refundOrderItem } from './refunds.js';
+import { boDau } from '../lib/text.js';
 
-/** Loi khong the khac phuc bang cach thu lai. */
+/**
+ * Loi khong the khac phuc bang cach thu lai. Viet ASCII khong dau va so tren
+ * chu da boDau: P.A tra chu co dau ("đã được đăng ký") cung phai khop.
+ */
 const PERMANENT_PATTERNS = [
   /da\s*(duoc\s*)?dang\s*ky/i,
   /already\s+(registered|exists|taken)/i,
@@ -33,8 +37,9 @@ const PERMANENT_PATTERNS = [
   /insufficient\s+(funds|balance)/i,
 ];
 
-function isPermanent(message: string): boolean {
-  return PERMANENT_PATTERNS.some((re) => re.test(message));
+export function isPermanent(message: string): boolean {
+  const chu = boDau(message);
+  return PERMANENT_PATTERNS.some((re) => re.test(chu));
 }
 
 export interface ProvisionSummary {

@@ -4,6 +4,7 @@ import { httpRequest } from '../lib/http.js';
 import { log } from '../lib/logger.js';
 import { maskSecret, sha256 } from '../lib/crypto.js';
 import { settings } from '../lib/settings.js';
+import { boDau } from '../lib/text.js';
 import { ACTIONS, FIELDS, RESPONSE_KEYS, SUCCESS_TOKENS, type ActionKey } from './actions.js';
 import { asBool, normalizeDate, parseNameservers, parseResponse, pick, type Flat } from './parse.js';
 import {
@@ -119,7 +120,7 @@ export async function call(
 }
 
 /** Doc trang thai thanh cong / ma loi / thong bao tu phan hoi da parse. */
-function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'message'> {
+export function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'message'> {
   const status = pick(data, [...RESPONSE_KEYS.status]) ?? '';
   const message = pick(data, [...RESPONSE_KEYS.message]) ?? '';
   const normalized = status.trim().toLowerCase();
@@ -131,8 +132,12 @@ function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'me
     // day khong phai loi ky thuat nen van coi la goi thanh cong.
     if (!ok && /available|unavailable|registered|active|expired/.test(normalized)) ok = true;
   } else {
-    // Khong co truong status -> suy doan tu noi dung
-    ok = !/\b(error|loi|fail(ed)?|invalid|denied|not\s+allowed|permission)\b/i.test(raw);
+    // Khong co truong status -> suy doan tu noi dung. So tren chu da boDau:
+    // "Lỗi: ..." hay "IP không được phép truy cập" truoc day khong khop gi nen
+    // loi goi hong bi coi la THANH CONG.
+    ok = !/\b(error|loi|fail(ed)?|invalid|denied|not\s+allowed|permission|khong\s+duoc\s+phep|khong\s+duoc\s+ho\s+tro)\b/i.test(
+      boDau(raw),
+    );
   }
 
   return { ok, code: status, message: message || (ok ? '' : raw.slice(0, 500)) };
@@ -169,6 +174,19 @@ function ensureOk(res: RawResult, what: string): RawResult {
 
 /* ========================================================== ham nghiep vu */
 
+/**
+ * Suy ra "con trong" tu chu cua phan hoi khi khong co truong 0/1 ro rang.
+ * So tren chu da boDau de khop ca "đã được đăng ký" lan "da duoc dang ky".
+ */
+export function availableFromText(text: string): boolean {
+  const hay = boDau(text);
+  if (/\b(unavailable|not\s+available|taken|registered|da\s*(duoc\s*)?dang\s*ky|khong\s*kha\s*dung)\b/.test(hay)) {
+    return false;
+  }
+  if (/\b(available|free|chua\s*(duoc\s*)?dang\s*ky|kha\s*dung|con\s*trong)\b/.test(hay)) return true;
+  return false; // An toan: khong ro thi coi nhu KHONG con trong
+}
+
 /** Kiem tra ten mien con trong hay khong. */
 export async function checkDomain(domain: string): Promise<CheckResult> {
   const d = normalizeDomain(domain);
@@ -179,14 +197,7 @@ export async function checkDomain(domain: string): Promise<CheckResult> {
   if (availableRaw !== undefined && /^(0|1|true|false|yes|no|y|n)$/i.test(availableRaw.trim())) {
     available = asBool(availableRaw);
   } else {
-    const hay = `${availableRaw ?? ''} ${res.message} ${res.raw}`.toLowerCase();
-    if (/\b(unavailable|not\s+available|taken|registered|da\s*(duoc\s*)?dang\s*ky|khong\s*kha\s*dung)\b/.test(hay)) {
-      available = false;
-    } else if (/\b(available|free|chua\s*dang\s*ky|kha\s*dung|con\s*trong)\b/.test(hay)) {
-      available = true;
-    } else {
-      available = false; // An toan: khong ro thi coi nhu KHONG con trong
-    }
+    available = availableFromText(`${availableRaw ?? ''} ${res.message} ${res.raw}`);
   }
 
   return { ...res, domain: d, available };
@@ -375,16 +386,20 @@ export async function setDomainLock(domain: string, locked: boolean): Promise<Ra
   );
 }
 
+/** Chu WHOIS co cho thay ten mien da co chu khong (so tren chu da boDau). */
+export function registeredFromWhoisText(text: string): boolean {
+  return !/no\s+match|not\s+found|khong\s+tim\s+thay|chua\s+(duoc\s+)?dang\s+ky|available/i.test(boDau(text));
+}
+
 /** Tra cuu WHOIS. */
 export async function whois(domain: string): Promise<WhoisResult> {
   const d = normalizeDomain(domain);
   const res = await call(ACTIONS.whois, { [FIELDS.domain]: d }, { domainForLog: d });
   const text = String(pick(res.data, ['raw_text', 'whois', 'result', 'data']) ?? res.raw);
-  const registered = !/no\s+match|not\s+found|khong\s+tim\s+thay|chua\s+dang\s+ky|available/i.test(text);
   return {
     ...res,
     domain: d,
-    registered,
+    registered: registeredFromWhoisText(text),
     registrar: pick(res.data, [...RESPONSE_KEYS.registrar]) ?? extract(text, /Registrar:\s*(.+)/i),
     createdAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.created]) ?? extract(text, /Creat(?:ed|ion)\s*(?:on|Date)?:\s*(.+)/i)),
     expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires]) ?? extract(text, /Expir\w*\s*(?:on|Date)?:\s*(.+)/i)),
