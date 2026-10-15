@@ -31,11 +31,34 @@ function secret(key: string): string {
   return crypto.createHash('sha256').update(`dev-${key}`).digest('hex');
 }
 
+/**
+ * Tien to duong dan khi app chay duoi thu muc con (vd https://mientaymedia.com/ten-mien).
+ * Rong = chay o goc nhu truoc. Phai khop phan duong dan cua APP_URL: link trong
+ * email, sitemap, URL thanh toan dung APP_URL, con link trong trang dung tien
+ * to nay; lech nhau la khach bam vao link hong, nen dung khoi dong luon.
+ */
+export function chuanHoaBasePath(raw: string, appUrl: string): string {
+  const v = raw.trim().replace(/\/+$/, '');
+  if (v && !/^(\/[a-z0-9._~-]+)+$/.test(v)) {
+    throw new Error(`BASE_PATH không hợp lệ: "${raw}". Ví dụ đúng: /ten-mien (chữ thường, bắt đầu bằng /).`);
+  }
+  const urlPath = new URL(appUrl).pathname.replace(/\/+$/, '');
+  if (urlPath !== v) {
+    throw new Error(
+      `APP_URL và BASE_PATH không khớp: APP_URL có đường dẫn "${urlPath || '/'}" nhưng BASE_PATH là "${v || '/'}".`,
+    );
+  }
+  return v;
+}
+
+const appUrl = str('APP_URL', `http://localhost:${num('PORT', 3000)}`).replace(/\/+$/, '');
+
 export const config = {
   env: str('NODE_ENV', 'development'),
   isProd,
   port: num('PORT', 3000),
-  appUrl: str('APP_URL', `http://localhost:${num('PORT', 3000)}`).replace(/\/+$/, ''),
+  appUrl,
+  basePath: chuanHoaBasePath(str('BASE_PATH', ''), appUrl),
   appName: str('APP_NAME', 'Ten Mien Viet'),
   sessionSecret: secret('SESSION_SECRET'),
   encryptionKey: secret('ENCRYPTION_KEY'),

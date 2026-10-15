@@ -10,6 +10,9 @@ import { randomToken } from '../lib/crypto.js';
 
 const COOKIE = 'sid';
 const TTL_MS = 30 * 24 * 3600_000; // 30 ngay
+// Cookie chi gui cho duong dan cua app: chay duoi /ten-mien thi khong lo sang
+// site chinh cung ten mien.
+const COOKIE_PATH = config.basePath || '/';
 
 export interface SessionData {
   userId?: number;
@@ -79,7 +82,7 @@ export function sessionMiddleware(req: Request, res: Response, next: NextFunctio
       sameSite: 'lax',
       secure: config.isProd,
       maxAge: TTL_MS,
-      path: '/',
+      path: COOKIE_PATH,
     });
   }
 
@@ -119,7 +122,7 @@ export function loginSession(req: Request, res: Response, userId: number): void 
   db.prepare(
     `INSERT INTO sessions (sid, user_id, data, ip, user_agent, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
   ).run(sid, userId, JSON.stringify(data), req.ip ?? '', String(req.get('user-agent') ?? '').slice(0, 255), isoIn(TTL_MS), nowIso());
-  res.cookie(COOKIE, serialize(sid), { httpOnly: true, sameSite: 'lax', secure: config.isProd, maxAge: TTL_MS, path: '/' });
+  res.cookie(COOKIE, serialize(sid), { httpOnly: true, sameSite: 'lax', secure: config.isProd, maxAge: TTL_MS, path: COOKIE_PATH });
   req.sessionId = sid;
   req.session = data;
   db.prepare('UPDATE users SET last_login_at = ? WHERE id = ?').run(nowIso(), userId);
@@ -127,7 +130,7 @@ export function loginSession(req: Request, res: Response, userId: number): void 
 
 export function destroySession(req: Request, res: Response): void {
   db.prepare('DELETE FROM sessions WHERE sid = ?').run(req.sessionId);
-  res.clearCookie(COOKIE, { path: '/' });
+  res.clearCookie(COOKIE, { path: COOKIE_PATH });
   req.session = {};
 }
 

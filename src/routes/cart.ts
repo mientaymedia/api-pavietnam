@@ -5,6 +5,7 @@ import { wrap } from '../middleware/error.js';
 import { checkDomain } from '../pavietnam/client.js';
 import { authCodeSchema, domainSchema, yearsSchema } from '../lib/validate.js';
 import { rateLimit } from '../middleware/ratelimit.js';
+import { stripBase } from '../lib/basePath.js';
 
 const router = Router();
 
@@ -21,7 +22,11 @@ function quayLai(req: Request): string {
   try {
     const u = new URL(referer);
     const goc = `${req.protocol}://${req.get('host')}`;
-    return u.origin === goc ? `${u.pathname}${u.search}` : macDinh;
+    if (u.origin !== goc) return macDinh;
+    // Referer co tien to BASE_PATH; trang cung ten mien nhung ngoai app (site
+    // chinh) thi ve gio hang.
+    const trong = stripBase(u.pathname);
+    return trong === null ? macDinh : `${trong}${u.search}`;
   } catch {
     return macDinh;
   }

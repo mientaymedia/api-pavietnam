@@ -11,6 +11,7 @@ import { buildCsp } from './lib/csp.js';
 import { getCart } from './services/cart.js';
 import { formatVnd } from './lib/money.js';
 import { isVerified } from './services/verification.js';
+import { BASE, outsideBase, redirectWithBase, withBase } from './lib/basePath.js';
 
 import homeRoutes from './routes/home.js';
 import authRoutes from './routes/auth.js';
@@ -34,20 +35,8 @@ export function createApp() {
   app.set('views', path.join(here, 'views'));
   app.disable('x-powered-by');
 
-  // Webhook can body tho de xac thuc chu ky -> giu lai ban raw
-  app.use(
-    express.json({
-      limit: '256kb',
-      verify: (req, _res, buf) => {
-        (req as express.Request & { rawBody?: string }).rawBody = buf.toString('utf8');
-      },
-    }),
-  );
-  app.use(express.urlencoded({ extended: false, limit: '256kb' }));
-  app.use(cookieParser());
-  app.use(express.static(path.join(projectRoot, 'public'), { maxAge: config.isProd ? '7d' : 0 }));
-
-  // Header bao mat co ban (khong can thu vien ngoai)
+  // Header bao mat co ban (khong can thu vien ngoai). O cap app de ca phan
+  // hoi ngoai tien to BASE_PATH cung co.
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
@@ -57,12 +46,33 @@ export function createApp() {
     next();
   });
 
-  app.use(sessionMiddleware);
+  // Moi thu con lai nam trong router con mount tai BASE_PATH: ben trong,
+  // req.path da bo tien to nen route, CSRF, gioi han tan suat, danh dau menu
+  // chay y nhu khi app o goc.
+  const site = express.Router();
+
+  // Phai dung dau router con: redirect nao ben duoi cung duoc them tien to.
+  site.use(redirectWithBase);
+
+  // Webhook can body tho de xac thuc chu ky -> giu lai ban raw
+  site.use(
+    express.json({
+      limit: '256kb',
+      verify: (req, _res, buf) => {
+        (req as express.Request & { rawBody?: string }).rawBody = buf.toString('utf8');
+      },
+    }),
+  );
+  site.use(express.urlencoded({ extended: false, limit: '256kb' }));
+  site.use(cookieParser());
+  site.use(express.static(path.join(projectRoot, 'public'), { maxAge: config.isProd ? '7d' : 0 }));
+
+  site.use(sessionMiddleware);
 
   // Bien dung chung cho moi view.
   // Phai dat TRUOC csrfMiddleware: khi CSRF bi tu choi, trang loi cung can
   // cac bien nay de render duoc (neu khong se thanh loi 500 kho hieu).
-  app.use((req, res, next) => {
+  site.use((req, res, next) => {
     res.locals['site'] = settings.site();
     res.locals['currentUser'] = req.currentUser ?? null;
     res.locals['flashes'] = takeFlash(req);
@@ -70,26 +80,36 @@ export function createApp() {
     res.locals['formatVnd'] = formatVnd;
     res.locals['currentPath'] = req.path;
     res.locals['appUrl'] = config.appUrl;
+    // Link trong view: href="<%= base %>/gio-hang", hoac url(duong_dan) trong khoi ma
+    res.locals['base'] = BASE;
+    res.locals['url'] = withBase;
     res.locals['csrfToken'] = '';
     // Hien dai nhac xac thuc email tren moi trang khi khach chua xac thuc
     res.locals['needsEmailVerify'] = Boolean(req.currentUser) && !isVerified(req.currentUser!.id);
     next();
   });
 
-  app.use(csrfMiddleware);
+  site.use(csrfMiddleware);
 
-  app.use('/', homeRoutes);
-  app.use('/', authRoutes);
-  app.use('/gio-hang', cartRoutes);
-  app.use('/thanh-toan', checkoutRoutes);
-  app.use('/don-hang', orderRoutes);
-  app.use('/webhooks', webhookRoutes);
-  app.use('/control-panel', controlPanelRoutes);
-  app.use('/', accountRoutes);
-  app.use('/admin', adminRoutes);
-  app.use('/api/v1', apiRoutes);
+  site.use('/', homeRoutes);
+  site.use('/', authRoutes);
+  site.use('/gio-hang', cartRoutes);
+  site.use('/thanh-toan', checkoutRoutes);
+  site.use('/don-hang', orderRoutes);
+  site.use('/webhooks', webhookRoutes);
+  site.use('/control-panel', controlPanelRoutes);
+  site.use('/', accountRoutes);
+  site.use('/admin', adminRoutes);
+  site.use('/api/v1', apiRoutes);
 
-  app.use(notFound);
-  app.use(errorHandler);
+  site.use(notFound);
+  site.use(errorHandler);
+
+  if (BASE) {
+    app.use(BASE, site);
+    app.use(outsideBase);
+  } else {
+    app.use(site);
+  }
   return app;
 }

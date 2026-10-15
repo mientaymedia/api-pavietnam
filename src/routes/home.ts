@@ -5,6 +5,7 @@ import { listTlds, priceFor } from '../services/pricing.js';
 import { rateLimit } from '../middleware/ratelimit.js';
 import { normalizeDomain } from '../pavietnam/client.js';
 import { config } from '../config.js';
+import { BASE } from '../lib/basePath.js';
 
 const router = Router();
 
@@ -92,7 +93,10 @@ router.get('/robots.txt', (_req, res) => {
       '',
       `Sitemap: ${config.appUrl}/sitemap.xml`,
       '',
-    ].join('\n'),
+    ]
+      // Chay duoi BASE_PATH thi duong dan chan cung phai co tien to
+      .map((dong) => dong.replace(/^(Disallow|Allow): (?=\/)/, `$1: ${BASE}`))
+      .join('\n'),
   );
 });
 

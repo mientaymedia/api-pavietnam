@@ -2,13 +2,16 @@ import type { NextFunction, Request, Response } from 'express';
 import { db, nowIso } from '../db/index.js';
 import { sha256 } from '../lib/crypto.js';
 import { flash } from './session.js';
+import { stripBase } from '../lib/basePath.js';
 import { isEnabled as twoFactorEnabled, requires2FA } from '../services/twoFactor.js';
 
 /** Bat buoc dang nhap; chua dang nhap thi chuyen sang trang dang nhap kem duong dan quay lai. */
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
   if (req.currentUser) return next();
   flash(req, 'error', 'Vui long dang nhap de tiep tuc.');
-  res.redirect(`/dang-nhap?next=${encodeURIComponent(req.originalUrl)}`);
+  // originalUrl con tien to BASE_PATH; next phai la duong dan BEN TRONG app vi
+  // redirect se them tien to dung mot lan nua.
+  res.redirect(`/dang-nhap?next=${encodeURIComponent(stripBase(req.originalUrl) ?? '/dashboard')}`);
 }
 
 export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
