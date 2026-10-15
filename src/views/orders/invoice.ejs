@@ -3,8 +3,8 @@
 <div class="container container-mid" style="padding-top:28px; padding-bottom:60px">
 
   <div class="row-between no-print" style="margin-bottom:18px">
-    <a class="btn btn-outline btn-sm" href="<%= base %>/don-hang/<%= order.code %>">&larr; Ve don hang</a>
-    <button class="btn btn-sm" type="button" data-print>In phieu</button>
+    <a class="btn btn-outline btn-sm" href="<%= base %>/don-hang/<%= order.code %>">&larr; Về đơn hàng</a>
+    <button class="btn btn-sm" type="button" data-print>In phiếu</button>
   </div>
 
   <div class="card invoice">
@@ -16,19 +16,19 @@
         <% if (site.supportEmail) { %><div class="small muted"><%= site.supportEmail %></div><% } %>
       </div>
       <div class="right">
-        <h1 style="margin:0 0 4px; font-size:1.3rem">PHIEU THANH TOAN</h1>
+        <h1 style="margin:0 0 4px; font-size:1.3rem">PHIẾU THANH TOÁN</h1>
         <div class="mono"><strong><%= order.code %></strong></div>
-        <div class="small muted">Ngay: <%= (order.paid_at || order.created_at).slice(0, 10) %></div>
+        <div class="small muted">Ngày: <%= (order.paid_at || order.created_at).slice(0, 10) %></div>
       </div>
     </div>
 
     <div class="grid grid-2" style="margin-bottom:22px">
       <div>
-        <div class="section-heading">Ben mua</div>
+        <div class="section-heading">Bên mua</div>
         <% if (contact) { %>
           <div><strong><%= contact.kind === 'organization' && contact.org_name ? contact.org_name : contact.full_name %></strong></div>
           <% if (contact.kind === 'organization' && contact.tax_code) { %>
-            <div class="small">Ma so thue: <%= contact.tax_code %></div>
+            <div class="small">Mã số thuế: <%= contact.tax_code %></div>
           <% } %>
           <% if (contact.address) { %><div class="small"><%= contact.address %><%= contact.province ? ', ' + contact.province : '' %></div><% } %>
           <div class="small"><%= contact.email %> &middot; <%= contact.phone %></div>
@@ -39,17 +39,17 @@
       </div>
 
       <div>
-        <div class="section-heading">Thanh toan</div>
+        <div class="section-heading">Thanh toán</div>
         <% if (payments.length) { %>
           <% payments.forEach(function (p) { %>
             <div class="small">
-              <%= p.provider === 'sepay' ? 'Chuyen khoan ngan hang' : p.provider === 'balance' ? 'Tru so du tai khoan' : p.provider === 'manual' ? 'Xac nhan thu cong' : p.provider %>
+              <%= p.provider === 'sepay' ? 'Chuyển khoản ngân hàng' : p.provider === 'balance' ? 'Trừ số dư tài khoản' : p.provider === 'manual' ? 'Xác nhận thủ công' : p.provider %>
               <% if (p.paid_at) { %> &middot; <%= p.paid_at.replace('T', ' ').slice(0, 16) %><% } %>
             </div>
             <% if (p.provider_txn) { %><div class="tiny muted mono">GD: <%= p.provider_txn %></div><% } %>
           <% }); %>
         <% } else { %>
-          <div class="small muted">Chua ghi nhan thanh toan</div>
+          <div class="small muted">Chưa ghi nhận thanh toán</div>
         <% } %>
       </div>
     </div>
@@ -57,7 +57,7 @@
     <div class="table-wrap">
     <table>
       <thead>
-        <tr><th style="width:34px">#</th><th>Noi dung</th><th class="right">Thoi han</th><th class="right">Don gia</th><th class="right">Thanh tien</th></tr>
+        <tr><th style="width:34px">#</th><th>Nội dung</th><th class="right">Thời hạn</th><th class="right">Đơn giá</th><th class="right">Thành tiền</th></tr>
       </thead>
       <tbody>
         <% items.forEach(function (i, idx) { %>
@@ -65,9 +65,9 @@
             <td class="small muted"><%= idx + 1 %></td>
             <td>
               <strong class="mono"><%= i.domain %></strong>
-              <div class="tiny muted"><%= i.action === 'register' ? 'Dang ky ten mien' : i.action === 'renew' ? 'Gia han ten mien' : 'Chuyen ten mien ve' %></div>
+              <div class="tiny muted"><%= i.action === 'register' ? 'Đăng ký tên miền' : i.action === 'renew' ? 'Gia hạn tên miền' : 'Chuyển tên miền về' %></div>
             </td>
-            <td class="right small"><%= i.years %> nam</td>
+            <td class="right small"><%= i.years %> năm</td>
             <td class="right small"><%= formatVnd(i.unit_price) %></td>
             <td class="right"><%= formatVnd(i.amount) %></td>
           </tr>
@@ -77,10 +77,10 @@
     </div>
 
     <div style="margin-left:auto; max-width:320px; margin-top:18px">
-      <div class="copy-row"><span class="label">Tam tinh</span><span class="value"><%= formatVnd(order.subtotal) %></span></div>
+      <div class="copy-row"><span class="label">Tạm tính</span><span class="value"><%= formatVnd(order.subtotal) %></span></div>
       <% if (order.discount) { %>
         <div class="copy-row">
-          <span class="label">Giam gia<%= order.coupon_code ? ' (' + order.coupon_code + ')' : '' %></span>
+          <span class="label">Giảm giá<%= order.coupon_code ? ' (' + order.coupon_code + ')' : '' %></span>
           <span class="value">-<%= formatVnd(order.discount) %></span>
         </div>
       <% } %>
@@ -88,15 +88,15 @@
         <div class="copy-row"><span class="label">VAT</span><span class="value"><%= formatVnd(order.vat) %></span></div>
       <% } %>
       <div class="copy-row" style="border-top:2px solid var(--line); padding-top:12px">
-        <span class="label"><strong>Tong cong</strong></span>
+        <span class="label"><strong>Tổng cộng</strong></span>
         <span class="value" style="font-size:1.15rem"><%= formatVnd(order.total) %></span>
       </div>
     </div>
 
     <p class="tiny muted" style="margin-top:28px; border-top:1px solid var(--line); padding-top:14px">
-      Phieu nay la chung tu xac nhan giao dich cua he thong, <strong>khong thay the hoa don gia tri gia tang</strong>.
-      Neu can hoa don VAT, vui long lien he
-      <%= site.supportEmail || site.hotline || 'bo phan ho tro' %> kem ma don <%= order.code %>.
+      Phiếu này là chứng từ xác nhận giao dịch của hệ thống, <strong>không thay thế hóa đơn giá trị gia tăng</strong>.
+      Nếu cần hóa đơn VAT, vui lòng liên hệ
+      <%= site.supportEmail || site.hotline || 'bộ phận hỗ trợ' %> kèm mã đơn <%= order.code %>.
     </p>
   </div>
 </div>

@@ -59,7 +59,7 @@ export async function refundOrderItem(
   if (!claimed.ok) {
     return claimed.item.status === 'refunded'
       ? { status: 'already_refunded' }
-      : { status: 'not_refundable', reason: `Dong don dang o trang thai "${claimed.item.status}", chi hoan duoc dong da that bai` };
+      : { status: 'not_refundable', reason: `Dòng đơn đang ở trạng thái "${claimed.item.status}", chỉ hoàn được dòng đã thất bại` };
   }
 
   const item = claimed.item;
@@ -73,7 +73,7 @@ export async function refundOrderItem(
     amount,
     'refund',
     `order:${order.code}:item:${item.id}`,
-    opts.reason || `Hoan tien ${item.domain} - dang ky khong thanh cong`,
+    opts.reason || `Hoàn tiền ${item.domain} - đăng ký không thành công`,
   );
 
   refreshOrderStatus(order.id);
@@ -96,7 +96,7 @@ export async function refundOrderItem(
       orderCode: order.code,
       amount,
       balanceAfter,
-      reason: opts.reason || item.error || 'Dang ky khong thanh cong',
+      reason: opts.reason || item.error || 'Đăng ký không thành công',
     });
   }
 

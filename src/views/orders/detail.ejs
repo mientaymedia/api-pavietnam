@@ -6,38 +6,38 @@
 
   <div class="row-between">
     <div>
-      <h1 style="margin-bottom:4px">Don hang <span class="mono"><%= order.code %></span></h1>
+      <h1 style="margin-bottom:4px">Đơn hàng <span class="mono"><%= order.code %></span></h1>
       <div><%- include('../partials/order-status', { status: order.status }) %>
-        <span class="muted small"> Tao luc <%= order.created_at.replace('T', ' ').slice(0, 16) %></span>
+        <span class="muted small"> Tạo lúc <%= order.created_at.replace('T', ' ').slice(0, 16) %></span>
       </div>
     </div>
     <div class="row">
       <% if (order.status !== 'pending_payment' && order.status !== 'cancelled') { %>
-        <a class="btn btn-outline" href="<%= base %>/don-hang/<%= order.code %>/hoa-don" target="_blank" rel="noopener">Phieu thanh toan</a>
+        <a class="btn btn-outline" href="<%= base %>/don-hang/<%= order.code %>/hoa-don" target="_blank" rel="noopener">Phiếu thanh toán</a>
       <% } %>
-      <a class="btn btn-outline" href="<%= base %>/don-hang">Tat ca don hang</a>
+      <a class="btn btn-outline" href="<%= base %>/don-hang">Tất cả đơn hàng</a>
     </div>
   </div>
 
   <div class="sidebar-layout" style="margin-top:18px">
     <div>
       <div class="card">
-        <div class="card-title"><h2>Chi tiet</h2></div>
+        <div class="card-title"><h2>Chi tiết</h2></div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Ten mien</th><th>Dich vu</th><th>Thoi han</th><th>Trang thai</th><th class="right">Thanh tien</th></tr></thead>
+            <thead><tr><th>Tên miền</th><th>Dịch vụ</th><th>Thời hạn</th><th>Trạng thái</th><th class="right">Thành tiền</th></tr></thead>
             <tbody>
               <% items.forEach(function (i) { %>
                 <tr>
                   <td class="mono"><strong><%= i.domain %></strong></td>
-                  <td class="small"><%= i.action === 'register' ? 'Dang ky moi' : i.action === 'renew' ? 'Gia han' : 'Chuyen ve' %></td>
-                  <td class="small"><%= i.years %> nam</td>
+                  <td class="small"><%= i.action === 'register' ? 'Đăng ký mới' : i.action === 'renew' ? 'Gia hạn' : 'Chuyển về' %></td>
+                  <td class="small"><%= i.years %> năm</td>
                   <td>
-                    <% if (i.status === 'active') { %><span class="badge badge-ok">Da kich hoat</span>
-                    <% } else if (i.status === 'refunded') { %><span class="badge badge-info">Da hoan tien vao vi</span>
-                    <% } else if (i.status === 'failed') { %><span class="badge badge-danger">That bai</span>
-                    <% } else if (i.status === 'processing') { %><span class="badge badge-info">Dang dang ky</span>
-                    <% } else { %><span class="badge badge-muted">Cho xu ly</span><% } %>
+                    <% if (i.status === 'active') { %><span class="badge badge-ok">Đã kích hoạt</span>
+                    <% } else if (i.status === 'refunded') { %><span class="badge badge-info">Đã hoàn tiền vào ví</span>
+                    <% } else if (i.status === 'failed') { %><span class="badge badge-danger">Thất bại</span>
+                    <% } else if (i.status === 'processing') { %><span class="badge badge-info">Đang đăng ký</span>
+                    <% } else { %><span class="badge badge-muted">Chờ xử lý</span><% } %>
                     <% if (i.error) { %><div class="tiny" style="color:var(--danger)"><%= i.error %></div><% } %>
                   </td>
                   <td class="right"><%= formatVnd(i.amount) %></td>
@@ -50,8 +50,8 @@
 
       <% if (order.status === 'completed' || order.status === 'partially_completed') { %>
         <div class="card">
-          <div class="card-title"><h2>Quan ly ten mien</h2></div>
-          <p class="muted small">Ten mien da kich hoat. Ban co the cau hinh DNS va nameserver ngay bay gio.</p>
+          <div class="card-title"><h2>Quản lý tên miền</h2></div>
+          <p class="muted small">Tên miền đã kích hoạt. Bạn có thể cấu hình DNS và nameserver ngay bây giờ.</p>
           <div class="row">
             <% items.filter(function (i) { return i.status === 'active'; }).forEach(function (i) { %>
               <a class="btn btn-sm btn-outline" href="<%= base %>/control-panel/<%= i.domain %>"><%= i.domain %></a>
@@ -65,32 +65,32 @@
       <% if (order.status === 'pending_payment') { %>
         <% if (pendingPayment && pendingPayment.qr_url) { %>
           <div class="card">
-            <div class="card-title"><h2>Quet ma de thanh toan</h2></div>
+            <div class="card-title"><h2>Quét mã để thanh toán</h2></div>
             <div class="qr-box">
-              <img src="<%= pendingPayment.qr_url %>" alt="Ma QR chuyen khoan">
-              <p class="tiny muted" style="margin:10px 0 0">Mo app ngan hang, quet ma. So tien va noi dung da duoc dien san.</p>
+              <img src="<%= pendingPayment.qr_url %>" alt="Mã QR chuyển khoản">
+              <p class="tiny muted" style="margin:10px 0 0">Mở app ngân hàng, quét mã. Số tiền và nội dung đã được điền sẵn.</p>
             </div>
             <div style="margin-top:14px">
               <div class="copy-row">
-                <span class="label">So tien</span>
+                <span class="label">Số tiền</span>
                 <span class="value"><%= formatVnd(order.total) %>
-                  <button class="btn-link tiny" data-copy="<%= order.total %>">chep</button></span>
+                  <button class="btn-link tiny" data-copy="<%= order.total %>">chép</button></span>
               </div>
               <div class="copy-row">
-                <span class="label">Noi dung CK</span>
+                <span class="label">Nội dung CK</span>
                 <span class="value"><%= pendingPayment.ref_code %>
-                  <button class="btn-link tiny" data-copy="<%= pendingPayment.ref_code %>">chep</button></span>
+                  <button class="btn-link tiny" data-copy="<%= pendingPayment.ref_code %>">chép</button></span>
               </div>
             </div>
             <div class="alert alert-warn tiny" style="margin:14px 0 0">
-              Ghi <strong>dung noi dung chuyen khoan</strong> de he thong doi soat tu dong va kich hoat ten mien ngay.
-              Trang nay tu cap nhat khi nhan duoc tien.
+              Ghi <strong>đúng nội dung chuyển khoản</strong> để hệ thống đối soát tự động và kích hoạt tên miền ngay.
+              Trang này tự cập nhật khi nhận được tiền.
             </div>
           </div>
         <% } %>
 
         <div class="card">
-          <div class="card-title"><h2>Phuong thuc thanh toan</h2></div>
+          <div class="card-title"><h2>Phương thức thanh toán</h2></div>
           <div class="stack">
             <% providers.forEach(function (p) { %>
               <form method="post" action="<%= base %>/don-hang/<%= order.code %>/thanh-toan">
@@ -106,31 +106,31 @@
             <% }); %>
           </div>
 
-          <form method="post" action="<%= base %>/don-hang/<%= order.code %>/huy" data-confirm="Huy don hang nay?" style="margin-top:16px">
+          <form method="post" action="<%= base %>/don-hang/<%= order.code %>/huy" data-confirm="Hủy đơn hàng này?" style="margin-top:16px">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn-link small" type="submit">Huy don hang</button>
+            <button class="btn-link small" type="submit">Hủy đơn hàng</button>
           </form>
         </div>
       <% } %>
 
       <div class="card">
-        <div class="card-title"><h3>Tong ket</h3></div>
-        <div class="copy-row"><span class="label">Tam tinh</span><span class="value"><%= formatVnd(order.subtotal) %></span></div>
+        <div class="card-title"><h3>Tổng kết</h3></div>
+        <div class="copy-row"><span class="label">Tạm tính</span><span class="value"><%= formatVnd(order.subtotal) %></span></div>
         <% if (order.discount) { %>
-          <div class="copy-row"><span class="label">Giam gia</span><span class="value" style="color:var(--ok)">-<%= formatVnd(order.discount) %></span></div>
+          <div class="copy-row"><span class="label">Giảm giá</span><span class="value" style="color:var(--ok)">-<%= formatVnd(order.discount) %></span></div>
         <% } %>
         <% if (order.vat) { %>
           <div class="copy-row"><span class="label">VAT</span><span class="value"><%= formatVnd(order.vat) %></span></div>
         <% } %>
-        <div class="copy-row"><span class="label"><strong>Tong cong</strong></span><span class="value" style="font-size:1.15rem"><%= formatVnd(order.total) %></span></div>
+        <div class="copy-row"><span class="label"><strong>Tổng cộng</strong></span><span class="value" style="font-size:1.15rem"><%= formatVnd(order.total) %></span></div>
         <% if (order.paid_at) { %>
-          <div class="copy-row"><span class="label">Thanh toan luc</span><span class="value small"><%= order.paid_at.replace('T', ' ').slice(0, 16) %></span></div>
+          <div class="copy-row"><span class="label">Thanh toán lúc</span><span class="value small"><%= order.paid_at.replace('T', ' ').slice(0, 16) %></span></div>
         <% } %>
       </div>
 
       <% if (payments.length) { %>
         <div class="card">
-          <div class="card-title"><h3>Lich su giao dich</h3></div>
+          <div class="card-title"><h3>Lịch sử giao dịch</h3></div>
           <% payments.forEach(function (p) { %>
             <div class="copy-row">
               <span class="label"><%= p.provider %><div class="tiny muted"><%= p.created_at.replace('T', ' ').slice(0, 16) %></div></span>

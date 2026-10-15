@@ -42,13 +42,13 @@ export function addToCart(input: {
 }): { ok: true } | { ok: false; error: string } {
   const domain = normalizeDomain(input.domain);
   const parsed = splitDomain(domain, knownTlds());
-  if (!parsed) return { ok: false, error: 'Duoi ten mien khong duoc ho tro' };
+  if (!parsed) return { ok: false, error: 'Đuôi tên miền không được hỗ trợ' };
 
   const tld = getTld(parsed.tld);
-  if (!tld || !tld.is_active) return { ok: false, error: 'Duoi ten mien khong duoc ho tro' };
+  if (!tld || !tld.is_active) return { ok: false, error: 'Đuôi tên miền không được hỗ trợ' };
 
   if (input.action === 'transfer' && !input.meta?.['authCode']) {
-    return { ok: false, error: 'Chuyen ten mien ve can ma xac thuc (EPP/Auth Code) tu nha dang ky cu' };
+    return { ok: false, error: 'Chuyển tên miền về cần mã xác thực (EPP/Auth Code) từ nhà đăng ký cũ' };
   }
 
   const price = priceFor(tld, input.action, input.years);

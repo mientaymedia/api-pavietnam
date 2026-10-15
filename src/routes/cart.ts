@@ -33,7 +33,7 @@ function quayLai(req: Request): string {
 }
 
 router.get('/', (req, res) => {
-  res.render('cart', { title: 'Gio hang', cart: getCart(req.cartKey) });
+  res.render('cart', { title: 'Giỏ hàng', cart: getCart(req.cartKey) });
 });
 
 router.post(
@@ -41,14 +41,14 @@ router.post(
   // Moi lan them ten mien la mot lan goi API cua nha dang ky. Khong chan thi
   // khach vang lai cung co the dot het han muc API, hoac lam IP cua ta bi P.A
   // han che. Con so du rong rai cho nguoi mua that (mua 20 ten mien / phut).
-  rateLimit({ windowMs: 60_000, max: 20, message: 'Ban them ten mien qua nhanh. Vui long cho mot chut.' }),
+  rateLimit({ windowMs: 60_000, max: 20, message: 'Bạn thêm tên miền quá nhanh. Vui lòng chờ một chút.' }),
   wrap(async (req, res) => {
     const domain = domainSchema.safeParse(req.body?.domain);
     const years = yearsSchema.safeParse(req.body?.years ?? 1);
     const action = String(req.body?.action ?? 'register') as 'register' | 'renew' | 'transfer';
 
     if (!domain.success) {
-      flash(req, 'error', 'Ten mien khong hop le.');
+      flash(req, 'error', 'Tên miền không hợp lệ.');
       return res.redirect(quayLai(req));
     }
 
@@ -58,12 +58,12 @@ router.post(
       const raw = req.body?.auth_code;
       // Zod tra "Required" khi thieu truong - thay bang thong bao nguoi dung hieu duoc
       if (raw === undefined || String(raw).trim() === '') {
-        flash(req, 'error', 'Vui long nhap ma xac thuc (EPP/Auth Code) lay tu nha dang ky hien tai.');
+        flash(req, 'error', 'Vui lòng nhập mã xác thực (EPP/Auth Code) lấy từ nhà đăng ký hiện tại.');
         return res.redirect(quayLai(req));
       }
       const code = authCodeSchema.safeParse(raw);
       if (!code.success) {
-        flash(req, 'error', code.error.issues[0]?.message ?? 'Ma xac thuc khong hop le');
+        flash(req, 'error', code.error.issues[0]?.message ?? 'Mã xác thực không hợp lệ');
         return res.redirect(quayLai(req));
       }
       meta = { authCode: code.data };
@@ -74,7 +74,7 @@ router.post(
       try {
         const check = await checkDomain(domain.data);
         if (check.ok && !check.available) {
-          flash(req, 'error', `Rat tiec, ${domain.data} vua duoc nguoi khac dang ky.`);
+          flash(req, 'error', `Rất tiếc, ${domain.data} vừa được người khác đăng ký.`);
           return res.redirect(quayLai(req));
         }
       } catch {
@@ -96,7 +96,7 @@ router.post(
       return res.redirect(quayLai(req));
     }
 
-    flash(req, 'success', `Da them ${domain.data} vao gio hang.`);
+    flash(req, 'success', `Đã thêm ${domain.data} vào giỏ hàng.`);
     res.redirect('/gio-hang');
   }),
 );
@@ -109,7 +109,7 @@ router.post('/cap-nhat/:id', (req, res) => {
 
 router.post('/xoa/:id', (req, res) => {
   removeFromCart(req.cartKey, Number(req.params.id));
-  flash(req, 'info', 'Da xoa khoi gio hang.');
+  flash(req, 'info', 'Đã xóa khỏi giỏ hàng.');
   res.redirect('/gio-hang');
 });
 

@@ -52,9 +52,9 @@ export interface ProvisionSummary {
 /** Cap phat toan bo cac dong cua mot don hang. */
 export async function provisionOrder(orderId: number): Promise<ProvisionSummary> {
   const order = getOrder(orderId);
-  if (!order) throw new Error(`Khong tim thay don hang #${orderId}`);
+  if (!order) throw new Error(`Không tìm thấy đơn hàng #${orderId}`);
   if (order.status === 'pending_payment') {
-    throw new Error(`Don hang ${order.code} chua thanh toan, khong the cap phat`);
+    throw new Error(`Đơn hàng ${order.code} chưa thanh toán, không thể cấp phát`);
   }
 
   const summary: ProvisionSummary = { orderId, processed: 0, succeeded: 0, failed: 0 };
@@ -96,7 +96,7 @@ export async function provisionItem(itemId: number): Promise<boolean> {
 
   const order = getOrder(claimed.order_id);
   if (!order) {
-    markItemFailed(claimed, 'Khong tim thay don hang');
+    markItemFailed(claimed, 'Không tìm thấy đơn hàng');
     return false;
   }
 
@@ -128,7 +128,7 @@ export async function provisionItem(itemId: number): Promise<boolean> {
       // Tat trong cau hinh neu doanh nghiep muon duyet tay tung truong hop.
       if (autoRefundEnabled()) {
         const refund = await refundOrderItem(claimed.id, {
-          reason: `Dang ky khong thanh cong: ${message.slice(0, 200)}`,
+          reason: `Đăng ký không thành công: ${message.slice(0, 200)}`,
         });
         if (refund.status === 'refunded') {
           log.info('auto_refund_done', { domain: claimed.domain, amount: refund.amount });
@@ -149,7 +149,7 @@ export async function provisionItem(itemId: number): Promise<boolean> {
 
 async function doRegister(order: Order, item: OrderItem): Promise<void> {
   const contact = loadContact(order);
-  if (!contact) throw new RegistrarError('Thieu ho so chu the de dang ky ten mien', 'NO_CONTACT');
+  if (!contact) throw new RegistrarError('Thiếu hồ sơ chủ thể để đăng ký tên miền', 'NO_CONTACT');
 
   const ns = settings.dns().defaultNameservers;
   const result = await registerDomain({
@@ -240,7 +240,7 @@ async function doTransfer(order: Order, item: OrderItem): Promise<void> {
   const meta = parseJson<{ authCode?: string }>(item.meta, {});
   const authCode = (meta.authCode ?? '').trim();
   if (!authCode) {
-    throw new RegistrarError('Thieu ma xac thuc (EPP/Auth Code) de chuyen ten mien', 'NO_AUTH_CODE');
+    throw new RegistrarError('Thiếu mã xác thực (EPP/Auth Code) để chuyển tên miền', 'NO_AUTH_CODE');
   }
 
   const contact = loadContact(order);

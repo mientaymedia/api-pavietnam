@@ -22,11 +22,11 @@ function contactsOf(userId: number): ContactRow[] {
 router.get('/', requireAuth, (req, res) => {
   const cart = getCart(req.cartKey);
   if (!cart.lines.length) {
-    flash(req, 'info', 'Gio hang dang trong.');
+    flash(req, 'info', 'Giỏ hàng đang trống.');
     return res.redirect('/');
   }
   res.render('checkout/index', {
-    title: 'Thanh toan',
+    title: 'Thanh toán',
     cart,
     contacts: contactsOf(req.currentUser!.id),
     coupon: '',
@@ -47,12 +47,12 @@ router.post('/ma-giam-gia', requireAuth, (req, res) => {
   );
 
   res.render('checkout/index', {
-    title: 'Thanh toan',
+    title: 'Thanh toán',
     cart,
     contacts: contactsOf(req.currentUser!.id),
     coupon: code,
     discount,
-    couponError: code && !discount ? (error ?? 'Ma giam gia khong hop le') : '',
+    couponError: code && !discount ? (error ?? 'Mã giảm giá không hợp lệ') : '',
     contactErrors: {},
     values: req.body ?? {},
   });
@@ -65,14 +65,14 @@ router.post(
     const userId = req.currentUser!.id;
     const cart = getCart(req.cartKey);
     if (!cart.lines.length) {
-      flash(req, 'error', 'Gio hang dang trong.');
+      flash(req, 'error', 'Giỏ hàng đang trống.');
       return res.redirect('/');
     }
 
     // Ten mien duoc quan ly qua email; dat hang bang email chua xac thuc de
     // dan den mat lien lac voi tai san cua chinh khach.
     if (requireVerifiedToOrder() && !isVerified(userId)) {
-      flash(req, 'error', 'Vui long xac thuc dia chi email truoc khi dat hang. Kiem tra hop thu cua ban.');
+      flash(req, 'error', 'Vui lòng xác thực địa chỉ email trước khi đặt hàng. Kiểm tra hộp thư của bạn.');
       return res.redirect('/thanh-toan');
     }
 
@@ -83,7 +83,7 @@ router.post(
       const parsed = contactSchema.safeParse(req.body);
       if (!parsed.success) {
         return res.status(422).render('checkout/index', {
-          title: 'Thanh toan',
+          title: 'Thanh toán',
           cart,
           contacts: contactsOf(userId),
           coupon: String(req.body?.coupon ?? ''),
@@ -111,7 +111,7 @@ router.post(
       // Xac minh ho so thuoc ve chinh nguoi dung nay
       const owned = db.prepare('SELECT 1 FROM contacts WHERE id = ? AND user_id = ?').get(contactId, userId);
       if (!owned) {
-        flash(req, 'error', 'Ho so chu the khong hop le.');
+        flash(req, 'error', 'Hồ sơ chủ thể không hợp lệ.');
         return res.redirect('/thanh-toan');
       }
     }
@@ -144,7 +144,7 @@ router.get(
   wrap(async (req, res) => {
     const provider = getProvider(String(req.params.provider));
     if (!provider?.verifyReturn) {
-      flash(req, 'info', 'Vui long kiem tra trang thai don hang.');
+      flash(req, 'info', 'Vui lòng kiểm tra trạng thái đơn hàng.');
       return res.redirect('/don-hang');
     }
 
@@ -169,7 +169,7 @@ router.get(
       return res.redirect(`/don-hang/${result.refCode}`);
     }
 
-    flash(req, 'error', result.message || 'Khong xac dinh duoc ket qua thanh toan.');
+    flash(req, 'error', result.message || 'Không xác định được kết quả thanh toán.');
     res.redirect('/don-hang');
   }),
 );

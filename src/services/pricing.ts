@@ -1,5 +1,5 @@
 import { db, nowIso } from '../db/index.js';
-import { roundUpTo, toVnd } from '../lib/money.js';
+import { formatVnd, roundUpTo, toVnd } from '../lib/money.js';
 import { settings } from '../lib/settings.js';
 
 export interface Tld {
@@ -174,20 +174,20 @@ export function computeDiscount(
   if (!coupon) return { discount: 0 };
 
   const now = nowIso();
-  if (coupon.starts_at && now < coupon.starts_at) return { discount: 0, error: 'Ma giam gia chua den thoi gian su dung' };
-  if (coupon.expires_at && now > coupon.expires_at) return { discount: 0, error: 'Ma giam gia da het han' };
+  if (coupon.starts_at && now < coupon.starts_at) return { discount: 0, error: 'Mã giảm giá chưa đến thời gian sử dụng' };
+  if (coupon.expires_at && now > coupon.expires_at) return { discount: 0, error: 'Mã giảm giá đã hết hạn' };
   if (coupon.max_uses > 0 && coupon.used_count >= coupon.max_uses) {
-    return { discount: 0, error: 'Ma giam gia da het luot su dung' };
+    return { discount: 0, error: 'Mã giảm giá đã hết lượt sử dụng' };
   }
 
   const filter = coupon.tld_filter.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
   const eligible = filter.length ? items.filter((i) => filter.includes(i.tld.toLowerCase())) : items;
   const base = eligible.reduce((sum, i) => sum + i.amount, 0);
-  if (!base) return { discount: 0, error: 'Ma giam gia khong ap dung cho san pham trong gio' };
+  if (!base) return { discount: 0, error: 'Mã giảm giá không áp dụng cho sản phẩm trong giỏ' };
 
   const cartTotal = items.reduce((sum, i) => sum + i.amount, 0);
   if (coupon.min_amount > 0 && cartTotal < coupon.min_amount) {
-    return { discount: 0, error: `Don hang toi thieu ${coupon.min_amount.toLocaleString('vi-VN')}d moi dung duoc ma nay` };
+    return { discount: 0, error: `Đơn hàng tối thiểu ${formatVnd(coupon.min_amount)} mới dùng được mã này` };
   }
 
   let discount = coupon.discount_type === 'percent' ? toVnd((base * coupon.value) / 100) : toVnd(coupon.value);

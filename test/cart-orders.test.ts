@@ -24,7 +24,7 @@ test('chuyen ten mien ve BAT BUOC co ma EPP', () => {
   const thieuMa = addToCart({ cartKey, userId, domain: 'abc.test', action: 'transfer', years: 1 });
 
   assert.equal(thieuMa.ok, false);
-  if (!thieuMa.ok) assert.match(thieuMa.error, /EPP|xac thuc/i);
+  if (!thieuMa.ok) assert.match(thieuMa.error, /EPP|xác thực/i);
   assert.equal(getCart(cartKey).count, 0);
 });
 
@@ -93,5 +93,5 @@ test('gia han duoi da ngung ban thi bao loi ro rang', () => {
   const { userId } = fixture();
   const res = createRenewalOrder({ userId, contactId: null, domain: 'x.duoi-khong-ton-tai', tld: 'duoi-khong-ton-tai', years: 1 });
   assert.equal(res.ok, false);
-  if (!res.ok) assert.match(res.error, /khong con duoc ho tro/i);
+  if (!res.ok) assert.match(res.error, /không còn được hỗ trợ/i);
 });

@@ -3,46 +3,46 @@
 
 <div class="container container-mid">
   <%- include('partials/flash') %>
-  <h1>Gio hang</h1>
+  <h1>Giỏ hàng</h1>
 
   <% if (!cart.lines.length) { %>
     <div class="card center">
-      <p class="muted">Gio hang dang trong.</p>
-      <a class="btn" href="<%= base %>/">Tim ten mien</a>
+      <p class="muted">Giỏ hàng đang trống.</p>
+      <a class="btn" href="<%= base %>/">Tìm tên miền</a>
     </div>
   <% } else { %>
     <div class="card">
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>Ten mien</th><th>Dich vu</th><th style="width:120px">Thoi han</th><th class="right">Thanh tien</th><th></th></tr>
+            <tr><th>Tên miền</th><th>Dịch vụ</th><th style="width:120px">Thời hạn</th><th class="right">Thành tiền</th><th></th></tr>
           </thead>
           <tbody>
             <% cart.lines.forEach(function (line) { %>
               <tr>
                 <td>
                   <strong class="mono"><%= line.domain %></strong>
-                  <% if (line.requiresVnContact) { %><div class="tiny muted">Can ho so chu the (.vn)</div><% } %>
+                  <% if (line.requiresVnContact) { %><div class="tiny muted">Cần hồ sơ chủ thể (.vn)</div><% } %>
                 </td>
-                <td><span class="badge badge-muted"><%= line.action === 'register' ? 'Dang ky moi' : line.action === 'renew' ? 'Gia han' : 'Chuyen ve' %></span></td>
+                <td><span class="badge badge-muted"><%= line.action === 'register' ? 'Đăng ký mới' : line.action === 'renew' ? 'Gia hạn' : 'Chuyển về' %></span></td>
                 <td>
                   <form method="post" action="<%= base %>/gio-hang/cap-nhat/<%= line.id %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <select name="years" aria-label="So nam cho <%= line.domain %>" data-submit-on-change>
+                    <select name="years" aria-label="Số năm cho <%= line.domain %>" data-submit-on-change>
                       <% for (var y = 1; y <= 10; y++) { %>
-                        <option value="<%= y %>" <%= line.years === y ? 'selected' : '' %>><%= y %> nam</option>
+                        <option value="<%= y %>" <%= line.years === y ? 'selected' : '' %>><%= y %> năm</option>
                       <% } %>
                     </select>
                   </form>
                 </td>
                 <td class="right">
                   <strong><%= formatVnd(line.total) %></strong>
-                  <% if (line.vat) { %><div class="tiny muted">gom VAT <%= formatVnd(line.vat) %></div><% } %>
+                  <% if (line.vat) { %><div class="tiny muted">gồm VAT <%= formatVnd(line.vat) %></div><% } %>
                 </td>
                 <td class="right">
                   <form method="post" action="<%= base %>/gio-hang/xoa/<%= line.id %>">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <button class="btn-link tiny" type="submit">Xoa</button>
+                    <button class="btn-link tiny" type="submit">Xóa</button>
                   </form>
                 </td>
               </tr>
@@ -54,17 +54,17 @@
       <div class="row-between" style="margin-top:18px; padding-top:16px; border-top:1px solid var(--line)">
         <form method="post" action="<%= base %>/gio-hang/xoa-het">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button class="btn-link small" type="submit">Xoa toan bo gio hang</button>
+          <button class="btn-link small" type="submit">Xóa toàn bộ giỏ hàng</button>
         </form>
         <div class="right">
-          <div class="muted small">Tam tinh: <%= formatVnd(cart.subtotal) %><% if (cart.vat) { %> + VAT <%= formatVnd(cart.vat) %><% } %></div>
+          <div class="muted small">Tạm tính: <%= formatVnd(cart.subtotal) %><% if (cart.vat) { %> + VAT <%= formatVnd(cart.vat) %><% } %></div>
           <div style="font-size:1.3rem; font-weight:700"><%= formatVnd(cart.total) %></div>
         </div>
       </div>
     </div>
 
     <div class="right" style="margin-top:18px">
-      <a class="btn btn-lg" href="<%= base %>/thanh-toan">Tien hanh thanh toan</a>
+      <a class="btn btn-lg" href="<%= base %>/thanh-toan">Tiến hành thanh toán</a>
     </div>
   <% } %>
 </div>

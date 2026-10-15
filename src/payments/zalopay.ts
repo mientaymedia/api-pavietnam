@@ -23,7 +23,7 @@ function appTransId(refCode: string): string {
 export const zalopayProvider: PaymentProvider = {
   id: 'zalopay',
   label: 'ZaloPay',
-  description: 'Thanh toan bang vi ZaloPay hoac the lien ket.',
+  description: 'Thanh toán bằng ví ZaloPay hoặc thẻ liên kết.',
 
   isEnabled: () => {
     const z = settings.zalopay();
@@ -66,7 +66,7 @@ export const zalopayProvider: PaymentProvider = {
 
     const parsed = JSON.parse(responseBody) as { order_url?: string; return_code?: number; return_message?: string };
     if (!parsed.order_url) {
-      throw new Error(`ZaloPay tu choi tao giao dich: ${parsed.return_message ?? responseBody.slice(0, 200)}`);
+      throw new Error(`ZaloPay từ chối tạo giao dịch: ${parsed.return_message ?? responseBody.slice(0, 200)}`);
     }
 
     return { payUrl: parsed.order_url, providerTxn: transId, requestBody: body, responseBody };

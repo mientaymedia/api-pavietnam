@@ -13,8 +13,8 @@ function hmac(data: string, secret: string): string {
 
 export const momoProvider: PaymentProvider = {
   id: 'momo',
-  label: 'Vi MoMo',
-  description: 'Thanh toan bang ung dung MoMo, xac nhan tuc thi.',
+  label: 'Ví MoMo',
+  description: 'Thanh toán bằng ứng dụng MoMo, xác nhận tức thì.',
 
   isEnabled: () => {
     const m = settings.momo();
@@ -61,7 +61,7 @@ export const momoProvider: PaymentProvider = {
 
     const parsed = JSON.parse(responseBody) as { payUrl?: string; resultCode?: number; message?: string };
     if (!parsed.payUrl) {
-      throw new Error(`MoMo tu choi tao giao dich: ${parsed.message ?? responseBody.slice(0, 200)}`);
+      throw new Error(`MoMo từ chối tạo giao dịch: ${parsed.message ?? responseBody.slice(0, 200)}`);
     }
 
     return {
@@ -107,7 +107,7 @@ export const momoProvider: PaymentProvider = {
       refCode: String(query['orderId'] ?? ''),
       amount: Math.round(Number(query['amount'] ?? 0)),
       providerTxn: String(query['transId'] ?? ''),
-      message: ok ? 'Thanh toan thanh cong' : `MoMo tra ma ${query['resultCode']}`,
+      message: ok ? 'Thanh toán thành công' : `MoMo trả mã ${query['resultCode']}`,
     };
   },
 };

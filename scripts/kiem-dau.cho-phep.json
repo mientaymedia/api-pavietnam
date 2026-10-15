@@ -1,4 +1,16 @@
 [
   { "tep": "src/db/seed.ts", "chua": "Kinh doanh", "ly_do": "Đúng chính tả: \"Kinh doanh\" vốn không có dấu" },
-  { "tep": "src/db/migrate.ts", "chua": "Da tao/cap nhat cau truc CSDL.", "ly_do": "Dòng in ra màn hình dòng lệnh cho người vận hành, ngoài phạm vi (intent C6)" }
+  { "tep": "src/db/migrate.ts", "chua": "Da tao/cap nhat cau truc CSDL.", "ly_do": "Dòng in ra màn hình dòng lệnh cho người vận hành, ngoài phạm vi (intent C6)" },
+  { "tep": "src/payments/momo.ts", "chua": "Thanh toan don hang ", "ly_do": "orderInfo gửi MoMo, nằm trong chuỗi ký HMAC (spec 3.4, intent mục 4)" },
+  { "tep": "src/payments/momo.ts", "chua": "Chu ky MoMo khong hop le", "ly_do": "Thông điệp verifyIpn trả cho máy của cổng (spec 3.4, D5)" },
+  { "tep": "src/payments/momo.ts", "chua": "Thanh toan thanh cong", "ly_do": "Thông điệp verifyIpn trả cho máy của cổng (spec 3.4, D5); bản hiển thị ở verifyReturn đã thêm dấu" },
+  { "tep": "src/payments/zalopay.ts", "chua": "Ten mien", "ly_do": "itemname gửi ZaloPay, nằm trong chuỗi item được ký (spec 3.4)" },
+  { "tep": "src/payments/zalopay.ts", "chua": "Thanh toan don hang ", "ly_do": "description gửi ZaloPay, chưa thử chữ có dấu với cổng thật (spec 3.4)" },
+  { "tep": "src/payments/zalopay.ts", "chua": "Chu ky ZaloPay khong hop le", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" },
+  { "tep": "src/payments/zalopay.ts", "chua": "Thanh toan thanh cong", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" },
+  { "tep": "src/payments/sepay.ts", "chua": "Chua cau hinh SEPAY_WEBHOOK_TOKEN", "ly_do": "Thông điệp verifyIpn trả cho SePay (spec 3.4, D5)" },
+  { "tep": "src/payments/sepay.ts", "chua": "Token webhook khong hop le", "ly_do": "Thông điệp verifyIpn; webhooks.ts dựa vào chữ \"Token\" để trả 401 (spec 3.2, 3.4)" },
+  { "tep": "src/payments/sepay.ts", "chua": "Khong doc duoc du lieu giao dich", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" },
+  { "tep": "src/payments/sepay.ts", "chua": "Bo qua giao dich chuyen di", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" },
+  { "tep": "src/payments/sepay.ts", "chua": "Khong tim thay ma don trong noi dung chuyen khoan", "ly_do": "Thông điệp verifyIpn (spec 3.4, D5)" }
 ]

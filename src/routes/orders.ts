@@ -16,7 +16,7 @@ const router = Router();
 router.use(requireAuth);
 
 router.get('/', (req, res) => {
-  res.render('orders/list', { title: 'Don hang cua toi', orders: listOrders(req.currentUser!.id) });
+  res.render('orders/list', { title: 'Đơn hàng của tôi', orders: listOrders(req.currentUser!.id) });
 });
 
 /** Lay don hang va kiem tra quyen xem. */
@@ -31,13 +31,13 @@ function loadOrder(req: Parameters<typeof requireAuth>[0], code: string) {
 router.get('/:code', (req, res) => {
   const order = loadOrder(req, String(req.params.code));
   if (!order) {
-    flash(req, 'error', 'Khong tim thay don hang.');
+    flash(req, 'error', 'Không tìm thấy đơn hàng.');
     return res.redirect('/don-hang');
   }
 
   const payments = listPayments(order.id);
   res.render('orders/detail', {
-    title: `Don hang ${order.code}`,
+    title: `Đơn hàng ${order.code}`,
     order,
     items: getOrderItems(order.id),
     payments,
@@ -53,11 +53,11 @@ router.post(
   wrap(async (req, res) => {
     const order = loadOrder(req, String(req.params.code));
     if (!order) {
-      flash(req, 'error', 'Khong tim thay don hang.');
+      flash(req, 'error', 'Không tìm thấy đơn hàng.');
       return res.redirect('/don-hang');
     }
     if (order.status !== 'pending_payment') {
-      flash(req, 'info', 'Don hang nay khong con cho thanh toan.');
+      flash(req, 'info', 'Đơn hàng này không còn chờ thanh toán.');
       return res.redirect(`/don-hang/${order.code}`);
     }
 
@@ -75,7 +75,7 @@ router.post(
           providerTxn: result.payment.provider_txn || `WALLET-${order.id}`,
         });
         kickWorker();
-        flash(req, 'success', 'Da thanh toan bang so du. He thong dang dang ky ten mien.');
+        flash(req, 'success', 'Đã thanh toán bằng số dư. Hệ thống đang đăng ký tên miền.');
         return res.redirect(`/don-hang/${order.code}`);
       }
 
@@ -86,7 +86,7 @@ router.post(
       if (err instanceof InsufficientBalance) {
         flash(req, 'error', err.message);
       } else {
-        flash(req, 'error', err instanceof Error ? err.message : 'Khong tao duoc giao dich thanh toan.');
+        flash(req, 'error', err instanceof Error ? err.message : 'Không tạo được giao dịch thanh toán.');
       }
       return res.redirect(`/don-hang/${order.code}`);
     }
@@ -96,15 +96,15 @@ router.post(
 router.post('/:code/huy', (req, res) => {
   const order = loadOrder(req, String(req.params.code));
   if (!order) {
-    flash(req, 'error', 'Khong tim thay don hang.');
+    flash(req, 'error', 'Không tìm thấy đơn hàng.');
     return res.redirect('/don-hang');
   }
   if (order.status !== 'pending_payment') {
-    flash(req, 'error', 'Chi co the huy don dang cho thanh toan.');
+    flash(req, 'error', 'Chỉ có thể hủy đơn đang chờ thanh toán.');
     return res.redirect(`/don-hang/${order.code}`);
   }
-  cancelOrder(order.id, 'Khach hang tu huy');
-  flash(req, 'info', `Da huy don hang ${order.code}.`);
+  cancelOrder(order.id, 'Khách hàng tự hủy');
+  flash(req, 'info', `Đã hủy đơn hàng ${order.code}.`);
   res.redirect('/don-hang');
 });
 
@@ -112,12 +112,12 @@ router.post('/:code/huy', (req, res) => {
 router.get('/:code/hoa-don', (req, res) => {
   const order = loadOrder(req, String(req.params.code));
   if (!order) {
-    flash(req, 'error', 'Khong tim thay don hang.');
+    flash(req, 'error', 'Không tìm thấy đơn hàng.');
     return res.redirect('/don-hang');
   }
 
   res.render('orders/invoice', {
-    title: `Phieu thanh toan ${order.code}`,
+    title: `Phiếu thanh toán ${order.code}`,
     order,
     items: getOrderItems(order.id),
     payments: listPayments(order.id).filter((p) => p.status === 'paid'),
@@ -133,7 +133,7 @@ router.get('/:code/hoa-don', (req, res) => {
 /** Kiem tra trang thai thanh toan (trang don hang tu goi de tu cap nhat). */
 router.get('/:code/trang-thai', (req, res) => {
   const order = loadOrder(req, String(req.params.code));
-  if (!order) return res.status(404).json({ error: 'Khong tim thay don hang' });
+  if (!order) return res.status(404).json({ error: 'Không tìm thấy đơn hàng' });
   res.json({
     code: order.code,
     status: order.status,

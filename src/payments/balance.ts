@@ -4,18 +4,19 @@
  * ngay trong cau UPDATE de khong the tru am du co nhieu request dong thoi.
  */
 import { db, nowIso, tx } from '../db/index.js';
+import { formatVnd } from '../lib/money.js';
 import type { CreateContext, CreateResult, PaymentProvider } from './types.js';
 
 export class InsufficientBalance extends Error {
   constructor(readonly balance: number, readonly required: number) {
-    super(`So du khong du: can ${required.toLocaleString('vi-VN')}d, hien co ${balance.toLocaleString('vi-VN')}d`);
+    super(`Số dư không đủ: cần ${formatVnd(required)}, hiện có ${formatVnd(balance)}`);
   }
 }
 
 export const balanceProvider: PaymentProvider = {
   id: 'balance',
-  label: 'So du tai khoan',
-  description: 'Tru truc tiep vao so du kha dung cua tai khoan.',
+  label: 'Số dư tài khoản',
+  description: 'Trừ trực tiếp vào số dư khả dụng của tài khoản.',
 
   isEnabled: () => true,
 

@@ -2,15 +2,15 @@
 <%- include('../partials/header') %>
 <div class="container container-mid">
   <%- include('../partials/flash') %>
-  <h1>Don hang cua toi</h1>
+  <h1>Đơn hàng của tôi</h1>
 
   <div class="card">
     <% if (!orders.length) { %>
-      <p class="muted">Ban chua co don hang nao. <a href="<%= base %>/">Tim ten mien</a>.</p>
+      <p class="muted">Bạn chưa có đơn hàng nào. <a href="<%= base %>/">Tìm tên miền</a>.</p>
     <% } else { %>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Ma don</th><th>Ngay tao</th><th>Trang thai</th><th class="right">Tong tien</th><th></th></tr></thead>
+          <thead><tr><th>Mã đơn</th><th>Ngày tạo</th><th>Trạng thái</th><th class="right">Tổng tiền</th><th></th></tr></thead>
           <tbody>
             <% orders.forEach(function (o) { %>
               <tr>
@@ -18,7 +18,7 @@
                 <td class="small"><%= o.created_at.replace('T', ' ').slice(0, 16) %></td>
                 <td><%- include('../partials/order-status', { status: o.status }) %></td>
                 <td class="right"><%= formatVnd(o.total) %></td>
-                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/don-hang/<%= o.code %>">Chi tiet</a></td>
+                <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/don-hang/<%= o.code %>">Chi tiết</a></td>
               </tr>
             <% }); %>
           </tbody>

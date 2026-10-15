@@ -45,8 +45,8 @@ export function buildSepayQrUrl(input: { amount: number; addInfo: string }): str
 
 export const sepayProvider: PaymentProvider = {
   id: 'sepay',
-  label: 'Chuyen khoan ngan hang (QR SePay)',
-  description: 'Quet ma QR hoac chuyen khoan thu cong. He thong doi soat tu dong, kich hoat ten mien trong vai giay.',
+  label: 'Chuyển khoản ngân hàng (QR SePay)',
+  description: 'Quét mã QR hoặc chuyển khoản thủ công. Hệ thống đối soát tự động, kích hoạt tên miền trong vài giây.',
 
   isEnabled: () => {
     const s = settings.sepay();
@@ -58,11 +58,11 @@ export const sepayProvider: PaymentProvider = {
     return {
       qrUrl: buildSepayQrUrl({ amount: ctx.order.total, addInfo: ctx.refCode }),
       instructions: [
-        { label: 'Ngan hang', value: s.bankName || s.bankCode },
-        { label: 'So tai khoan', value: s.accountNumber, copyable: true },
-        { label: 'Chu tai khoan', value: s.accountName },
-        { label: 'So tien', value: String(ctx.order.total), copyable: true },
-        { label: 'Noi dung chuyen khoan', value: ctx.refCode, copyable: true },
+        { label: 'Ngân hàng', value: s.bankName || s.bankCode },
+        { label: 'Số tài khoản', value: s.accountNumber, copyable: true },
+        { label: 'Chủ tài khoản', value: s.accountName },
+        { label: 'Số tiền', value: String(ctx.order.total), copyable: true },
+        { label: 'Nội dung chuyển khoản', value: ctx.refCode, copyable: true },
       ],
     };
   },

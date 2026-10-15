@@ -65,10 +65,10 @@ export function createOrderFromCart(input: CreateOrderInput):
   | { ok: true; order: Order }
   | { ok: false; error: string } {
   const cart = getCart(input.cartKey);
-  if (!cart.lines.length) return { ok: false, error: 'Gio hang dang trong' };
+  if (!cart.lines.length) return { ok: false, error: 'Giỏ hàng đang trống' };
 
   if (cart.requiresVnContact && !input.contactId) {
-    return { ok: false, error: 'Ten mien .vn bat buoc phai chon ho so chu the' };
+    return { ok: false, error: 'Tên miền .vn bắt buộc phải chọn hồ sơ chủ thể' };
   }
 
   const coupon = findCoupon(input.couponCode ?? '');
@@ -143,7 +143,7 @@ export function createRenewalOrder(input: {
   if (pending) return { ok: true, order: pending, existing: true };
 
   const tld = getTld(input.tld);
-  if (!tld || !tld.is_active) return { ok: false, error: `Duoi .${input.tld} khong con duoc ho tro` };
+  if (!tld || !tld.is_active) return { ok: false, error: `Đuôi .${input.tld} không còn được hỗ trợ` };
 
   const price = priceFor(tld, 'renew', input.years);
 
@@ -250,7 +250,7 @@ export function cancelOrder(orderId: number, reason = ''): void {
   const order = getOrder(orderId);
   if (!order || order.status !== 'pending_payment') return;
   db.prepare(`UPDATE orders SET status='cancelled', note=?, updated_at=? WHERE id=?`)
-    .run(`${order.note}${order.note ? ' | ' : ''}Huy: ${reason}`.slice(0, 500), nowIso(), orderId);
+    .run(`${order.note}${order.note ? ' | ' : ''}Hủy: ${reason}`.slice(0, 500), nowIso(), orderId);
   db.prepare(`UPDATE payments SET status='expired', updated_at=? WHERE order_id=? AND status='pending'`)
     .run(nowIso(), orderId);
   if (order.coupon_code) {

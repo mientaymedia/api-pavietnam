@@ -44,8 +44,8 @@ export interface StartPaymentOutput extends CreateResult {
  */
 export async function startPayment(input: StartPaymentInput): Promise<StartPaymentOutput> {
   const provider = getProvider(input.providerId);
-  if (!provider || !provider.isEnabled()) throw new Error('Phuong thuc thanh toan khong kha dung');
-  if (input.order.status !== 'pending_payment') throw new Error('Don hang nay khong con cho thanh toan');
+  if (!provider || !provider.isEnabled()) throw new Error('Phương thức thanh toán không khả dụng');
+  if (input.order.status !== 'pending_payment') throw new Error('Đơn hàng này không còn chờ thanh toán');
 
   const existing = db
     .prepare(
