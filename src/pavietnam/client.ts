@@ -58,7 +58,10 @@ export async function call(
   opts: CallOptions = {},
 ): Promise<RawResult> {
   const cred = credentials(opts.credentials);
-  if (!cred.username || !cred.apikey) {
+  // Xet sandbox TRUOC khi doi key: gia lap khong goi P.A nen khong can key that
+  // (may dev, test). Che do that van bat buoc co du username + API Key.
+  const sandbox = sandboxEnabled();
+  if (!sandbox && (!cred.username || !cred.apikey)) {
     throw new RegistrarError(
       'Chua cau hinh username/API Key cua P.A Viet Nam. Vao Control Panel > Cau hinh API hoac dat PAVIETNAM_USERNAME / PAVIETNAM_APIKEY trong .env.',
       'NO_CREDENTIALS',
@@ -66,8 +69,8 @@ export async function call(
   }
 
   const query = new URLSearchParams();
-  query.set('username', cred.username);
-  query.set('apikey', cred.apikey);
+  query.set('username', cred.username || 'sandbox');
+  query.set('apikey', cred.apikey || 'sandbox');
   query.set('action', action);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== '') query.set(k, String(v));
@@ -75,14 +78,14 @@ export async function call(
 
   // Chuoi an toan de ghi log: khong bao gio luu API Key that
   const safeQuery = new URLSearchParams(query);
-  safeQuery.set('apikey', maskSecret(cred.apikey));
+  safeQuery.set('apikey', maskSecret(query.get('apikey') ?? ''));
   const logged = `${cred.endpoint}?${safeQuery.toString()}`;
 
   const started = Date.now();
   let raw = '';
   let ok = false;
   try {
-    if (sandboxEnabled()) {
+    if (sandbox) {
       raw = sandboxResponse(action, params);
     } else if ((opts.method ?? 'GET') === 'POST') {
       raw = await httpRequest(cred.endpoint, {
