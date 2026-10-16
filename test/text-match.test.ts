@@ -65,6 +65,52 @@ test('phan hoi dang chu bao loi bang tieng Viet co dau khong bi coi la thanh con
   assert.equal(interpret(parseResponse('Thành công'), 'Thành công').ok, true);
 });
 
+/** Phan hoi JSON co truong status, di qua parse that nhu khi P.A tra ve. */
+function trangThai(status: string, message = ''): boolean {
+  const raw = JSON.stringify({ status, message });
+  return interpret(parseResponse(raw), raw).ok;
+}
+
+test('status thanh cong co dau, khong dau, hoa thuong, NFD deu la thanh cong (loi evals 5)', () => {
+  for (const s of [
+    'Thành công',
+    'thành công',
+    'THÀNH CÔNG',
+    'Thành Công',
+    'Thành công'.normalize('NFD'),
+    'thanh cong',
+    'Thanh Cong',
+    'thanhcong',
+    '  thanh  cong  ',
+    'success',
+    'SUCCESS',
+    'Success',
+    'ok',
+    'OK',
+  ]) {
+    assert.equal(trangThai(s), true, JSON.stringify(s));
+  }
+});
+
+test('status bao loi van la loi sau khi bo dau (loi evals 5)', () => {
+  for (const s of [
+    'Không thành công',
+    'khong thanh cong',
+    'Thất bại',
+    'Lỗi',
+    'LỖI: LỆNH THỰC THI KHÔNG ĐƯỢC HỖ TRỢ',
+    'IP không được phép truy cập',
+    'error',
+    'failed',
+    'not ok',
+    'Thành công một phần',
+  ]) {
+    assert.equal(trangThai(s), false, JSON.stringify(s));
+  }
+  // status loi nhung message lai co chu "Thành công": van la loi
+  assert.equal(trangThai('error', 'Thành công'), false);
+});
+
 test('kiem tra ten mien hieu chu co dau', () => {
   assert.equal(availableFromText('Tên miền đã được đăng ký'), false);
   assert.equal(availableFromText('Không khả dụng'), false);
