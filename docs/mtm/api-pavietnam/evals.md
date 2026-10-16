@@ -129,3 +129,9 @@ Không có. `npm test` 195/195, `kiem-dau` 0, `tsc` sạch, `kiem-base` 0. Khôn
 5. Duyệt và ký bảng kiểm chính tả `test.md` mục 4, quyết điểm "qui trình" / "quy trình" (tiêu chí 12).
 6. Trước khi bật đăng ký thật: chạy `pa:probe` trên VPS để xác minh định dạng phản hồi P.A (lỗi 5).
 7. Ở Deploy: D6 (robots và cookie `sid` của mientay-web), D7 (HSTS `includeSubDomains`), khai lại webhook SePay `https://mientaymedia.com/ten-mien/webhooks/sepay`; chú thích webhook trong `.env.example` vẫn ghi dạng `https://<ten-mien-cua-ban>/webhooks/sepay`, nhớ thêm `/ten-mien`.
+
+## 10. Việc sau (ngoài phạm vi đợt sửa theo evals)
+
+Build đã sửa lỗi 1, 2, 4, 5 và ghi chú lỗi 3 (plan.md mục "Sửa sau Test", S1 đến S5). Mục dưới đây chỉ ghi lại, chưa sửa:
+
+1. Lỗi 6: mã trạng thái tiếng Anh vẫn hiện cho khách ("active" ở đầu trang control panel; "sepay", "paid" trong "Lịch sử giao dịch" của trang đơn). Cần chủ quyết có Việt hóa ở đợt sau không; nếu có, chỉ đổi nhãn hiển thị qua bảng ánh xạ, giữ nguyên giá trị lưu trong CSDL và giá trị so khớp trong mã.

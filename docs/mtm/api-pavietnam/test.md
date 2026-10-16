@@ -33,6 +33,21 @@ cap_nhat: 16/10/2026
 | 6.3.6 | Xem trang chủ, giỏ hàng, chi tiết tên miền trên Android và iPhone (hoặc chế độ thiết bị của Chrome) | Lưu ý nút hẹp "chép tất cả" ở trang bảo mật |
 | 6.3.3 | Thử tay dưới `/ten-mien`: đăng nhập từ trang cần đăng nhập rồi quay về đúng trang; thêm vào giỏ rồi quay lại; trang chờ thanh toán SePay tự cập nhật | Phần tự động đã có trong `test/base-path.test.ts` |
 
+### Chạy thử dưới tiền tố trên Windows Git Bash (evals lỗi 3)
+
+Git Bash (MSYS) tự đổi giá trị biến môi trường trông như đường dẫn POSIX khi truyền cho chương trình Windows: `BASE_PATH=/ten-mien` tới `node` thành `C:/Program Files/Git/ten-mien`, app dừng với "BASE_PATH không hợp lệ". Đặt `MSYS_NO_PATHCONV=1` ở đầu lệnh:
+
+```bash
+MSYS_NO_PATHCONV=1 BASE_PATH=/ten-mien APP_URL=http://127.0.0.1:3000/ten-mien PAVIETNAM_SANDBOX=1 npm run dev
+MSYS_NO_PATHCONV=1 node scripts/kiem-base.mjs
+```
+
+Kiểm nhanh: `MSYS_NO_PATHCONV=1 BASE_PATH=/ten-mien node -e "console.log(process.env.BASE_PATH)"` phải in `/ten-mien` (không có biến này thì in `C:/Program Files/Git/ten-mien`). Cách khác: `MSYS2_ENV_CONV_EXCL="BASE_PATH;APP_URL"`, hoặc chạy trong PowerShell (`$env:BASE_PATH='/ten-mien'`). VPS Linux không bị.
+
+### Sau đợt sửa theo evals (S1 đến S4 trong plan.md)
+
+`npx tsc -p tsconfig.json --noEmit` thoát 0; `npm test` 207/207 đạt (195 cũ + 12 mới); `npm run kiem-dau` 0; `MSYS_NO_PATHCONV=1 node scripts/kiem-base.mjs` 0 link thiếu. QA cần chạy lại dòng "Chuyển hướng next=" của `evals.md` mục 2.
+
 ## 3. Điểm chính tả cần chủ quyết
 
 | Chỗ | Đang để | Lý do |
