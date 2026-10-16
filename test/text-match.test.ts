@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import ts from 'typescript';
 import { boDau } from '../src/lib/text.js';
 import { isPermanent } from '../src/services/provisioning.js';
-import { availableFromText, interpret, registeredFromWhoisText } from '../src/pavietnam/client.js';
+import { availableFromText, interpret, ketNoiHopLe, registeredFromWhoisText } from '../src/pavietnam/client.js';
 import { parseResponse } from '../src/pavietnam/parse.js';
 
 test('boDau bo dau, doi đ thanh d, ve chu thuong', () => {
@@ -154,4 +154,44 @@ test('whois hieu chu co dau', () => {
   assert.equal(registeredFromWhoisText('Không tìm thấy thông tin tên miền'), false);
   assert.equal(registeredFromWhoisText('Tên miền chưa được đăng ký'), false);
   assert.equal(registeredFromWhoisText('Registrar: P.A Việt Nam\nExpiry Date: 2030-01-01'), true);
+});
+
+test('status nghiep vu kem false hoac 0 la tra loi KHONG (evals vong 3, loi thap 1)', () => {
+  for (const s of ['registered: false', 'active=0', 'active: 0', 'exists=false', 'Registered: FALSE', 'available = 0']) {
+    assert.equal(trangThai(s), false, JSON.stringify(s));
+  }
+  // Ma so dung mot minh va tu nghiep vu co so khac 0 khong bi anh huong
+  for (const s of ['0', '1', 'true', 'active', 'registered 10 years', 'expired 2030']) {
+    assert.equal(trangThai(s), true, JSON.stringify(s));
+  }
+});
+
+/** Ket qua kiem tra ten mien gia, di qua interpret that nhu checkDomain. */
+function ketNoi(raw: string): boolean {
+  const data = parseResponse(raw);
+  return ketNoiHopLe({ ...interpret(data, raw), raw });
+}
+
+test('Kiem tra API: ten mien da co chu khong bi bao THAT BAI (evals vong 3, loi thap 1)', () => {
+  for (const raw of [
+    JSON.stringify({ status: 'Domain not available' }),
+    JSON.stringify({ status: 'not available', domain: 'pavietnam.vn' }),
+    'Tên miền đã được đăng ký',
+    JSON.stringify({ status: 'available' }),
+    JSON.stringify({ status: 'success', available: 0 }),
+  ]) {
+    assert.equal(ketNoi(raw), true, raw);
+  }
+  // P.A tu choi lenh: xac thuc, IP, lenh khong ho tro, loi nghiep vu kem "error"
+  for (const raw of [
+    'IP không được phép truy cập',
+    'Lỗi: Lệnh thực thi không được hỗ trợ',
+    JSON.stringify({ status: 'error', message: 'Invalid API key' }),
+    JSON.stringify({ status: 'denied', message: 'Domain not available' }),
+    JSON.stringify({ status: 'error: domain not registered' }),
+    JSON.stringify({ status: 'Unauthorized' }),
+    JSON.stringify({ status: '???' }),
+  ]) {
+    assert.equal(ketNoi(raw), false, raw);
+  }
 });

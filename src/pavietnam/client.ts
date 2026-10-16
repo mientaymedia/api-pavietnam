@@ -121,8 +121,13 @@ export async function call(
 
 /** Status nghiep vu (sau boDau, bo khoang trang) duoc coi la goi thanh cong. */
 const BUSINESS_STATUS = new Set(['available', 'unavailable', 'registered', 'active', 'expired']);
-/** Dau hieu phu dinh / loi trong status: co mot tu nay thi khong con la thanh cong. */
-const STATUS_PHU_DINH = /\b(not|no|non|khong|chua|error|loi|fail(ed|ure)?|invalid|denied|that\s*bai|sai)\b/;
+/**
+ * Dau hieu phu dinh / loi trong status: co mot tu nay thi khong con la thanh cong.
+ * 'false', '0' chi xet o nhanh co tu nghiep vu, so nguyen token: "registered:
+ * false", "active=0" la cau tra loi KHONG. Status '0' dung mot minh van la ma
+ * thanh cong vi SUCCESS_TOKENS duoc khop truoc.
+ */
+const STATUS_PHU_DINH = /\b(not|no|non|khong|chua|error|loi|fail(ed|ure)?|invalid|denied|that\s*bai|sai|false|0)\b/;
 
 /** Doc trang thai thanh cong / ma loi / thong bao tu phan hoi da parse. */
 export function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'message'> {
@@ -218,6 +223,26 @@ export async function checkDomain(domain: string): Promise<CheckResult> {
   }
 
   return { ...res, domain: d, available };
+}
+
+/** Dau hieu P.A tu choi lenh (xac thuc, IP, lenh, tham so): ket noi chua dung. */
+const LOI_KET_NOI =
+  /\b(error|loi|fail(ed|ure)?|invalid|denied|not\s+allowed|permission|unauthori[sz]ed|forbidden|whitelist|api\s*key|xac\s*thuc|khong\s+duoc\s+phep|khong\s+duoc\s+ho\s+tro|khong\s+hop\s+le|sai)\b/;
+/** Cau tra loi nghiep vu ve ten mien: P.A da doc va thuc thi lenh. */
+const TRA_LOI_NGHIEP_VU =
+  /\b(available|unavailable|registered|active|expired|taken|da\s*(duoc\s*)?dang\s*ky|chua\s*(duoc\s*)?dang\s*ky|con\s*trong)\b/;
+
+/**
+ * Nut "Kiem tra API" trong Cau hinh chi hoi: P.A co tra loi hop le khong. Ten
+ * mien thu da co chu thi status co the la "Domain not available" (interpret
+ * coi la ok=false vi co "not"), nhung do van la ket noi tot. Nen: ok thi dat;
+ * khong ok thi chi dat khi la cau tra loi nghiep vu va khong co dau hieu tu
+ * choi nao. Khong ro thi coi la THAT BAI (an toan, quan tri xem phan hoi tho).
+ */
+export function ketNoiHopLe(res: Pick<RawResult, 'ok' | 'code' | 'message' | 'raw'>): boolean {
+  if (res.ok) return true;
+  const chu = boDau(`${res.code} ${res.message} ${res.raw}`);
+  return !LOI_KET_NOI.test(chu) && TRA_LOI_NGHIEP_VU.test(chu);
 }
 
 /** Kiem tra nhieu ten mien song song, gioi han so lenh chay dong thoi. */

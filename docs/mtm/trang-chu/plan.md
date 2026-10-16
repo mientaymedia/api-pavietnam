@@ -41,6 +41,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - L14. V2: `site.address` nay có mặc định nên phiếu thanh toán (`src/views/orders/invoice.ejs`, có sẵn dòng địa chỉ) cũng in trụ sở; không sửa view đó. Địa chỉ trong footer chuyển từ khối thương hiệu xuống dòng pháp lý (dạng "Trụ sở: ...") để không in hai lần.
 - L15. V2: như hotline và email, các trường pháp lý để trống trong Cấu hình sẽ về giá trị mặc định (cách `getSetting` sẵn có), không ẩn được khỏi footer bằng cách xóa trắng. Muốn ẩn cần đổi cơ chế settings: ngoài phạm vi.
 - L16. V2: site viết hoa tên pháp lý không thống nhất ("Phần mềm" ở `seo-content`, "Phần Mềm" ở các trang điều khoản, in hoa toàn bộ ở `site-data.ts`); dùng đúng chuỗi chủ đưa "Công ty TNHH Phần mềm Mientay Media". Nơi cấp MST viết theo site ("Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024"), thêm chữ "tỉnh", "ngày" so với lời chủ.
+- L17. W1: phản hồi KHÔNG có trường status vẫn đi theo nhánh suy đoán cũ (chỉ bắt chữ lỗi), nên chữ lạ như "???" vẫn là `ok=true`; không đổi trong đợt này để giữ nguyên ca hồi quy. Lỗi HTTP 4xx, 5xx đã bị `httpRequest` ném lỗi trước khi tới `interpret`. `ketNoiHopLe` khi `ok=false` chỉ đạt nếu có câu trả lời nghiệp vụ và không có dấu hiệu từ chối (xác thực, IP, lệnh, tham số); không rõ thì báo THẤT BẠI. Khi THẤT BẠI, thông báo không còn in "tên miền -> đã đăng ký" (dễ hiểu nhầm), vẫn in phản hồi thô.
 
 ## Sửa sau Test vòng 2 và câu chữ theo brain (đợt 2)
 
@@ -61,6 +62,15 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - [x] V1. Ghi quyết định của chủ vào `nguon-cau-chu.md` và plan này (cả ghi chú Deploy). Kiểm: không em dash, en dash. Xong trong commit V1.
 - [x] V2. Footer in dòng pháp lý và giờ làm việc từ Cấu hình. Tệp: `src/lib/settings.ts` (mặc định `site.address`, `site.legal_name`, `site.tax_code`, `site.tax_issued`, `site.working_hours`), `src/db/seed.ts`, `src/routes/admin.ts` (ô sửa trong Cấu hình), `src/views/partials/footer.ejs`, `public/css/app.css`, `test/trang-chu.test.ts`. Kiểm: cổng chặn; test footer mới; Chrome headless 360px và 1366px footer không tràn. Xong: 219/219 đạt; Chrome headless 14 trang x 360px, 1366px (28 lần đo) không tràn, `.site-footer` 360/360, dòng pháp lý 328x79 ở 360px (5 dòng), 1100x40 ở 1366px.
 - [x] V3. Chụp lại trang chủ máy tính và điện thoại vào thư mục này. Kiểm: ảnh có footer mới. Xong: `trang-chu-desktop.png` (1366px), `trang-chu-dien-thoai.png` (360px DPR 2), CSDL sandbox mới, Chrome headless.
+
+## Sửa sau Test vòng 3 (đợt 4)
+
+Đầu vào: `evals-vong-3.md` mục 3 (3 lỗi thấp, ghi chú 1). Cổng chặn mỗi commit: `npx tsc --noEmit`, `npm test` đạt hết (mốc 220/220), `npm run kiem-dau` 0, `MSYS_NO_PATHCONV=1 node scripts/kiem-base.mjs` 0; ca hồi quy QA (`qa2/pa-probe.mts` 38 ca, `qa3/interp3.mts` 56 ca) trong scratchpad.
+
+- [x] W1. `interpret`: thêm `false`, `0` vào dấu hiệu phủ định khi đi kèm từ nghiệp vụ (so nguyên token); nút "Kiểm tra API" trong Cấu hình báo kết nối theo việc P.A trả lời hợp lệ (hàm mới `ketNoiHopLe`), không theo kết quả còn trống. Tệp: `src/pavietnam/client.ts`, `src/routes/admin.ts`, `test/text-match.test.ts`. Kiểm: test hai chiều mới, 38/38 `pa-probe`, 56/56 `interp3`.
+- [ ] W2. `.footer-text` thêm `overflow-wrap: anywhere`. Tệp: `public/css/app.css`. Kiểm: Chrome headless 360px, `site.working_hours` là chuỗi liền 60 ký tự, `scrollWidth` = 360.
+- [ ] W3. Thẻ Google Workspace: giá theo USD của hãng, quy đổi theo tỷ giá Vietcombank, chưa gồm thuế nhà thầu 10%, nhân viên xác nhận khi chốt. Tệp: nơi giữ câu chữ thẻ, `nguon-cau-chu.md`, test trang chủ nếu có câu cố định. Kiểm: cổng chặn, câu khớp brain.
+- [ ] W4. Chụp lại `don-hang-dien-thoai.png` (360px, có dòng pháp lý) và ảnh trang chủ nếu thẻ đổi. Kiểm: kích thước ảnh, footer có dòng pháp lý.
 
 ## Ghi cho bước Deploy
 

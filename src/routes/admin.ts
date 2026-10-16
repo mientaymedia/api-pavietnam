@@ -23,7 +23,7 @@ import { listTlds, upsertTld } from '../services/pricing.js';
 import { getOrder, getOrderItems, refreshOrderStatus } from '../services/orders.js';
 import { confirmManually } from '../payments/index.js';
 import { provisionOrder } from '../services/provisioning.js';
-import { getBalance, checkDomain } from '../pavietnam/client.js';
+import { getBalance, checkDomain, ketNoiHopLe } from '../pavietnam/client.js';
 import { enqueue, jobStats } from '../jobs/queue.js';
 import { kickWorker } from '../jobs/worker.js';
 import { credit } from '../payments/balance.js';
@@ -249,11 +249,15 @@ router.post(
       } catch {
         // khong bat buoc
       }
+      // Kiem ket noi theo viec P.A tra loi hop le, khong theo ket qua con trong:
+      // ten mien thu da co chu ("not available") khong phai loi ket noi.
+      const ketNoi = ketNoiHopLe(check);
       flash(
         req,
-        check.ok ? 'success' : 'error',
-        `Kết nối API: ${check.ok ? 'THÀNH CÔNG' : 'THẤT BẠI'}. ${domain} -> ${check.available ? 'còn trống' : 'đã đăng ký'}.${balanceText} ` +
-          `Phản hồi thô: ${check.raw.slice(0, 200)}`,
+        ketNoi ? 'success' : 'error',
+        `Kết nối API: ${ketNoi ? 'THÀNH CÔNG' : 'THẤT BẠI'}.` +
+          (ketNoi ? ` ${domain} -> ${check.available ? 'còn trống' : 'đã đăng ký'}.` : '') +
+          `${balanceText} Phản hồi thô: ${check.raw.slice(0, 200)}`,
       );
     } catch (err) {
       flash(
