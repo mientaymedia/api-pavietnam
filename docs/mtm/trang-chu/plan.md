@@ -39,7 +39,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 
 - [x] U1. `interpret`: status nghiệp vụ chỉ thành công khi khớp nguyên token hoặc không có dấu hiệu phủ định/lỗi. Tệp: `src/pavietnam/client.ts`, `test/text-match.test.ts`. Kiểm: test hai chiều mới, 38/38 ca `pa-probe` của QA vòng 2 vẫn đạt. Commit `7207d7a`; 213/213, pa-probe 38/38.
 - [x] U2. Giới hạn đăng nhập theo email đã chuẩn hóa (trim + chữ thường). Tệp: `src/routes/auth.ts`, test mới. Kiểm: 42 lần đổi hoa thường email bị 429. Xong; 214/214, test mới đỏ trên mã cũ, xanh sau sửa.
-- [ ] U3. Trang đơn hàng và chi tiết tên miền không tràn ngang ở 360px. Tệp: `public/css/app.css`, view liên quan. Kiểm: Chrome headless 360px `scrollWidth` = 360; 1366px không đổi bố cục.
+- [x] U3. Trang đơn hàng và chi tiết tên miền không tràn ngang ở 360px. Tệp: `public/css/app.css`, view liên quan. Kiểm: Chrome headless 360px `scrollWidth` = 360; 1366px không đổi bố cục. Xong; đo Chrome headless 360px: `/don-hang/<mã>` 537 (chờ thanh toán 526) về 360, `/control-panel/<tên miền>` 391 về 360, bảng cuộn trong `.table-wrap`; 1366px cột vẫn 750 + 330. 215/215.
 - [ ] U4. `/admin/bao-cao`: bảng "Dự kiến doanh thu gia hạn" cuộn ngang trong khung riêng. Kiểm: 360px `scrollWidth` = 360.
 - [ ] U5. Liên hệ mặc định theo brain: hotline, email hỗ trợ, website (settings, seed, footer). Không đổi `MAIL_FROM`. Kiểm: cổng chặn, footer CSDL mới có đủ ba mục.
 - [ ] U6. Câu chữ trang chủ (giới thiệu, 3 lý do, thẻ dịch vụ khác, 5 câu hỏi) theo brain, nguồn từng câu trong `nguon-cau-chu.md`. Kiểm: cổng chặn, mọi câu mới có nguồn.
