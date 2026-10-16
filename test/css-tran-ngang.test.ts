@@ -45,3 +45,23 @@ test('luoi grid-2/3/4 mot cot tren dien thoai dung minmax(0, 1fr) (evals trang c
     assert.ok(ds.includes('minmax(0, 1fr)'), ten);
   }
 });
+
+/** Gia tri overflow-wrap gan cho mot bo chon dung ten `ten`. */
+function ngatDongCua(ten: string): string[] {
+  const ra: string[] = [];
+  for (const m of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    if (!m[1]!.split(',').map((s) => s.trim()).includes(ten)) continue;
+    const v = m[2]!.match(/overflow-wrap:\s*([^;]+);/);
+    if (v) ra.push(v[1]!.trim());
+  }
+  return ra;
+}
+
+test('chu trong footer tu Cau hinh ngat duoc chuoi lien dai (evals vong 3, loi 2)', () => {
+  // Gio lam viec, dong phap ly do quan tri nhap: mot tu lien 60 ky tu tung day
+  // trang 360px ra 516px. `anywhere` (khong phai `break-word`) moi ha duoc
+  // min-content, nen cot luoi footer `1fr` khong bi keo rong.
+  for (const ten of ['.footer-text', '.footer-legal']) {
+    assert.ok(ngatDongCua(ten).includes('anywhere'), ten);
+  }
+});

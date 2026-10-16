@@ -67,8 +67,8 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 
 Đầu vào: `evals-vong-3.md` mục 3 (3 lỗi thấp, ghi chú 1). Cổng chặn mỗi commit: `npx tsc --noEmit`, `npm test` đạt hết (mốc 220/220), `npm run kiem-dau` 0, `MSYS_NO_PATHCONV=1 node scripts/kiem-base.mjs` 0; ca hồi quy QA (`qa2/pa-probe.mts` 38 ca, `qa3/interp3.mts` 56 ca) trong scratchpad.
 
-- [x] W1. `interpret`: thêm `false`, `0` vào dấu hiệu phủ định khi đi kèm từ nghiệp vụ (so nguyên token); nút "Kiểm tra API" trong Cấu hình báo kết nối theo việc P.A trả lời hợp lệ (hàm mới `ketNoiHopLe`), không theo kết quả còn trống. Tệp: `src/pavietnam/client.ts`, `src/routes/admin.ts`, `test/text-match.test.ts`. Kiểm: test hai chiều mới, 38/38 `pa-probe`, 56/56 `interp3`.
-- [ ] W2. `.footer-text` thêm `overflow-wrap: anywhere`. Tệp: `public/css/app.css`. Kiểm: Chrome headless 360px, `site.working_hours` là chuỗi liền 60 ký tự, `scrollWidth` = 360.
+- [x] W1. `interpret`: thêm `false`, `0` vào dấu hiệu phủ định khi đi kèm từ nghiệp vụ (so nguyên token); nút "Kiểm tra API" trong Cấu hình báo kết nối theo việc P.A trả lời hợp lệ (hàm mới `ketNoiHopLe`), không theo kết quả còn trống. Tệp: `src/pavietnam/client.ts`, `src/routes/admin.ts`, `test/text-match.test.ts`. Kiểm: test hai chiều mới, 38/38 `pa-probe`, 56/56 `interp3`. Commit `d3fd28e`; 222/222.
+- [x] W2. `.footer-text` thêm `overflow-wrap: anywhere`. Tệp: `public/css/app.css`, `test/css-tran-ngang.test.ts`. Kiểm: Chrome headless 360px, `site.working_hours` là chuỗi liền 60 ký tự, `scrollWidth` = 360. Xong: CSDL sandbox mới, trang chủ 360px trước sửa 712, sau sửa 360 (`.footer-text` 16 đến 195); `/bang-gia`, `/dang-nhap`, `/gio-hang` 360; 1366px không đổi. 223/223.
 - [ ] W3. Thẻ Google Workspace: giá theo USD của hãng, quy đổi theo tỷ giá Vietcombank, chưa gồm thuế nhà thầu 10%, nhân viên xác nhận khi chốt. Tệp: nơi giữ câu chữ thẻ, `nguon-cau-chu.md`, test trang chủ nếu có câu cố định. Kiểm: cổng chặn, câu khớp brain.
 - [ ] W4. Chụp lại `don-hang-dien-thoai.png` (360px, có dòng pháp lý) và ảnh trang chủ nếu thẻ đổi. Kiểm: kích thước ảnh, footer có dòng pháp lý.
 
