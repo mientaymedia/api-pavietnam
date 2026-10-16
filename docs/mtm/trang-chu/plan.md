@@ -42,6 +42,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - L15. V2: như hotline và email, các trường pháp lý để trống trong Cấu hình sẽ về giá trị mặc định (cách `getSetting` sẵn có), không ẩn được khỏi footer bằng cách xóa trắng. Muốn ẩn cần đổi cơ chế settings: ngoài phạm vi.
 - L16. V2: site viết hoa tên pháp lý không thống nhất ("Phần mềm" ở `seo-content`, "Phần Mềm" ở các trang điều khoản, in hoa toàn bộ ở `site-data.ts`); dùng đúng chuỗi chủ đưa "Công ty TNHH Phần mềm Mientay Media". Nơi cấp MST viết theo site ("Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024"), thêm chữ "tỉnh", "ngày" so với lời chủ.
 - L17. W1: phản hồi KHÔNG có trường status vẫn đi theo nhánh suy đoán cũ (chỉ bắt chữ lỗi), nên chữ lạ như "???" vẫn là `ok=true`; không đổi trong đợt này để giữ nguyên ca hồi quy. Lỗi HTTP 4xx, 5xx đã bị `httpRequest` ném lỗi trước khi tới `interpret`. `ketNoiHopLe` khi `ok=false` chỉ đạt nếu có câu trả lời nghiệp vụ và không có dấu hiệu từ chối (xác thực, IP, lệnh, tham số); không rõ thì báo THẤT BẠI. Khi THẤT BẠI, thông báo không còn in "tên miền -> đã đăng ký" (dễ hiểu nhầm), vẫn in phản hồi thô.
+- L18. W3: người giao việc liệt kê "chưa gồm thuế nhà thầu 10%"; brain (`sp/04-google-workspace.md:21`, `Rate card:61`) còn dặn nói "chưa gồm VAT 10%". Ghi cả hai vì so với giá hãng 7 $ thì giá khách trả cộng thêm cả thuế nhà thầu (x 1,10) lẫn VAT 10% khi xuất hóa đơn. Ưu đãi 3,50 $ không đưa lên, chờ chủ.
 
 ## Sửa sau Test vòng 2 và câu chữ theo brain (đợt 2)
 
@@ -69,7 +70,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 
 - [x] W1. `interpret`: thêm `false`, `0` vào dấu hiệu phủ định khi đi kèm từ nghiệp vụ (so nguyên token); nút "Kiểm tra API" trong Cấu hình báo kết nối theo việc P.A trả lời hợp lệ (hàm mới `ketNoiHopLe`), không theo kết quả còn trống. Tệp: `src/pavietnam/client.ts`, `src/routes/admin.ts`, `test/text-match.test.ts`. Kiểm: test hai chiều mới, 38/38 `pa-probe`, 56/56 `interp3`. Commit `d3fd28e`; 222/222.
 - [x] W2. `.footer-text` thêm `overflow-wrap: anywhere`. Tệp: `public/css/app.css`, `test/css-tran-ngang.test.ts`. Kiểm: Chrome headless 360px, `site.working_hours` là chuỗi liền 60 ký tự, `scrollWidth` = 360. Xong: CSDL sandbox mới, trang chủ 360px trước sửa 712, sau sửa 360 (`.footer-text` 16 đến 195); `/bang-gia`, `/dang-nhap`, `/gio-hang` 360; 1366px không đổi. 223/223.
-- [ ] W3. Thẻ Google Workspace: giá theo USD của hãng, quy đổi theo tỷ giá Vietcombank, chưa gồm thuế nhà thầu 10%, nhân viên xác nhận khi chốt. Tệp: nơi giữ câu chữ thẻ, `nguon-cau-chu.md`, test trang chủ nếu có câu cố định. Kiểm: cổng chặn, câu khớp brain.
+- [x] W3. Thẻ Google Workspace: giá theo USD của hãng, quy đổi theo tỷ giá Vietcombank, chưa gồm thuế nhà thầu 10% và VAT 10%, nhân viên xác nhận khi chốt. Tệp: `src/views/home.ejs`, `nguon-cau-chu.md` (bảng nguồn và ý 5 cần chủ xác minh), `test/trang-chu.test.ts`. Kiểm: cổng chặn, câu khớp `sp/04-google-workspace.md:19`, `:21`, `Rate card:61`, `:90`; trang không có "3,50 $". Xong: 223/223.
 - [ ] W4. Chụp lại `don-hang-dien-thoai.png` (360px, có dòng pháp lý) và ảnh trang chủ nếu thẻ đổi. Kiểm: kích thước ảnh, footer có dòng pháp lý.
 
 ## Ghi cho bước Deploy

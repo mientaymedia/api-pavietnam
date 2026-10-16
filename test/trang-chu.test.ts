@@ -117,6 +117,13 @@ test('dich vu khac va gioi thieu theo brain: dung gia Rate card, link mientaymed
   assert.match(html, /Chỉ từ <strong>7 \$<\/strong>\/người\/tháng/);
   assert.match(html, /Chỉ từ <strong>149\.000 đ<\/strong>\/người\/tháng/);
   assert.match(html, /Gói Pro 99\.000 đ\/tháng, đã gồm VAT/);
+  // Google Workspace: noi du quy tac brain (sp/04:21, Rate card:61, :90), khong hua muc VND
+  assert.match(
+    html,
+    /Giá hãng gói Starter tính bằng USD, quy đổi theo tỷ giá Vietcombank ngày báo giá, chưa gồm thuế nhà thầu 10% và VAT 10%\. Nhân viên xác nhận giá khi chốt\./,
+  );
+  // Uu dai hang 3,50 $ nam dau do chu quyet, chua dua len
+  assert.doesNotMatch(html, /3[,.]50? ?\$/);
   // Ly do "ho tro" doc lien he tu cau hinh (mac dinh theo brain)
   assert.match(html, /gọi hotline 0976\.788\.840, nhắn Zalo OA hoặc gửi email hello@mientaymedia\.com\./);
   // Cau cu khong co nguon trong brain da bo
