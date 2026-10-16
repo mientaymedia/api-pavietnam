@@ -85,3 +85,17 @@ test('footer co lien he mac dinh theo brain MienTay Media, khong lo hop thu no-r
   assert.match(footer, /href="https:\/\/mientaymedia\.com"/);
   assert.doesNotMatch(footer, /no-?reply/i);
 });
+
+test('dich vu khac va gioi thieu theo brain: dung gia Rate card, link mientaymedia.com, lien he tu cau hinh', async () => {
+  const { html } = await trang('/');
+  for (const p of ['google-workspace', 'microsoft-365', 'mineflow-cdp']) {
+    assert.match(html, new RegExp(`href="https://mientaymedia\.com/${p}" rel="noopener"`), p);
+  }
+  assert.match(html, /Chỉ từ <strong>7 \$<\/strong>\/người\/tháng/);
+  assert.match(html, /Chỉ từ <strong>149\.000 đ<\/strong>\/người\/tháng/);
+  assert.match(html, /Gói Pro 99\.000 đ\/tháng, đã gồm VAT/);
+  // Ly do "ho tro" doc lien he tu cau hinh (mac dinh theo brain)
+  assert.match(html, /gọi hotline 0976\.788\.840, nhắn Zalo OA hoặc gửi email hello@mientaymedia\.com\./);
+  // Cau cu khong co nguon trong brain da bo
+  assert.doesNotMatch(html, /đồng hành cả chặng đường/);
+});

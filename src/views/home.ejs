@@ -13,7 +13,9 @@
     kinhLup: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     khien: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
     banhRang: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
-    nguoi: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.8 3 2.6 3.5 5.2"/>'
+    nguoi: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.8 3 2.6 3.5 5.2"/>',
+    thu: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',
+    luong: '<circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8.5 6h7M7.3 8.2l3.5 7.6M16.7 8.2l-3.5 7.6"/>'
   };
   function icon(ten) {
     return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[ten] + '</svg>';
@@ -156,7 +158,7 @@
   <div class="container">
     <div class="tc-head">
       <h2>Dịch vụ nổi bật</h2>
-      <p>Giá lấy trực tiếp từ bảng giá, đã gồm VAT nếu có. Giá gia hạn ghi rõ bên dưới.</p>
+      <p>Giá tên miền lấy trực tiếp từ bảng giá, đã gồm VAT nếu có, giá gia hạn ghi rõ bên dưới. Dịch vụ khác ghi rõ đã hay chưa gồm VAT trên từng thẻ.</p>
     </div>
 
     <div class="tc-grid">
@@ -200,6 +202,42 @@
         <div class="tc-gia"><strong>Miễn phí</strong> kèm tên miền</div>
         <a class="tc-card-link" href="<%= base %>/control-panel">Mở Control Panel</a>
       </article>
+
+      <%
+        // Ba dich vu khac cua MienTay Media. Gia va cau chu chep dung brain
+        // (Rate card, Tai lieu san pham), nguon tung cau o
+        // docs/mtm/trang-chu/nguon-cau-chu.md. Gia nay KHONG lay tu bang gia
+        // ten mien: doi gia thi sua o day cung luc voi Rate card.
+      %>
+      <article class="tc-card">
+        <span class="tc-nhom">Email doanh nghiệp</span>
+        <span class="tc-ic"><%- icon('thu') %></span>
+        <h3>Google Workspace</h3>
+        <p>Gmail theo tên miền, Drive, Meet, Lịch, Docs và Gemini AI. MienTay Media triển khai trọn gói, hỗ trợ kỹ thuật tiếng Việt.</p>
+        <div class="tc-gia">Chỉ từ <strong>7 $</strong>/người/tháng</div>
+        <div class="tc-giahan">Giá hãng gói Starter, quy đổi theo tỷ giá Vietcombank ngày báo giá, chưa gồm VAT</div>
+        <a class="tc-card-link" href="https://mientaymedia.com/google-workspace" rel="noopener">Xem Google Workspace</a>
+      </article>
+
+      <article class="tc-card">
+        <span class="tc-nhom">Email doanh nghiệp</span>
+        <span class="tc-ic"><%- icon('thu') %></span>
+        <h3>Microsoft 365</h3>
+        <p>Email theo tên miền, bộ Office, Teams và 1 TB OneDrive. Tenant đứng tên doanh nghiệp, hóa đơn VAT đầy đủ.</p>
+        <div class="tc-gia">Chỉ từ <strong>149.000 đ</strong>/người/tháng</div>
+        <div class="tc-giahan">Gói Business Basic, thanh toán theo năm, chưa gồm VAT</div>
+        <a class="tc-card-link" href="https://mientaymedia.com/microsoft-365" rel="noopener">Xem Microsoft 365</a>
+      </article>
+
+      <article class="tc-card">
+        <span class="tc-nhom">Phần mềm</span>
+        <span class="tc-ic"><%- icon('luong') %></span>
+        <h3>Mineflow</h3>
+        <p>Nền tảng dữ liệu khách hàng và tự động hóa marketing do MienTay Media tự phát triển: gom khách từ Zalo OA, Pancake POS, form, Excel về một hồ sơ.</p>
+        <div class="tc-gia">Có gói <strong>Miễn phí</strong></div>
+        <div class="tc-giahan">Gói Pro 99.000 đ/tháng, đã gồm VAT</div>
+        <a class="tc-card-link" href="https://mientaymedia.com/mineflow-cdp" rel="noopener">Xem Mineflow</a>
+      </article>
     </div>
   </div>
 </section>
@@ -209,22 +247,36 @@
   <div class="container tc-about">
     <div class="tc-about-text">
       <span class="tc-kicker">Về MienTay Media</span>
-      <h2>Tên miền là bước đầu, MienTay Media đồng hành cả chặng đường</h2>
-      <p>MienTay Media xây dựng giải pháp số cho doanh nghiệp: website, Zalo OA, công cụ bán hàng và chăm sóc khách hàng. Đăng ký tên miền tại đây, bạn có người hỗ trợ trỏ tên miền về website, email và các kênh bán hàng sau này.</p>
+      <%
+        // Moi cau duoi day (va 3 ly do) co nguon trong brain MienTay Media hoac
+        // trang mientaymedia.com: docs/mtm/trang-chu/nguon-cau-chu.md muc 2.
+        // Cau nao chua co nguon thi khong dua len, ghi vao muc can chu xac minh.
+      %>
+      <h2>Công ty phần mềm và giải pháp chuyển đổi số tại An Giang</h2>
+      <p>MienTay Media tự phát triển Mineflow, nền tảng dữ liệu khách hàng và tự động hóa marketing. Chúng tôi triển khai giải pháp Zalo, Google Workspace, Microsoft 365 và thiết kế website cho doanh nghiệp. Hơn 500 doanh nghiệp trên toàn quốc đang dùng giải pháp do MienTay Media triển khai.</p>
+      <p>Đăng ký tên miền tại đây, bạn có thể nhờ MienTay Media cấu hình DNS để trỏ tên miền về hosting, Google Workspace hoặc landing page.</p>
       <a class="tc-link" href="https://mientaymedia.com" rel="noopener">Tìm hiểu MienTay Media</a>
     </div>
     <div class="tc-lydo">
       <div class="tc-lydo-item">
         <span class="tc-ic"><%- icon('khien') %></span>
-        <div><h3>Giá minh bạch</h3><p>Giá năm đầu, giá gia hạn và VAT (nếu có) đều hiện rõ trước khi bạn thanh toán.</p></div>
+        <div><h3>Bạn giữ toàn quyền tên miền</h3><p>MienTay Media bàn giao đầy đủ quyền quản trị tên miền cho doanh nghiệp.</p></div>
       </div>
       <div class="tc-lydo-item">
         <span class="tc-ic"><%- icon('banhRang') %></span>
-        <div><h3>Tự động từ đầu đến cuối</h3><p>Đăng ký, gia hạn, đổi DNS đều chạy tự động. Bạn tự làm được bất cứ lúc nào.</p></div>
+        <div><h3>Đủ dịch vụ sau tên miền</h3><p>Ngoài tên miền, MienTay Media triển khai email theo tên miền với Google Workspace, Microsoft 365, thiết kế website và giải pháp Zalo.</p></div>
       </div>
       <div class="tc-lydo-item">
         <span class="tc-ic"><%- icon('nguoi') %></span>
-        <div><h3>Có người thật hỗ trợ</h3><p>Đội ngũ MienTay Media hướng dẫn bạn cấu hình tên miền khi cần.</p></div>
+        <%
+          // Lien he lay tu cau hinh (mac dinh theo brain), de quan tri doi o mot cho.
+          var kenh = [];
+          if (site.hotline) kenh.push('gọi hotline ' + site.hotline);
+          kenh.push('nhắn Zalo OA');
+          if (site.supportEmail && !/no-?reply/i.test(site.supportEmail)) kenh.push('gửi email ' + site.supportEmail);
+          var cachLienHe = kenh.length > 1 ? kenh.slice(0, -1).join(', ') + ' hoặc ' + kenh[kenh.length - 1] : kenh[0];
+        %>
+        <div><h3>Hỗ trợ tiếng Việt từ người thật</h3><p>Bạn có thể <%= cachLienHe %>. Mọi yêu cầu được phản hồi trong 24 giờ làm việc.</p></div>
       </div>
     </div>
   </div>
