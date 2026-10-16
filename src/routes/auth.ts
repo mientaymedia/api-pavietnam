@@ -12,6 +12,7 @@ import { canResend, consumeToken, isVerified, issueToken } from '../services/ver
 import { requireAuth } from '../middleware/auth.js';
 import { audit } from '../services/audit.js';
 import { isEnabled as twoFactorEnabled, verifyLogin as verify2FA } from '../services/twoFactor.js';
+import { duongDanNoiBo } from '../lib/redirect.js';
 
 const router = Router();
 
@@ -29,33 +30,14 @@ const registerSchema = z
   });
 
 /**
- * Chi cho phep chuyen huong NOI BO.
+ * Chi cho phep chuyen huong NOI BO sau dang nhap.
  *
- * Kiem tra "bat dau bang / va khong bat dau bang //" la KHONG DU:
- * `/\\evil.com` lot qua duoc, va trinh duyet doi dau gach nguoc thanh gach
- * xuoi nen no thanh `//evil.com` - tuc la chuyen thang sang trang cua ke tan
- * cong. Ke gian dung dung dieu nay de lua: nan nhan dang nhap that o site cua
- * ta roi bi day sang trang gia y het.
- *
- * Cach chac chan: dung URL parser voi mot goc gia, roi chi lay lai duong dan.
- * Bat ky dia chi tuyet doi hay giao thuc tuong doi nao cung bi loai.
+ * Ke gian gui link dang nhap that cua ta kem next=//trang-gia: nan nhan dang
+ * nhap xong bi day sang trang gia y het. Logic kiem nam o lib/redirect.ts
+ * (dung chung voi gio hang), xem ly do o do.
  */
 function safeNext(value: unknown): string {
-  const macDinh = '/dashboard';
-  const raw = String(value ?? '').trim();
-  if (!raw || raw[0] !== '/') return macDinh;
-
-  // Loai truc tiep cac dang dua sang host khac: // hoac /\ (ke ca sau khi giai ma)
-  if (/^[/\\]{2}/.test(raw) || /^\/[\\]/.test(raw)) return macDinh;
-
-  try {
-    const goc = 'http://noi-bo.invalid';
-    const u = new URL(raw, goc);
-    if (u.origin !== goc) return macDinh;         // da bi day sang host khac
-    return `${u.pathname}${u.search}${u.hash}`;
-  } catch {
-    return macDinh;
-  }
+  return duongDanNoiBo(value, '/dashboard');
 }
 
 router.get('/dang-ky', (req, res) => {
@@ -234,7 +216,8 @@ router.post(
     if (kq.duPhong) {
       flash(req, 'info', `Bạn vừa dùng một mã dự phòng, còn lại ${kq.conLai ?? 0} mã. Nên tạo bộ mã mới trong mục Bảo mật.`);
     }
-    res.redirect(cho.next || '/dashboard');
+    // Kiem lai: phien tao truoc ban sua loi /.//evil.com co the con gia tri cu.
+    res.redirect(safeNext(cho.next));
   }),
 );
 

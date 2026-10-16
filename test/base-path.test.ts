@@ -8,6 +8,8 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+// Tep nay khong nap src nen import tinh duoc
+import { BIEN_THE_NEXT } from './helpers/bien-the-redirect.js';
 
 process.env['BASE_PATH'] = '/ten-mien';
 process.env['APP_URL'] = 'http://127.0.0.1/ten-mien';
@@ -111,6 +113,14 @@ test('next doc hai van bi chan duoi tien to', async () => {
   }
 });
 
+test('next chuan hoa thanh //host van bi chan duoi tien to (loi evals 1)', async () => {
+  for (const xau of BIEN_THE_NEXT) {
+    assert.equal(await dangNhap(xau), `${B}/dashboard`, JSON.stringify(xau));
+  }
+  // Duong dan noi bo co doan dau cham van ve dung trang, tien to mot lan
+  assert.equal(await dangNhap('/a/../gio-hang'), `${B}/gio-hang`);
+});
+
 test('quay lai trang truoc chi trong app', async () => {
   const { cookie, csrf } = await moPhien();
   // Ten mien sai dinh dang: route bao loi roi quay lai trang truoc (quayLai)
@@ -124,6 +134,10 @@ test('quay lai trang truoc chi trong app', async () => {
   assert.equal((await xoa(`${goc}/blog/bai-viet`)).headers.get('location'), `${B}/gio-hang`);
   // Trong app -> quay lai dung trang, khong lap tien to
   assert.equal((await xoa(`${goc}${B}/bang-gia?x=1`)).headers.get('location'), `${B}/bang-gia?x=1`);
+  // Cung origin nhung bo tien to con //host (loi evals 2) -> ve gio hang
+  for (const p of ['//evil.com/x', '/.//evil.com/x', '/\\evil.com/x']) {
+    assert.equal((await xoa(`${goc}${B}${p}`)).headers.get('location'), `${B}/gio-hang`, p);
+  }
 });
 
 test('cookie phien chi gui cho duong dan cua app', async () => {

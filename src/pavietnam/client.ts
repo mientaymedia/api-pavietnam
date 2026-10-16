@@ -123,11 +123,16 @@ export async function call(
 export function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'message'> {
   const status = pick(data, [...RESPONSE_KEYS.status]) ?? '';
   const message = pick(data, [...RESPONSE_KEYS.message]) ?? '';
-  const normalized = status.trim().toLowerCase();
+  // boDau + bo khoang trang: status "Thành công", "THÀNH CÔNG", "thanh cong"
+  // (ca dang NFD) deu thanh 'thanhcong'. Truoc day chi khop dung 'thanhcong'
+  // nen mot lenh dang ky P.A da lam xong co the bi coi la loi roi thu lai,
+  // hoan tien. Van so KHOP NGUYEN CHUOI voi danh sach: cau loi khong lot.
+  const normalized = boDau(status).trim();
+  const gon = normalized.replace(/\s+/g, '');
 
   let ok: boolean;
   if (normalized) {
-    ok = SUCCESS_TOKENS.has(normalized);
+    ok = SUCCESS_TOKENS.has(normalized) || SUCCESS_TOKENS.has(gon);
     // Mot so action tra ve status mang nghia nghiep vu ('available'/'unavailable'):
     // day khong phai loi ky thuat nen van coi la goi thanh cong.
     if (!ok && /available|unavailable|registered|active|expired/.test(normalized)) ok = true;

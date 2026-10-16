@@ -8,6 +8,7 @@
  */
 import type { NextFunction, Request, Response } from 'express';
 import { config } from '../config.js';
+import { laDiaChiHost } from './redirect.js';
 
 export const BASE = config.basePath;
 
@@ -35,16 +36,19 @@ export function stripBase(p: string): string | null {
  * Boc res.redirect de them tien to MOT lan cho duong dan noi bo. Nho vay hon
  * 120 loi goi res.redirect('/...') trong route khong phai sua; URL ngoai (MoMo,
  * Zalo) khong bat dau bang '/' nen di qua nguyen ven.
+ *
+ * Lop chan cuoi cho open redirect (ca khi BASE rong): khong bao gio phat
+ * Location dang `//host` hay `/\host`. Khong route nao can dang nay; neu co
+ * thi do la du lieu nguoi dung lot qua kiem tra, nen ve trang chu.
  */
 export function redirectWithBase(_req: Request, res: Response, next: NextFunction): void {
-  if (BASE) {
-    const goc = res.redirect.bind(res) as (a: string | number, b?: string | number) => void;
-    res.redirect = ((a: string | number, b?: string | number) => {
-      if (typeof a === 'number') return goc(a, withBase(String(b)));
-      if (typeof b === 'number') return goc(b, withBase(a)); // dang cu redirect(url, status)
-      return goc(withBase(a));
-    }) as Response['redirect'];
-  }
+  const goc = res.redirect.bind(res) as (a: string | number, b?: string | number) => void;
+  const dich = (p: string): string => withBase(laDiaChiHost(p) ? '/' : p);
+  res.redirect = ((a: string | number, b?: string | number) => {
+    if (typeof a === 'number') return goc(a, dich(String(b)));
+    if (typeof b === 'number') return goc(b, dich(a)); // dang cu redirect(url, status)
+    return goc(dich(a));
+  }) as Response['redirect'];
   next();
 }
 
