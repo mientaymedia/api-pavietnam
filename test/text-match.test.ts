@@ -111,6 +111,36 @@ test('status bao loi van la loi sau khi bo dau (loi evals 5)', () => {
   assert.equal(trangThai('error', 'Thành công'), false);
 });
 
+test('status nghiep vu khop nguyen token hoac khong co dau hieu phu dinh (evals vong 2, quan sat 1)', () => {
+  for (const s of [
+    'available',
+    'Unavailable',
+    'REGISTERED',
+    'active',
+    'Expired',
+    '  active  ',
+    'Domain is registered',
+    'registered, expired',
+  ]) {
+    assert.equal(trangThai(s), true, JSON.stringify(s));
+  }
+  for (const s of [
+    'error: domain not registered',
+    'inactive',
+    'Lỗi: tên miền chưa active',
+    'Lỗi: tên miền chưa active'.normalize('NFD'),
+    'not available',
+    'domain not active',
+    'failed: expired',
+    'Không registered',
+    'invalid registered',
+    'unregistered',
+    'deactivated',
+  ]) {
+    assert.equal(trangThai(s), false, JSON.stringify(s));
+  }
+});
+
 test('kiem tra ten mien hieu chu co dau', () => {
   assert.equal(availableFromText('Tên miền đã được đăng ký'), false);
   assert.equal(availableFromText('Không khả dụng'), false);

@@ -119,6 +119,11 @@ export async function call(
   }
 }
 
+/** Status nghiep vu (sau boDau, bo khoang trang) duoc coi la goi thanh cong. */
+const BUSINESS_STATUS = new Set(['available', 'unavailable', 'registered', 'active', 'expired']);
+/** Dau hieu phu dinh / loi trong status: co mot tu nay thi khong con la thanh cong. */
+const STATUS_PHU_DINH = /\b(not|no|non|khong|chua|error|loi|fail(ed|ure)?|invalid|denied|that\s*bai|sai)\b/;
+
 /** Doc trang thai thanh cong / ma loi / thong bao tu phan hoi da parse. */
 export function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'message'> {
   const status = pick(data, [...RESPONSE_KEYS.status]) ?? '';
@@ -134,8 +139,15 @@ export function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code
   if (normalized) {
     ok = SUCCESS_TOKENS.has(normalized) || SUCCESS_TOKENS.has(gon);
     // Mot so action tra ve status mang nghia nghiep vu ('available'/'unavailable'):
-    // day khong phai loi ky thuat nen van coi la goi thanh cong.
-    if (!ok && /available|unavailable|registered|active|expired/.test(normalized)) ok = true;
+    // day khong phai loi ky thuat nen van coi la goi thanh cong. Truoc day chi
+    // can CHUA mot tu nay la du, nen "error: domain not registered" hay "Lỗi:
+    // tên miền chưa active" thanh thanh cong. Nay: khop nguyen token, hoac co
+    // nguyen tu nghiep vu ma khong co dau hieu phu dinh / loi nao.
+    if (!ok) {
+      ok =
+        BUSINESS_STATUS.has(gon) ||
+        (/\b(available|unavailable|registered|active|expired)\b/.test(normalized) && !STATUS_PHU_DINH.test(normalized));
+    }
   } else {
     // Khong co truong status -> suy doan tu noi dung. So tren chu da boDau:
     // "Lỗi: ..." hay "IP không được phép truy cập" truoc day khong khop gi nen
