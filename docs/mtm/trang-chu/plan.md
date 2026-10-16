@@ -60,7 +60,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 
 - [x] V1. Ghi quyết định của chủ vào `nguon-cau-chu.md` và plan này (cả ghi chú Deploy). Kiểm: không em dash, en dash. Xong trong commit V1.
 - [x] V2. Footer in dòng pháp lý và giờ làm việc từ Cấu hình. Tệp: `src/lib/settings.ts` (mặc định `site.address`, `site.legal_name`, `site.tax_code`, `site.tax_issued`, `site.working_hours`), `src/db/seed.ts`, `src/routes/admin.ts` (ô sửa trong Cấu hình), `src/views/partials/footer.ejs`, `public/css/app.css`, `test/trang-chu.test.ts`. Kiểm: cổng chặn; test footer mới; Chrome headless 360px và 1366px footer không tràn. Xong: 219/219 đạt; Chrome headless 14 trang x 360px, 1366px (28 lần đo) không tràn, `.site-footer` 360/360, dòng pháp lý 328x79 ở 360px (5 dòng), 1100x40 ở 1366px.
-- [ ] V3. Chụp lại trang chủ máy tính và điện thoại vào thư mục này. Kiểm: ảnh có footer mới.
+- [x] V3. Chụp lại trang chủ máy tính và điện thoại vào thư mục này. Kiểm: ảnh có footer mới. Xong: `trang-chu-desktop.png` (1366px), `trang-chu-dien-thoai.png` (360px DPR 2), CSDL sandbox mới, Chrome headless.
 
 ## Ghi cho bước Deploy
 
