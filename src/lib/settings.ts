@@ -84,8 +84,11 @@ export const settings = {
   site: () => ({
     name: getSetting('site.name', config.appName),
     tagline: getSetting('site.tagline', 'Đăng ký tên miền Việt Nam & Quốc tế - kích hoạt tức thì'),
-    supportEmail: getSetting('site.support_email', config.smtp.from),
-    hotline: getSetting('site.hotline', ''),
+    // Mac dinh theo brain MienTay Media (Tai lieu san pham, muc "Lien he"): truoc
+    // day email ho tro roi ve MAIL_FROM (no-reply) va hotline de trong, nen
+    // footer, phieu thanh toan va email khong co cach nao lien he nguoi that.
+    supportEmail: getSetting('site.support_email', 'hello@mientaymedia.com'),
+    hotline: getSetting('site.hotline', '0976.788.840'),
     address: getSetting('site.address', ''),
     logoUrl: getSetting('site.logo_url', ''),
     primaryColor: getSetting('site.primary_color', '#0a6cff'),

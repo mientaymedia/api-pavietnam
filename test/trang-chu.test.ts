@@ -76,3 +76,12 @@ test('chuyen ten mien: ?domain= dien san o nhap va duoc thoat ky tu', async () =
   assert.equal(xau.status, 200);
   assert.doesNotMatch(xau.html, /<script>x<\/script>/);
 });
+
+test('footer co lien he mac dinh theo brain MienTay Media, khong lo hop thu no-reply', async () => {
+  const { html } = await trang('/');
+  const footer = html.slice(html.indexOf('<footer'));
+  assert.match(footer, /href="tel:0976788840">Hotline: 0976\.788\.840</);
+  assert.match(footer, /href="mailto:hello@mientaymedia\.com">hello@mientaymedia\.com</);
+  assert.match(footer, /href="https:\/\/mientaymedia\.com"/);
+  assert.doesNotMatch(footer, /no-?reply/i);
+});

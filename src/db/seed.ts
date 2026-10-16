@@ -97,6 +97,9 @@ const DEFAULTS: Record<string, string> = {
   'site.name': config.appName,
   'site.tagline': 'Đăng ký tên miền Việt Nam & Quốc tế - kích hoạt tức thì',
   'site.primary_color': '#0a6cff',
+  // Lien he theo brain MienTay Media; MAIL_FROM (no-reply) giu nguyen, chi dung de gui
+  'site.hotline': '0976.788.840',
+  'site.support_email': 'hello@mientaymedia.com',
   'dns.default_ns': 'ns1.pavietnam.vn,ns2.pavietnam.vn',
   'pricing.markup_percent': '0',
   'pricing.round_step': '1000',

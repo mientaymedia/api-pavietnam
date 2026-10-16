@@ -1,8 +1,8 @@
 </main>
 <%
-  // Email ho tro mac dinh lay tu MAIL_FROM, co the la "Ten <no-reply@...>" hoac
-  // no-reply@localhost: hien ra thi khach gui vao hop thu khong ai doc. Chi
-  // hien khi la dia chi tran va khong phai hop thu no-reply.
+  // Email ho tro mac dinh la hello@mientaymedia.com, nhung quan tri co the dien
+  // "Ten <no-reply@...>" hoac no-reply@localhost: hien ra thi khach gui vao hop
+  // thu khong ai doc. Chi hien khi la dia chi tran va khong phai hop thu no-reply.
   var emailHoTro = String(site.supportEmail || '').trim();
   if (!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(emailHoTro) || /no-?reply/i.test(emailHoTro)) emailHoTro = '';
 %>
