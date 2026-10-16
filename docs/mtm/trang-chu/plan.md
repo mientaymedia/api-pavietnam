@@ -15,14 +15,20 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 
 ## Các bước
 
-- [ ] T0. Tài liệu `intent.md`, `spec.md`, `plan.md`. Kiểm: `git status` sạch trong `docs/mtm/trang-chu`.
-- [ ] T1. Tài nguyên: `public/fonts/*.woff2` + `OFL.txt`, `public/img/mientaymedia-logo.png`, `public/img/mientaymedia-logo-trang.png`, `public/img/khach-hang/*.png`. Kiểm: tệp tồn tại, `GET /fonts/...` 200.
-- [ ] T2. Màu và font chung: `public/css/app.css` (`:root`, `@font-face`), `src/lib/settings.ts`, `src/db/seed.ts`, `src/routes/admin.ts` (gợi ý), `src/views/partials/head.ejs`. Kiểm: cổng chặn.
-- [ ] T3. Dữ liệu trang chủ: `src/routes/home.ts` (chips, noiBat, uuDai, giaChuyenTu; `/chuyen-ten-mien?domain=`), `test/trang-chu.test.ts`. Kiểm: test mới đạt (phần dữ liệu), cổng chặn.
-- [ ] T4. Header và footer dùng chung: `src/views/partials/header.ejs`, `src/views/partials/footer.ejs`, CSS. Kiểm: cổng chặn + `kiem-base`.
-- [ ] T5. Trang chủ: `src/views/home.ejs` (9 khối), CSS `tc-*`. Kiểm: cổng chặn + `kiem-base`, test trang chủ đạt đủ.
-- [ ] T6. Chạy thử sandbox cổng 3101, CSDL tạm; chụp `docs/mtm/trang-chu/trang-chu-desktop.png`, `trang-chu-dien-thoai.png`; sửa lỗi nhìn thấy. Kiểm: ảnh có trong thư mục, không tràn ngang ở 360px.
+- [x] T0. Tài liệu `intent.md`, `spec.md`, `plan.md`. Kiểm: `git status` sạch trong `docs/mtm/trang-chu`. Commit `7302774`.
+- [x] T1. Tài nguyên: `public/fonts/*.woff2` + `OFL.txt`, `public/img/mientaymedia-logo.png`, `public/img/mientaymedia-logo-trang.png`, `public/img/khach-hang/*.png`. Kiểm: tệp tồn tại, `GET /fonts/...` 200. Commit `a985d31`.
+- [x] T2. Màu và font chung: `public/css/app.css` (`:root`, `@font-face`), `src/lib/settings.ts`, `src/db/seed.ts`, `src/routes/admin.ts` (gợi ý), `src/views/partials/head.ejs`. Kiểm: cổng chặn. Commit `5d23869`; 195/195 đạt.
+- [x] T3. Dữ liệu trang chủ: `src/routes/home.ts` (chips, noiBat, uuDai, giaChuyenTu; `/chuyen-ten-mien?domain=`), `test/trang-chu.test.ts`. Kiểm: test mới đạt (phần dữ liệu), cổng chặn. Commit `e85dbc4`; 198/198 đạt.
+- [x] T4. Header và footer dùng chung: `src/views/partials/header.ejs`, `src/views/partials/footer.ejs`, CSS. Kiểm: cổng chặn + `kiem-base`. Commit `86b7f3a`; 198/198 đạt, kiem-base 0.
+- [x] T5. Trang chủ: `src/views/home.ejs` (9 khối), CSS `tc-*`. Kiểm: cổng chặn + `kiem-base`, test trang chủ đạt đủ. Commit `8423d0f`; 200/200 đạt, kiem-base 0.
+- [x] T6. Chạy thử sandbox cổng 3101, CSDL tạm; chụp `docs/mtm/trang-chu/trang-chu-desktop.png`, `trang-chu-dien-thoai.png`; sửa lỗi nhìn thấy. Kiểm: ảnh có trong thư mục, không tràn ngang ở 360px. Sửa: form chuyển bị hiện cùng form tìm (thứ tự CSS), nút Đăng ký trong menu mất nền, placeholder ngắn lại. 1366px và 360px không tràn ngang (scrollWidth = clientWidth), font Be Vietnam Pro tải đủ 4 độ đậm.
 
 ## Lệch spec
 
-(chưa có)
+- L1. Màu chủ đạo: CSDL đã seed trước đây lưu sẵn `#0f766e` (mặc định cũ), sẽ đè màu mới. Chọn cách an toàn: `head.ejs` coi `#0f766e` cũng là mặc định, không sửa dữ liệu trong CSDL. Email (`notifications.ts`) vẫn đọc màu trong CSDL nên với CSDL cũ email còn màu xanh ngọc cho tới khi quản trị đổi trong Cấu hình.
+- L2. Thẻ dịch vụ ghi "Chỉ từ ... /năm đầu" kèm dòng "Gia hạn ... /năm" thay cho "Chỉ từ ... đ/năm": giá đăng ký là giá năm đầu, giá gia hạn nhiều đuôi cao hơn hẳn (ví dụ .shop 189.000 đ rồi 899.000 đ), ghi "/năm" trơn dễ hiểu nhầm.
+- L3. Thẻ cam kết thứ tư ghi "Hóa đơn rõ ràng" (hóa đơn của đơn hàng, xem và in lại) thay vì "hóa đơn điện tử": mã nguồn chưa có xuất hóa đơn điện tử theo chuẩn thuế.
+- L4. Header và footer là partial dùng chung nên mọi trang đều đổi theo; điểm gập menu nâng từ 900px lên 1024px. Chỉ trang chủ có thanh ưu đãi.
+- L5. Header không in tên bên cạnh logo khi dùng logo có sẵn (ảnh đã có chữ "MIENTAY Media"); nếu quản trị đặt `site.logo_url` thì giữ cách cũ (ảnh + tên).
+- L6. "Mua ngay" được thêm vào `scripts/kiem-dau.cho-phep.json` (đúng chính tả, công cụ bắt nhầm từ "ngay").
+- L7. Không có Claude in Chrome trong phiên này: ảnh chụp bằng Chrome headless qua DevTools Protocol (profile tạm), giả lập điện thoại 360px, DPR 2.

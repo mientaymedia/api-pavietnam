@@ -125,10 +125,11 @@ code, kbd, .mono { font-family: var(--mono); font-size: .9em; }
 .nav a:hover, .nav button:hover { background: var(--bg); color: var(--ink); text-decoration: none; }
 .nav a.active { color: var(--brand); background: var(--brand-light); }
 .nav-sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
-.nav .btn { color: #fff; }
-.nav .btn-outline { color: var(--ink); }
-.nav .btn:hover { color: #fff; background: var(--brand-dark); }
-.nav .btn-outline:hover { color: var(--brand); background: var(--brand-light); border-color: var(--brand); }
+/* Nut trong menu: ".nav a" dat nen trong suot, phai tra lai nen cua .btn */
+.nav a.btn { color: #fff; background: var(--brand); margin-left: 4px; }
+.nav a.btn-outline { color: var(--ink); background: var(--surface); border-color: var(--line); }
+.nav a.btn:hover { color: #fff; background: var(--brand-dark); }
+.nav a.btn-outline:hover { color: var(--brand); background: var(--brand-light); border-color: var(--brand); }
 
 /* Gio hang: bieu tuong + so mon, nam ngoai menu de luon thay tren dien thoai */
 .cart-link {
@@ -451,7 +452,8 @@ main.main-flush { padding: 0; }
 #tc-tab-chuyen:checked ~ .tc-tab-labels label[for="tc-tab-chuyen"] { background: var(--brand); color: #fff; }
 #tc-tab-tim:focus-visible ~ .tc-tab-labels label[for="tc-tab-tim"],
 #tc-tab-chuyen:focus-visible ~ .tc-tab-labels label[for="tc-tab-chuyen"] { outline: 2px solid var(--brand-navy); outline-offset: 2px; }
-.tc-panel-chuyen { display: none; }
+/* Tien to .tc-tabs de thang .tc-search { display: flex } khai bao phia duoi */
+.tc-tabs .tc-panel-chuyen { display: none; }
 #tc-tab-chuyen:checked ~ .tc-panel-tim { display: none; }
 #tc-tab-chuyen:checked ~ .tc-panel-chuyen { display: flex; }
 
