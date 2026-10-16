@@ -78,7 +78,11 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'site.tagline', label: 'Khẩu hiệu' },
   { key: 'site.hotline', label: 'Hotline' },
   { key: 'site.support_email', label: 'Email hỗ trợ' },
-  { key: 'site.address', label: 'Địa chỉ công ty' },
+  { key: 'site.working_hours', label: 'Giờ làm việc', hint: 'Ví dụ: Thứ 2 đến thứ 7, 8:00 đến 17:30' },
+  { key: 'site.address', label: 'Địa chỉ trụ sở' },
+  { key: 'site.legal_name', label: 'Tên pháp lý công ty', hint: 'Chỉ in ở dòng pháp lý cuối trang; tên hiển thị là Tên website' },
+  { key: 'site.tax_code', label: 'Mã số thuế' },
+  { key: 'site.tax_issued', label: 'Nơi cấp và ngày cấp mã số thuế', hint: 'Ví dụ: Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024' },
   { key: 'site.primary_color', label: 'Màu chủ đạo', hint: 'Ví dụ: #0a6cff' },
   { key: 'site.logo_url', label: 'Đường dẫn logo' },
 

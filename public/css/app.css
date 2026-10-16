@@ -284,6 +284,8 @@ tbody tr:hover { background: var(--bg); }
 .footer-logo img { height: 28px; width: auto; display: block; margin-bottom: 14px; }
 .footer-brand p { margin: 0 0 8px; max-width: 360px; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.15); margin-top: 32px; padding-top: 16px; padding-bottom: 18px; font-size: .8rem; color: rgba(255,255,255,.6); }
+.footer-text { margin: 6px 0 0; padding: 3px 0; }
+.footer-legal { margin: 6px 0 0; line-height: 1.55; overflow-wrap: anywhere; }
 @media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: 1 / -1; } }
 
 pre.raw {

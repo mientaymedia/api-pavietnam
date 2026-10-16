@@ -89,7 +89,14 @@ export const settings = {
     // footer, phieu thanh toan va email khong co cach nao lien he nguoi that.
     supportEmail: getSetting('site.support_email', 'hello@mientaymedia.com'),
     hotline: getSetting('site.hotline', '0976.788.840'),
-    address: getSetting('site.address', ''),
+    // Thong tin phap ly chu da chot 16/10/2026, khop trang Gioi thieu va Dieu
+    // khoan tren mientaymedia.com. Ten phap ly chi in o dong phap ly cuoi footer;
+    // ten hien thi van la site.name (MienTay Media).
+    address: getSetting('site.address', '12A5 Lê Thị Hồng Gấm, Khóm Bình Khánh 2, Phường Bình Đức, An Giang'),
+    legalName: getSetting('site.legal_name', 'Công ty TNHH Phần mềm Mientay Media'),
+    taxCode: getSetting('site.tax_code', '1602182849'),
+    taxIssued: getSetting('site.tax_issued', 'Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024'),
+    workingHours: getSetting('site.working_hours', 'Thứ 2 đến thứ 7, 8:00 đến 17:30'),
     logoUrl: getSetting('site.logo_url', ''),
     primaryColor: getSetting('site.primary_color', '#0a6cff'),
   }),

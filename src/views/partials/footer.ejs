@@ -13,7 +13,6 @@
         <img src="<%= base %>/img/mientaymedia-logo-trang.png" alt="<%= site.name %>" width="1200" height="152">
       </a>
       <p><%= site.tagline %></p>
-      <% if (site.address) { %><p class="footer-line"><%= site.address %></p><% } %>
     </div>
 
     <div>
@@ -42,10 +41,21 @@
       <% if (site.hotline) { %><a href="tel:<%= site.hotline.replace(/[^\d+]/g, '') %>">Hotline: <%= site.hotline %></a><% } %>
       <% if (emailHoTro) { %><a href="mailto:<%= emailHoTro %>"><%= emailHoTro %></a><% } %>
       <a href="https://mientaymedia.com" rel="noopener">mientaymedia.com</a>
+      <% if (site.workingHours) { %><p class="footer-text">Giờ làm việc: <%= site.workingHours %></p><% } %>
     </div>
   </div>
   <div class="container footer-bottom">
-    &copy; <%= new Date().getFullYear() %> <%= site.name %>
+    <div>&copy; <%= new Date().getFullYear() %> <%= site.name %></div>
+    <%
+      // Dong phap ly: ten phap ly chi xuat hien o day, moi cho khac dung ten hien
+      // thi site.name. Moi truong deu co mac dinh (settings.ts) nhung van
+      // kiem tung truong: neu sau nay bo mac dinh thi chi an muc do, khong in nhan "MST" treo.
+      var phapLy = [];
+      if (site.legalName) phapLy.push(site.legalName);
+      if (site.taxCode) phapLy.push('MST ' + site.taxCode + (site.taxIssued ? ', do ' + site.taxIssued : ''));
+      if (site.address) phapLy.push('Trụ sở: ' + site.address);
+    %>
+    <% if (phapLy.length) { %><p class="footer-legal"><%= phapLy.join('. ') %>.</p><% } %>
   </div>
 </footer>
 <script src="<%= base %>/js/app.js" defer></script>

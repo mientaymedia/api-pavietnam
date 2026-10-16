@@ -38,6 +38,9 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - L11. U1: status "inactive", "unregistered", "deactivated" nay là lỗi (trước là thành công). Nếu P.A thật trả "inactive" như trạng thái nghiệp vụ hợp lệ thì lệnh đó sẽ báo lỗi: cần xác minh bằng `pa:probe` trên VPS đã whitelist (việc đã có trong evals vòng 2, mục 6 ý 4).
 - L12. U6: chỉ dẫn gốc là "chỉ dựa trên brain"; người giao việc bổ sung `D:\mientay-web\web\src\lib\seo-content\` là nguồn hợp lệ. Câu chỉ có ở site (An Giang, hơn 500 doanh nghiệp, 24 giờ làm việc, bàn giao quyền quản trị tên miền) đã đưa lên kèm nguồn và ghi vào mục cần chủ xác minh.
 - L13. U6: thẻ Google Workspace ghi giá hãng "Chỉ từ 7 $/người/tháng" vì brain cấm hứa mức VNĐ cố định (giá VNĐ đổi theo tỷ giá từng ngày). Lời dẫn khối "Dịch vụ nổi bật" sửa thêm một câu cho đúng với ba thẻ mới (giá không lấy từ bảng giá tên miền). Hai lý do cũ "Giá minh bạch", "Tự động từ đầu đến cuối" bị thay vì brain không có.
+- L14. V2: `site.address` nay có mặc định nên phiếu thanh toán (`src/views/orders/invoice.ejs`, có sẵn dòng địa chỉ) cũng in trụ sở; không sửa view đó. Địa chỉ trong footer chuyển từ khối thương hiệu xuống dòng pháp lý (dạng "Trụ sở: ...") để không in hai lần.
+- L15. V2: như hotline và email, các trường pháp lý để trống trong Cấu hình sẽ về giá trị mặc định (cách `getSetting` sẵn có), không ẩn được khỏi footer bằng cách xóa trắng. Muốn ẩn cần đổi cơ chế settings: ngoài phạm vi.
+- L16. V2: site viết hoa tên pháp lý không thống nhất ("Phần mềm" ở `seo-content`, "Phần Mềm" ở các trang điều khoản, in hoa toàn bộ ở `site-data.ts`); dùng đúng chuỗi chủ đưa "Công ty TNHH Phần mềm Mientay Media". Nơi cấp MST viết theo site ("Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024"), thêm chữ "tỉnh", "ngày" so với lời chủ.
 
 ## Sửa sau Test vòng 2 và câu chữ theo brain (đợt 2)
 
@@ -56,7 +59,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 Đầu vào: mục "Chủ đã chốt" trong `nguon-cau-chu.md`. Cổng chặn mỗi commit: `npx tsc --noEmit`, `npm test` đạt hết (mốc 218/218), `npm run kiem-dau` 0, `MSYS_NO_PATHCONV=1 node scripts/kiem-base.mjs` 0; footer không tràn ở 360px (Chrome headless).
 
 - [x] V1. Ghi quyết định của chủ vào `nguon-cau-chu.md` và plan này (cả ghi chú Deploy). Kiểm: không em dash, en dash. Xong trong commit V1.
-- [ ] V2. Footer in dòng pháp lý và giờ làm việc từ Cấu hình. Tệp: `src/lib/settings.ts` (mặc định `site.address`, `site.legal_name`, `site.tax_code`, `site.tax_issued`, `site.working_hours`), `src/db/seed.ts`, `src/routes/admin.ts` (ô sửa trong Cấu hình), `src/views/partials/footer.ejs`, `public/css/app.css`, `test/trang-chu.test.ts`. Kiểm: cổng chặn; test footer mới; Chrome headless 360px và 1366px footer không tràn.
+- [x] V2. Footer in dòng pháp lý và giờ làm việc từ Cấu hình. Tệp: `src/lib/settings.ts` (mặc định `site.address`, `site.legal_name`, `site.tax_code`, `site.tax_issued`, `site.working_hours`), `src/db/seed.ts`, `src/routes/admin.ts` (ô sửa trong Cấu hình), `src/views/partials/footer.ejs`, `public/css/app.css`, `test/trang-chu.test.ts`. Kiểm: cổng chặn; test footer mới; Chrome headless 360px và 1366px footer không tràn. Xong: 219/219 đạt; Chrome headless 14 trang x 360px, 1366px (28 lần đo) không tràn, `.site-footer` 360/360, dòng pháp lý 328x79 ở 360px (5 dòng), 1100x40 ở 1366px.
 - [ ] V3. Chụp lại trang chủ máy tính và điện thoại vào thư mục này. Kiểm: ảnh có footer mới.
 
 ## Ghi cho bước Deploy

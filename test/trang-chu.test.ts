@@ -13,6 +13,7 @@ import type { AddressInfo } from 'node:net';
 import { createApp } from '../src/app.js';
 import { getTld, priceFor, upsertTld } from '../src/services/pricing.js';
 import { formatVnd } from '../src/lib/money.js';
+import { setSetting } from '../src/lib/settings.js';
 
 let server: Server;
 let goc = '';
@@ -84,6 +85,28 @@ test('footer co lien he mac dinh theo brain MienTay Media, khong lo hop thu no-r
   assert.match(footer, /href="mailto:hello@mientaymedia\.com">hello@mientaymedia\.com</);
   assert.match(footer, /href="https:\/\/mientaymedia\.com"/);
   assert.doesNotMatch(footer, /no-?reply/i);
+});
+
+test('footer in dong phap ly chu da chot, doc tu Cau hinh; ten hien thi van la MienTay Media', async () => {
+  const { html } = await trang('/');
+  const footer = html.slice(html.indexOf('<footer'));
+  assert.match(footer, /<p class="footer-legal">Công ty TNHH Phần mềm Mientay Media\. MST 1602182849, do Sở KH&amp;ĐT tỉnh An Giang cấp ngày 13\/06\/2024\. Trụ sở: 12A5 Lê Thị Hồng Gấm, Khóm Bình Khánh 2, Phường Bình Đức, An Giang\.<\/p>/);
+  assert.match(footer, /Giờ làm việc: Thứ 2 đến thứ 7, 8:00 đến 17:30/);
+  assert.match(footer, /&copy; \d{4} MienTay Media</);
+  // Ten phap ly chi o dong phap ly, khong lan sang header hay than trang
+  assert.equal(html.split('Công ty TNHH Phần mềm Mientay Media').length - 1, 1);
+
+  // Quan tri sua trong Cau hinh thi footer doi theo (de trong thi ve gia tri mac dinh)
+  setSetting('site.working_hours', 'Thứ 2 đến thứ 6');
+  setSetting('site.tax_issued', 'Sở thử cấp');
+  try {
+    const sau = (await trang('/')).html;
+    assert.match(sau, /Giờ làm việc: Thứ 2 đến thứ 6</);
+    assert.match(sau, /MST 1602182849, do Sở thử cấp\. Trụ sở:/);
+  } finally {
+    setSetting('site.working_hours', '');
+    setSetting('site.tax_issued', '');
+  }
 });
 
 test('dich vu khac va gioi thieu theo brain: dung gia Rate card, link mientaymedia.com, lien he tu cau hinh', async () => {

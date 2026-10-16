@@ -100,6 +100,12 @@ const DEFAULTS: Record<string, string> = {
   // Lien he theo brain MienTay Media; MAIL_FROM (no-reply) giu nguyen, chi dung de gui
   'site.hotline': '0976.788.840',
   'site.support_email': 'hello@mientaymedia.com',
+  // Thong tin phap ly va gio lam viec chu da chot 16/10/2026 (xem settings.ts)
+  'site.address': '12A5 Lê Thị Hồng Gấm, Khóm Bình Khánh 2, Phường Bình Đức, An Giang',
+  'site.legal_name': 'Công ty TNHH Phần mềm Mientay Media',
+  'site.tax_code': '1602182849',
+  'site.tax_issued': 'Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024',
+  'site.working_hours': 'Thứ 2 đến thứ 7, 8:00 đến 17:30',
   'dns.default_ns': 'ns1.pavietnam.vn,ns2.pavietnam.vn',
   'pricing.markup_percent': '0',
   'pricing.round_step': '1000',
