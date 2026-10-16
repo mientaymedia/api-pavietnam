@@ -8,6 +8,8 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+// Tep nay khong nap src nen import tinh duoc
+import { BIEN_THE_NEXT } from './helpers/bien-the-redirect.js';
 
 process.env['BASE_PATH'] = '/ten-mien';
 process.env['APP_URL'] = 'http://127.0.0.1/ten-mien';
@@ -109,6 +111,14 @@ test('next doc hai van bi chan duoi tien to', async () => {
   for (const xau of ['//evil.com', '/\\evil.com', 'https://evil.com', '%2F%2Fevil.com']) {
     assert.equal(await dangNhap(xau), `${B}/dashboard`, xau);
   }
+});
+
+test('next chuan hoa thanh //host van bi chan duoi tien to (loi evals 1)', async () => {
+  for (const xau of BIEN_THE_NEXT) {
+    assert.equal(await dangNhap(xau), `${B}/dashboard`, JSON.stringify(xau));
+  }
+  // Duong dan noi bo co doan dau cham van ve dung trang, tien to mot lan
+  assert.equal(await dangNhap('/a/../gio-hang'), `${B}/gio-hang`);
 });
 
 test('quay lai trang truoc chi trong app', async () => {

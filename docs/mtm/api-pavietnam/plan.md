@@ -43,6 +43,16 @@ Chạy trong Git Bash tại `D:\api-pavietnam`. Từ B1 trở đi phải đạt 
 - [x] B11. Email và ZNS: `notifications.ts`, `znsEvents.ts`, `lib/zns.ts`, `mailer.ts`, `test/zns.test.ts`, `test/email-encoding.test.ts`. Kết quả: 195/195 đạt.
 - [x] B12. Kiểm chứng cuối có thể làm trên máy: `kiem-dau` toàn bộ = 0, NFD = 0, mã băm, `kiem-base` = 0, spec 6.2, curl 6.3 bước 1 đến 3 (cả hai chế độ tiền tố), rút gọn danh sách cho phép, lập `test.md` có bảng kiểm chính tả cho chủ. Không mở PR (không push). Kết quả: xem `test.md` mục 1; phần cần người làm ở mục 2, điểm chính tả chờ chủ ở mục 3, bảng kiểm ở mục 4.
 
+## Sửa sau Test (evals.md, kết luận CHƯA ĐẠT tại 738ba18)
+
+Mỗi lỗi một commit có test hồi quy; cổng chặn như trên cộng `MSYS_NO_PATHCONV=1 node scripts/kiem-base.mjs` = 0.
+
+- [x] S1. Lỗi 1 (chặn deploy), open redirect `next=`: hàm chung `src/lib/redirect.ts` (`duongDanNoiBo`, `laDiaChiHost`) kiểm lại KẾT QUẢ sau khi `new URL` chuẩn hóa (pathname không được bắt đầu bằng `//` hay `/\`, không ký tự điều khiển, cùng origin); `safeNext` trong `routes/auth.ts` dùng hàm này, bước hai lớp kiểm lại `cho.next`; lớp chặn cuối trong `redirectWithBase` (`lib/basePath.ts`, giờ gắn cả khi `BASE` rỗng): mọi `Location` dạng `//host`, `/\host` thành trang chủ của app. Test: `test/security.test.ts` (gọi hàm thật thay bản sao), `test/base-path.test.ts`, `test/open-redirect.test.ts` (chế độ gốc, cả bước hai lớp), danh sách biến thể dùng chung `test/helpers/bien-the-redirect.ts`. Kiểm: test mới đỏ trên mã cũ (`Location: //evil.com`), xanh sau khi sửa; 203/203 đạt.
+- [ ] S2. Lỗi 2, `quayLai` (`routes/cart.ts`) dùng `duongDanNoiBo`. Test hồi quy Referer `/ten-mien//evil.com/x` và `/ten-mien/.//evil.com`.
+- [ ] S3. Lỗi 4, email "Thử cấu hình SMTP" đi qua khung `layout` (có `<meta charset="utf-8">`). Test trong `test/email-encoding.test.ts`.
+- [ ] S4. Lỗi 5, `interpret` của P.A coi `status` "Thành công", "thanh cong", "success", "ok" (mọi dạng dấu, hoa thường) là thành công, qua `boDau()`; giữ các test hồi quy thông báo lỗi.
+- [ ] S5. Lỗi 3, `test.md`: cách chạy thử dưới tiền tố trong Git Bash (`MSYS_NO_PATHCONV=1`); `evals.md` ghi lỗi 6 vào việc sau.
+
 ## Lệch spec
 
 1. Repo không có nhánh `main` cục bộ hay trên remote; nhánh chính là `claude/domain-registration-platform-23gtg1` (origin/HEAD), đúng commit `55b3a60` mà spec gọi là `main`. Nhánh `mtm/api-pavietnam` tạo từ commit này.

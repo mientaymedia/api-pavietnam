@@ -51,7 +51,8 @@ export function createApp() {
   // chay y nhu khi app o goc.
   const site = express.Router();
 
-  // Phai dung dau router con: redirect nao ben duoi cung duoc them tien to.
+  // Phai dung dau router con: redirect nao ben duoi cung duoc them tien to
+  // va qua lop chan open redirect (ca khi BASE rong).
   site.use(redirectWithBase);
 
   // Webhook can body tho de xac thuc chu ky -> giu lai ban raw
