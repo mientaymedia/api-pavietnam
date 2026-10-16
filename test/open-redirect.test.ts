@@ -99,3 +99,18 @@ test('o goc: buoc hai lop cung khong chuyen sang host khac', async () => {
     assert.equal(r2.headers.get('location'), '/dashboard', xau);
   }
 });
+
+test('o goc: quay lai gio hang khong theo Referer //host (loi evals 2)', async () => {
+  const { cookie, csrf } = await moPhien();
+  // Ten mien sai dinh dang: route bao loi roi quay lai trang truoc (quayLai)
+  const xoa = (referer: string) =>
+    lay('/gio-hang/them', {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded', cookie, referer },
+      body: new URLSearchParams({ _csrf: csrf, domain: '!!!' }).toString(),
+    });
+  assert.equal((await xoa(`${goc}/bang-gia?x=1`)).headers.get('location'), '/bang-gia?x=1');
+  for (const p of ['//evil.com/x', '/.//evil.com/x', '/a/..//evil.com/x']) {
+    assert.equal((await xoa(`${goc}${p}`)).headers.get('location'), '/gio-hang', p);
+  }
+});

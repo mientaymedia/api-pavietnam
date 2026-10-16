@@ -6,6 +6,7 @@ import { checkDomain } from '../pavietnam/client.js';
 import { authCodeSchema, domainSchema, yearsSchema } from '../lib/validate.js';
 import { rateLimit } from '../middleware/ratelimit.js';
 import { stripBase } from '../lib/basePath.js';
+import { duongDanNoiBo } from '../lib/redirect.js';
 
 const router = Router();
 
@@ -26,7 +27,10 @@ function quayLai(req: Request): string {
     // Referer co tien to BASE_PATH; trang cung ten mien nhung ngoai app (site
     // chinh) thi ve gio hang.
     const trong = stripBase(u.pathname);
-    return trong === null ? macDinh : `${trong}${u.search}`;
+    if (trong === null) return macDinh;
+    // Cung origin chua du: Referer /ten-mien//evil.com/x bo tien to con
+    // //evil.com/x. Qua cung ham kiem voi next= khi dang nhap.
+    return duongDanNoiBo(`${trong}${u.search}`, macDinh);
   } catch {
     return macDinh;
   }

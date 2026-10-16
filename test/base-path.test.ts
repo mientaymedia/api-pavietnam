@@ -134,6 +134,10 @@ test('quay lai trang truoc chi trong app', async () => {
   assert.equal((await xoa(`${goc}/blog/bai-viet`)).headers.get('location'), `${B}/gio-hang`);
   // Trong app -> quay lai dung trang, khong lap tien to
   assert.equal((await xoa(`${goc}${B}/bang-gia?x=1`)).headers.get('location'), `${B}/bang-gia?x=1`);
+  // Cung origin nhung bo tien to con //host (loi evals 2) -> ve gio hang
+  for (const p of ['//evil.com/x', '/.//evil.com/x', '/\\evil.com/x']) {
+    assert.equal((await xoa(`${goc}${B}${p}`)).headers.get('location'), `${B}/gio-hang`, p);
+  }
 });
 
 test('cookie phien chi gui cho duong dan cua app', async () => {
