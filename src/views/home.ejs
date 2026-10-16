@@ -11,9 +11,9 @@
       <button class="btn btn-lg" type="submit">Kiểm tra</button>
     </form>
 
-    <% if (featured.length) { %>
+    <% if (chips.length) { %>
       <div class="tld-chips">
-        <% featured.forEach(function (t) { %>
+        <% chips.slice(0, 8).forEach(function (t) { %>
           <span class="tld-chip">.<%= t.tld %> &middot; <%= formatVnd(priceFor(t, 'register', 1).total) %></span>
         <% }); %>
       </div>
@@ -47,7 +47,7 @@
           <tr><th>Đuôi</th><th>Loại</th><th class="right">Đăng ký năm đầu</th><th class="right">Gia hạn / năm</th><th></th></tr>
         </thead>
         <tbody>
-          <% tlds.slice(0, 12).forEach(function (t) { %>
+          <% chips.slice(0, 12).forEach(function (t) { %>
             <tr>
               <td><strong>.<%= t.tld %></strong><% if (t.label) { %><div class="tiny muted"><%= t.label %></div><% } %></td>
               <td><span class="badge badge-muted"><%= t.kind === 'vn' ? 'Việt Nam' : 'Quốc tế' %></span></td>

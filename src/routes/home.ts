@@ -11,10 +11,20 @@ const router = Router();
 
 router.get('/', (_req, res) => {
   const tlds = listTlds({ activeOnly: true });
+  // Duoi noi bat len truoc, giu thu tu sort_order trong tung nhom: chip va
+  // luoi dich vu doc tu cung mot danh sach nen khong bao gio lech gia nhau.
+  const xep = [...tlds.filter((t) => t.is_featured), ...tlds.filter((t) => !t.is_featured)];
+  const giaChuyen = tlds.filter((t) => t.price_transfer > 0).map((t) => priceFor(t, 'transfer', 1).total);
+
   res.render('home', {
     title: 'Đăng ký tên miền Việt Nam & Quốc tế',
-    featured: tlds.filter((t) => t.is_featured).slice(0, 8),
-    tlds,
+    chips: xep,
+    // Luoi 3 cot: 6 the duoi + 3 the cong cu. Thieu duoi noi bat thi bu bang
+    // duoi dang ban de hang cuoi cua luoi khong bi hut.
+    noiBat: xep.slice(0, 6),
+    // Thanh uu dai va the .vn chi neu gia dang ban, khong bia khuyen mai.
+    uuDai: tlds.find((t) => t.tld === 'vn') ?? xep[0] ?? null,
+    giaChuyenTu: giaChuyen.length ? Math.min(...giaChuyen) : null,
     priceFor,
   });
 });
@@ -53,13 +63,16 @@ router.get(
 );
 
 /** Trang chuyen ten mien tu nha dang ky khac ve he thong. */
-router.get('/chuyen-ten-mien', (_req, res) => {
+router.get('/chuyen-ten-mien', (req, res) => {
   const tlds = listTlds({ activeOnly: true }).filter((t) => t.price_transfer > 0);
+  // Tab "Chuyển tên miền về" o trang chu gui ?domain= toi day: dien san o nhap
+  // de khach khong phai go lai. Chi dien san, viec kiem hop le van o gio hang.
+  const domain = normalizeDomain(String(req.query['domain'] ?? '')).slice(0, 253);
   res.render('transfer', {
     title: 'Chuyển tên miền về',
     tlds,
     priceFor,
-    values: {},
+    values: domain ? { domain } : {},
   });
 });
 
