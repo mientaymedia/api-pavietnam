@@ -6,7 +6,11 @@
 <title><%= typeof title !== 'undefined' ? title + ' - ' + site.name : site.name %></title>
 <meta name="description" content="<%= site.tagline %>">
 <link rel="stylesheet" href="<%= base %>/css/app.css">
-<% if (site.primaryColor && site.primaryColor !== '#0f766e') { %>
+<%
+  // #0f766e la mau mac dinh cu do seed ghi san vao CSDL, khong phai mau quan
+  // tri vien tu chon: coi nhu mac dinh de CSDL cu cung len mau MienTay Media.
+%>
+<% if (site.primaryColor && site.primaryColor !== '#0a6cff' && site.primaryColor !== '#0f766e') { %>
 <style>:root { --brand: <%= site.primaryColor %>; }</style>
 <% } %>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127760;</text></svg>">

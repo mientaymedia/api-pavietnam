@@ -88,7 +88,7 @@ export const settings = {
     hotline: getSetting('site.hotline', ''),
     address: getSetting('site.address', ''),
     logoUrl: getSetting('site.logo_url', ''),
-    primaryColor: getSetting('site.primary_color', '#0f766e'),
+    primaryColor: getSetting('site.primary_color', '#0a6cff'),
   }),
 
   pa: () => ({

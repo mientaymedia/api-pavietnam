@@ -96,7 +96,7 @@ console.log(`+ Bang gia: them ${added} duoi moi (tong ${SEED_TLDS.length} duoi m
 const DEFAULTS: Record<string, string> = {
   'site.name': config.appName,
   'site.tagline': 'Đăng ký tên miền Việt Nam & Quốc tế - kích hoạt tức thì',
-  'site.primary_color': '#0f766e',
+  'site.primary_color': '#0a6cff',
   'dns.default_ns': 'ns1.pavietnam.vn,ns2.pavietnam.vn',
   'pricing.markup_percent': '0',
   'pricing.round_step': '1000',

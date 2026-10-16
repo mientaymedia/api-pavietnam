@@ -79,7 +79,7 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'site.hotline', label: 'Hotline' },
   { key: 'site.support_email', label: 'Email hỗ trợ' },
   { key: 'site.address', label: 'Địa chỉ công ty' },
-  { key: 'site.primary_color', label: 'Màu chủ đạo', hint: 'Ví dụ: #0f766e' },
+  { key: 'site.primary_color', label: 'Màu chủ đạo', hint: 'Ví dụ: #0a6cff' },
   { key: 'site.logo_url', label: 'Đường dẫn logo' },
 
   // API P.A Viet Nam
