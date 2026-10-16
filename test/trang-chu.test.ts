@@ -48,6 +48,26 @@ test('o tim ten mien gui toi /tim-kiem voi tham so q', async () => {
   assert.match(html, /name="q"/);
 });
 
+test('du cac khoi: uu dai, tab chuyen, dich vu, khach hang, cau hoi', async () => {
+  const { html } = await trang('/');
+  assert.match(html, /class="tc-promo"/);
+  assert.match(html, /<form[^>]*action="\/chuyen-ten-mien"[^>]*method="get"/);
+  assert.match(html, /Dịch vụ nổi bật/);
+  assert.match(html, /<img src="\/img\/khach-hang\/[a-z0-9-]+\.png" alt="Logo khách hàng /);
+  assert.match(html, /<details>\s*<summary>/);
+  // Trang chu khong duoc keo tai nguyen ngoai may chu (CSP chan, trang se vo)
+  assert.doesNotMatch(html, /\s(src|href)="https?:\/\/(?!mientaymedia\.com)/);
+});
+
+test('logo khach hang va font tu phuc vu deu ton tai', async () => {
+  const { html } = await trang('/');
+  const anh = [...html.matchAll(/src="(\/img\/khach-hang\/[^"]+)"/g)].map((m) => m[1]!);
+  assert.ok(anh.length >= 6, 'it nhat 6 logo khach hang');
+  for (const a of [...anh, '/img/mientaymedia-logo.png', '/fonts/be-vietnam-pro-vietnamese-400-normal.woff2']) {
+    assert.equal((await fetch(goc + a)).status, 200, a);
+  }
+});
+
 test('chuyen ten mien: ?domain= dien san o nhap va duoc thoat ky tu', async () => {
   const { html } = await trang('/chuyen-ten-mien?domain=' + encodeURIComponent('https://www.ViDu.com/abc'));
   assert.match(html, /name="domain" value="vidu\.com"/);

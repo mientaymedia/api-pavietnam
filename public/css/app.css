@@ -237,21 +237,6 @@ tbody tr:hover { background: var(--bg); }
 .alert-info { background: var(--info-bg); border-color: #bae6fd; color: #075985; }
 .alert-warn { background: var(--warn-bg); border-color: #fde68a; color: #92400e; }
 
-/* ------------------------------------------------------------------- hero */
-.hero { background: linear-gradient(160deg, var(--brand) 0%, var(--brand-dark) 100%); color: #fff; padding: 56px 0 64px; }
-.hero h1 { font-size: 2.2rem; color: #fff; margin-bottom: 10px; }
-.hero p { color: rgba(255,255,255,.88); font-size: 1.05rem; max-width: 620px; margin: 0 auto 26px; }
-.hero .center { text-align: center; }
-
-.search-box { display: flex; gap: 8px; background: #fff; padding: 8px; border-radius: var(--r-lg); box-shadow: var(--shadow-lg); max-width: 680px; margin: 0 auto; }
-.search-box input { border: 0; font-size: 1rem; padding: 12px 14px; }
-.search-box input:focus { box-shadow: none; }
-.search-box .btn { flex: none; }
-@media (max-width: 560px) { .search-box { flex-direction: column; } }
-
-.tld-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
-.tld-chip { background: rgba(255,255,255,.15); color: #fff; padding: 5px 12px; border-radius: 99px; font-size: .85rem; font-weight: 600; }
-
 /* ---------------------------------------------------------- ket qua tim kiem */
 .result {
   display: flex; align-items: center; gap: 16px; padding: 16px 18px;
@@ -354,8 +339,6 @@ pre.raw {
   .card { padding: 16px; }
   .table-wrap { margin: 0 -16px; padding: 0 16px; }
   .sidebar-layout { grid-template-columns: 1fr; }
-  .hero { padding: 36px 0 42px; }
-  .hero h1 { font-size: 1.7rem; }
   /* Nut tren dien thoai: du rong de bam bang ngon tay */
   .row > form > .btn, .row > .btn { min-height: 42px; }
 }
@@ -426,3 +409,201 @@ pre.raw {
 .viz-tip b { font-weight: 700; }
 /* Thang khong co doanh thu: vach mo de van nhin thay vi tri tren truc */
 .viz-seg-trong { height: 2px; background: var(--viz-axis); opacity: .35; border-radius: 2px; }
+
+/* =========================================================================
+   Trang chu (tien to tc-)
+   Bo cuc theo thu tu quen thuoc cua trang ban ten mien: thanh uu dai, hero co
+   o tim lon, banner, luoi dich vu, gioi thieu, khach hang, cau hoi, footer.
+   Chi dung o home.ejs nen khong anh huong trang khac.
+   ========================================================================= */
+main.main-flush { padding: 0; }
+
+.tc-promo { background: var(--brand-navy); color: #fff; font-size: .86rem; }
+.tc-promo .container { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 40px; padding-top: 6px; padding-bottom: 6px; text-align: center; }
+.tc-promo strong { color: #ffd166; }
+.tc-promo-btn {
+  flex: none; background: #fff; color: var(--brand-navy); font-weight: 700; font-size: .8rem;
+  padding: 4px 14px; border-radius: 99px;
+}
+.tc-promo-btn:hover { text-decoration: none; background: var(--brand-light); }
+
+/* ------------------------------------------------------------------- hero */
+.tc-hero {
+  padding: 56px 0 40px; text-align: center;
+  background:
+    radial-gradient(600px 300px at 12% 0%, rgba(10,108,255,.12), transparent 70%),
+    radial-gradient(520px 280px at 92% 20%, rgba(14,180,166,.10), transparent 70%),
+    linear-gradient(180deg, #eef4ff 0%, #f6faff 55%, var(--bg) 100%);
+}
+.tc-hero h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -.02em; max-width: 820px; margin: 0 auto 12px; }
+.tc-hero h1 span { color: var(--brand); }
+.tc-lead { color: var(--ink-soft); font-size: 1.05rem; max-width: 640px; margin: 0 auto 26px; }
+
+/* Tab doi bang radio an: van nhan Tab/phim mui ten, vien focus hien tren nhan */
+.tc-tabs { max-width: 760px; margin: 0 auto; }
+.tc-tab-input { position: absolute; opacity: 0; pointer-events: none; }
+.tc-tab-labels { display: inline-flex; gap: 4px; padding: 4px; background: #fff; border: 1px solid var(--line); border-radius: 99px; margin-bottom: 12px; }
+.tc-tab-labels label {
+  margin: 0; cursor: pointer; padding: 7px 16px; border-radius: 99px;
+  font-size: .88rem; font-weight: 600; color: var(--ink-soft);
+}
+#tc-tab-tim:checked ~ .tc-tab-labels label[for="tc-tab-tim"],
+#tc-tab-chuyen:checked ~ .tc-tab-labels label[for="tc-tab-chuyen"] { background: var(--brand); color: #fff; }
+#tc-tab-tim:focus-visible ~ .tc-tab-labels label[for="tc-tab-tim"],
+#tc-tab-chuyen:focus-visible ~ .tc-tab-labels label[for="tc-tab-chuyen"] { outline: 2px solid var(--brand-navy); outline-offset: 2px; }
+.tc-panel-chuyen { display: none; }
+#tc-tab-chuyen:checked ~ .tc-panel-tim { display: none; }
+#tc-tab-chuyen:checked ~ .tc-panel-chuyen { display: flex; }
+
+.tc-search {
+  display: flex; align-items: center; gap: 6px; background: #fff;
+  border: 2px solid var(--brand); border-radius: 99px; padding: 6px 6px 6px 18px;
+  box-shadow: 0 12px 32px rgba(10,108,255,.14);
+}
+.tc-search-icon { color: var(--brand); display: grid; flex: none; }
+.tc-search input { border: 0; font-size: 1.05rem; padding: 12px 8px; background: transparent; min-width: 0; }
+.tc-search input:focus { box-shadow: none; }
+.tc-search .btn { flex: none; border-radius: 99px; padding: 13px 28px; font-size: 1rem; }
+
+/* Dai gia duoi: xuong dong tren may tinh, cuon ngang tren dien thoai */
+.tc-chips { list-style: none; margin: 18px auto 0; padding: 0; max-width: 980px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.tc-chip {
+  background: #fff; border: 1px solid var(--line); border-radius: 99px;
+  padding: 5px 12px; font-size: .84rem; white-space: nowrap; color: var(--ink-soft);
+}
+.tc-chip b { color: var(--ink); font-weight: 700; }
+.tc-chip-noi-bat { border-color: #bcd4ff; background: var(--brand-light); }
+.tc-chip-noi-bat b { color: var(--brand); }
+
+.tc-camket { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 34px; text-align: left; }
+.tc-camket-item { display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 16px; }
+.tc-camket-item strong { display: block; font-size: .93rem; }
+.tc-camket-item span:not(.tc-ic) { display: block; font-size: .82rem; color: var(--ink-soft); line-height: 1.5; margin-top: 2px; }
+.tc-ic { flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--brand-light); color: var(--brand); }
+
+/* ------------------------------------------------------------- khoi chung */
+.tc-section { padding: 48px 0; }
+.tc-head { text-align: center; max-width: 680px; margin: 0 auto 28px; }
+.tc-head h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+.tc-head p { color: var(--ink-soft); margin: 0; }
+.tc-kicker { display: inline-block; font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--brand); margin-bottom: 8px; }
+.tc-kicker-sang { color: #9cc2ff; }
+.tc-link { font-weight: 600; }
+.tc-link::after, .tc-card-link::after, .tc-link-sang::after { content: " \2192"; }
+
+/* ----------------------------------------------------------------- banner */
+.tc-banners-wrap { padding-top: 16px; }
+.tc-banners { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; }
+.tc-banner {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px;
+  border-radius: 20px; padding: 32px; color: #fff;
+  background: linear-gradient(120deg, var(--brand-navy) 0%, var(--brand) 100%);
+}
+.tc-banner h2 { color: #fff; font-size: 1.6rem; font-weight: 800; }
+.tc-banner p { color: rgba(255,255,255,.86); max-width: 440px; }
+.tc-banner-text { flex: 1 1 auto; position: relative; z-index: 1; }
+.tc-banner-art { flex: none; width: 260px; height: auto; }
+.tc-banner-cta { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.tc-btn-trang { background: #fff; color: var(--brand-navy); }
+.tc-btn-trang:hover { background: var(--brand-light); color: var(--brand-navy); }
+.tc-link-sang { color: #fff; font-weight: 600; }
+.tc-link-sang:hover { color: #fff; }
+
+.tc-vn {
+  border-radius: 20px; padding: 28px; background: #fff; border: 1px solid var(--line);
+  box-shadow: var(--shadow); display: flex; flex-direction: column;
+  background-image: radial-gradient(240px 160px at 100% 0%, rgba(10,108,255,.10), transparent 70%);
+}
+.tc-vn-ten { font-size: 3.2rem; font-weight: 800; line-height: 1; color: var(--brand); letter-spacing: -.03em; margin-bottom: 10px; }
+.tc-vn p { color: var(--ink-soft); font-size: .9rem; }
+.tc-vn .btn { margin-top: auto; }
+.tc-vn .tc-gia { margin-bottom: 14px; }
+
+/* ------------------------------------------------------- dich vu noi bat */
+.tc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.tc-card {
+  position: relative; display: flex; flex-direction: column; background: #fff;
+  border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.tc-card:hover { border-color: #bcd4ff; box-shadow: 0 12px 30px rgba(10,108,255,.10); transform: translateY(-2px); }
+.tc-nhom { position: absolute; top: 18px; right: 18px; font-size: .72rem; font-weight: 700; color: var(--brand); background: var(--brand-light); padding: 3px 9px; border-radius: 99px; }
+.tc-card .tc-ic { margin-bottom: 14px; }
+.tc-card h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 4px; }
+.tc-card p { color: var(--ink-soft); font-size: .88rem; margin-bottom: 14px; flex: 1 1 auto; }
+.tc-gia { font-size: .9rem; color: var(--ink-soft); }
+.tc-gia strong { font-size: 1.25rem; font-weight: 800; color: var(--brand); }
+.tc-giahan { font-size: .78rem; color: var(--ink-muted); margin-top: 2px; }
+.tc-card-link { margin-top: 14px; font-weight: 600; font-size: .9rem; }
+
+/* -------------------------------------------------------------- gioi thieu */
+.tc-about-wrap { background: #fff; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.tc-about { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.tc-about-text h2 { font-size: 1.8rem; font-weight: 800; }
+.tc-about-text p { color: var(--ink-soft); }
+.tc-lydo { display: grid; gap: 14px; }
+.tc-lydo-item { display: flex; gap: 14px; padding: 18px; border-radius: var(--r-lg); background: var(--bg); border: 1px solid var(--line); }
+.tc-lydo-item h3 { font-size: 1rem; margin-bottom: 2px; }
+.tc-lydo-item p { margin: 0; color: var(--ink-soft); font-size: .88rem; }
+
+/* -------------------------------------------------------------- khach hang */
+.tc-logos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+.tc-logos li { background: #fff; border: 1px solid var(--line); border-radius: var(--r); padding: 10px; display: grid; place-items: center; }
+.tc-logos img { width: 100%; height: auto; max-width: 180px; display: block; }
+
+/* --------------------------------------------------------- cau hoi thuong gap */
+.tc-faq-wrap { padding-bottom: 64px; }
+.tc-faq { max-width: 820px; }
+.tc-faq details { background: #fff; border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 10px; }
+.tc-faq summary {
+  cursor: pointer; list-style: none; padding: 16px 48px 16px 18px; font-weight: 600; position: relative;
+}
+.tc-faq summary::-webkit-details-marker { display: none; }
+.tc-faq summary::after {
+  content: "+"; position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
+  font-size: 1.3rem; font-weight: 400; color: var(--brand);
+}
+.tc-faq details[open] summary::after { content: "\2212"; }
+.tc-faq details[open] summary { color: var(--brand); }
+.tc-faq details p { padding: 0 18px 16px; margin: 0; color: var(--ink-soft); }
+
+/* ---------------------------------------------------------------- man hep */
+@media (max-width: 1024px) {
+  .tc-camket { grid-template-columns: repeat(2, 1fr); }
+  .tc-banners { grid-template-columns: 1fr; }
+  .tc-grid { grid-template-columns: repeat(2, 1fr); }
+  .tc-logos { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 760px) {
+  .tc-promo .container { justify-content: space-between; text-align: left; font-size: .8rem; }
+  .tc-hero { padding: 32px 0 28px; }
+  .tc-hero h1 { font-size: 1.7rem; }
+  .tc-hero h1 span { display: block; }
+  .tc-lead { font-size: .95rem; margin-bottom: 18px; }
+  .tc-search { padding-left: 14px; }
+  .tc-search .btn { padding: 12px 18px; }
+  .tc-chips {
+    flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto;
+    margin-left: -16px; margin-right: -16px; padding: 2px 16px 6px;
+    scrollbar-width: none;
+  }
+  .tc-chips::-webkit-scrollbar { display: none; }
+  .tc-section { padding: 36px 0; }
+  .tc-head h2, .tc-about-text h2 { font-size: 1.4rem; }
+  .tc-banner { padding: 24px; }
+  .tc-banner h2 { font-size: 1.3rem; }
+  .tc-banner-art { display: none; }
+  .tc-about { grid-template-columns: 1fr; gap: 24px; }
+  .tc-grid { grid-template-columns: 1fr; }
+  .tc-logos { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+}
+@media (max-width: 480px) {
+  .tc-camket { grid-template-columns: 1fr; gap: 10px; }
+  /* O tim hep: an bieu tuong, nut gon lai de o nhap con du cho */
+  .tc-search-icon { display: none; }
+  .tc-search { padding-left: 8px; }
+  .tc-search input { font-size: 1rem; padding: 10px 6px; }
+  .tc-search .btn { padding: 11px 14px; font-size: .92rem; }
+  .tc-tab-labels label { padding: 7px 12px; font-size: .84rem; }
+  .tc-logos { grid-template-columns: repeat(2, 1fr); }
+}

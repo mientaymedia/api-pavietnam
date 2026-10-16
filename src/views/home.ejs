@@ -1,66 +1,277 @@
 <%- include('partials/head') %>
+<%
+  // Bieu tuong net manh ve bang SVG noi tuyen: khong anh ngoai, khong font
+  // bieu tuong (CSP chi cho tai nguyen tu may chu nay). Chuoi co dinh trong ma
+  // nguon, khong co du lieu nguoi dung, nen in khong thoat ky tu la an toan.
+  var ICON = {
+    cau: '<path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z"/><path d="M3.6 9h16.8M3.6 15h16.8M12 3c2.3 2.5 3.5 5.5 3.5 9s-1.2 6.5-3.5 9c-2.3-2.5-3.5-5.5-3.5-9S9.7 5.5 12 3Z"/>',
+    tia: '<path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/>',
+    dns: '<rect x="3" y="4" width="18" height="6" rx="2"/><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 7h.01M7 17h.01"/>',
+    qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/>',
+    hoaDon: '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h5"/>',
+    chuyen: '<path d="M4 8h13l-4-4M20 16H7l4 4"/>',
+    kinhLup: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    khien: '<path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+    banhRang: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+    nguoi: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.5a3.5 3.5 0 0 1 0 7M18 14.8c1.8.8 3 2.6 3.5 5.2"/>'
+  };
+  function icon(ten) {
+    return '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[ten] + '</svg>';
+  }
+  function giaDangKy(t) { return formatVnd(priceFor(t, 'register', 1).total); }
+  function giaGiaHan(t) { return formatVnd(priceFor(t, 'renew', 1).total); }
+
+  // Logo khach hang that cua MienTay Media (chep tu repo mientay-web).
+  var KHACH_HANG = [
+    ['thangloigroup-vn', 'Thắng Lợi Group'],
+    ['silkpath', 'Silk Path'],
+    ['aimmedia', 'AIM Media'],
+    ['farina', 'Farina'],
+    ['dienthoaigiakho-vn', 'Điện Thoại Giá Kho'],
+    ['xay-dung-bidico', 'Xây dựng Bidico'],
+    ['staracademy-vn', 'Star Academy'],
+    ['thuy-dien-thac-mo', 'Thủy điện Thác Mơ'],
+    ['hyundaingocphat-com', 'Hyundai Ngọc Phát'],
+    ['realhomes-vn', 'RealHomes'],
+    ['tavopharma-com', 'Tavopharma'],
+    ['homelifeviet-vn', 'HomeLife Việt']
+  ];
+%>
+
+<% if (uuDai) { %>
+  <!-- 1. Thanh uu dai: chi neu gia dang ban trong bang gia, khong bia khuyen mai -->
+  <div class="tc-promo">
+    <div class="container">
+      <span>Tên miền <strong>.<%= uuDai.tld %></strong> chỉ <strong><%= giaDangKy(uuDai) %></strong> năm đầu, tự kích hoạt ngay sau khi thanh toán.</span>
+      <a class="tc-promo-btn" href="#tim-ten-mien">Mua ngay</a>
+    </div>
+  </div>
+<% } %>
+
 <%- include('partials/header') %>
 
-<section class="hero">
-  <div class="container center">
-    <h1>Đăng ký tên miền Việt Nam &amp; Quốc tế</h1>
-    <p><%= site.tagline %></p>
+<!-- 3. Hero: o tim lon, tab tim / chuyen ve, dai gia duoi, cam ket -->
+<section class="tc-hero" id="tim-ten-mien">
+  <div class="container">
+    <%- include('partials/flash') %>
+    <h1>Tên miền cho thương hiệu của bạn, <span>sẵn sàng sau vài phút</span></h1>
+    <p class="tc-lead">Tra cứu, đăng ký và quản lý tên miền Việt Nam lẫn quốc tế ở một nơi. Thanh toán bằng mã QR, tên miền tự kích hoạt.</p>
 
-    <form class="search-box" action="<%= base %>/tim-kiem" method="get">
-      <input type="search" name="q" aria-label="Tên miền cần tìm" placeholder="Nhập tên miền bạn muốn, ví dụ: congtyabc" required autofocus>
-      <button class="btn btn-lg" type="submit">Kiểm tra</button>
-    </form>
+    <%
+      // Hai tab bang radio + CSS (:checked ~): doi tab khong can JavaScript.
+      // Radio nam ngoai hai form nen khong bi gui kem.
+    %>
+    <div class="tc-tabs">
+      <input class="tc-tab-input" type="radio" name="tc-tab" id="tc-tab-tim" checked>
+      <input class="tc-tab-input" type="radio" name="tc-tab" id="tc-tab-chuyen">
+      <div class="tc-tab-labels">
+        <label for="tc-tab-tim">Tìm tên miền</label>
+        <label for="tc-tab-chuyen">Chuyển tên miền về</label>
+      </div>
+
+      <form class="tc-search tc-panel-tim" action="<%= base %>/tim-kiem" method="get" role="search">
+        <span class="tc-search-icon"><%- icon('kinhLup') %></span>
+        <input type="search" name="q" aria-label="Tên miền cần tìm" placeholder="Nhập tên bạn muốn, ví dụ: thuonghieucuaban" required>
+        <button class="btn" type="submit">Kiểm tra</button>
+      </form>
+
+      <form class="tc-search tc-panel-chuyen" action="<%= base %>/chuyen-ten-mien" method="get">
+        <span class="tc-search-icon"><%- icon('chuyen') %></span>
+        <input type="text" name="domain" aria-label="Tên miền cần chuyển về" placeholder="Tên miền đang dùng, ví dụ: tenmien.com" required>
+        <button class="btn" type="submit">Chuyển về</button>
+      </form>
+    </div>
 
     <% if (chips.length) { %>
-      <div class="tld-chips">
-        <% chips.slice(0, 8).forEach(function (t) { %>
-          <span class="tld-chip">.<%= t.tld %> &middot; <%= formatVnd(priceFor(t, 'register', 1).total) %></span>
+      <ul class="tc-chips" aria-label="Giá đăng ký năm đầu">
+        <% chips.forEach(function (t) { %>
+          <li class="tc-chip<%= t.is_featured ? ' tc-chip-noi-bat' : '' %>"><b>.<%= t.tld %></b> <span><%= giaDangKy(t) %></span></li>
         <% }); %>
-      </div>
+      </ul>
     <% } %>
+
+    <div class="tc-camket">
+      <div class="tc-camket-item">
+        <span class="tc-ic"><%- icon('tia') %></span>
+        <div><strong>Kích hoạt tức thì</strong><span>Thanh toán xong, tên miền tự đăng ký, không chờ duyệt tay.</span></div>
+      </div>
+      <div class="tc-camket-item">
+        <span class="tc-ic"><%- icon('dns') %></span>
+        <div><strong>Quản lý DNS miễn phí</strong><span>Sửa bản ghi, đổi nameserver ngay trong Control Panel.</span></div>
+      </div>
+      <div class="tc-camket-item">
+        <span class="tc-ic"><%- icon('qr') %></span>
+        <div><strong>Thanh toán QR tự động</strong><span>Quét mã chuyển khoản, hệ thống tự đối soát.</span></div>
+      </div>
+      <div class="tc-camket-item">
+        <span class="tc-ic"><%- icon('hoaDon') %></span>
+        <div><strong>Hóa đơn rõ ràng</strong><span>Mỗi đơn hàng có hóa đơn, xem và in lại bất cứ lúc nào.</span></div>
+      </div>
+    </div>
   </div>
 </section>
 
-<div class="container" style="margin-top:28px">
-  <%- include('partials/flash') %>
+<!-- 4. Hai banner: banner rong + the gioi thieu .vn (ve bang CSS/SVG) -->
+<section class="tc-section tc-banners-wrap">
+  <div class="container tc-banners">
+    <div class="tc-banner">
+      <div class="tc-banner-text">
+        <span class="tc-kicker tc-kicker-sang">Dành cho doanh nghiệp</span>
+        <h2>Giữ tên thương hiệu trước khi người khác đăng ký</h2>
+        <p>Đăng ký cùng lúc .vn và .com cho cùng một tên để khách luôn tìm đúng bạn, dù gõ đuôi nào.</p>
+        <div class="tc-banner-cta">
+          <a class="btn tc-btn-trang" href="#tim-ten-mien">Tìm tên miền</a>
+          <a class="tc-link-sang" href="<%= base %>/bang-gia">Xem bảng giá</a>
+        </div>
+      </div>
+      <svg class="tc-banner-art" viewBox="0 0 260 200" aria-hidden="true">
+        <circle cx="170" cy="100" r="86" fill="#ffffff" fill-opacity=".07"/>
+        <circle cx="170" cy="100" r="58" fill="#ffffff" fill-opacity=".08"/>
+        <rect x="40" y="54" width="196" height="104" rx="12" fill="#ffffff"/>
+        <rect x="40" y="54" width="196" height="22" rx="11" fill="#eef4ff"/>
+        <circle cx="56" cy="65" r="4" fill="#ff8a80"/><circle cx="69" cy="65" r="4" fill="#ffd166"/><circle cx="82" cy="65" r="4" fill="#5ad19a"/>
+        <rect x="54" y="90" width="168" height="24" rx="12" fill="#eef4ff"/>
+        <text x="68" y="107" font-size="13" font-weight="700" fill="#0a3da8">thuonghieu.vn</text>
+        <rect x="54" y="124" width="70" height="8" rx="4" fill="#d6e4ff"/><rect x="54" y="138" width="110" height="8" rx="4" fill="#d6e4ff"/>
+        <circle cx="214" cy="140" r="22" fill="#0a6cff"/>
+        <path d="m204 140 7 7 13-14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
 
-  <div class="grid grid-3">
-    <div class="card">
-      <h3>Kích hoạt tức thì</h3>
-      <p class="muted small">Thanh toán xong là tên miền được đăng ký tự động qua API nhà đăng ký, không chờ duyệt thủ công.</p>
-    </div>
-    <div class="card">
-      <h3>Quản lý DNS đầy đủ</h3>
-      <p class="muted small">Thêm, sửa, xóa bản ghi A / AAAA / CNAME / MX / TXT / NS / SRV / CAA và đổi nameserver ngay trong Control Panel.</p>
-    </div>
-    <div class="card">
-      <h3>Thanh toán tự động</h3>
-      <p class="muted small">Quét QR chuyển khoản ngân hàng, hệ thống đối soát tự động. Hỗ trợ thêm ví MoMo và ZaloPay.</p>
+    <% var vn = uuDai && uuDai.tld === 'vn' ? uuDai : null; %>
+    <div class="tc-vn">
+      <span class="tc-kicker">Tên miền quốc gia</span>
+      <div class="tc-vn-ten">.vn</div>
+      <p>Tên miền của Việt Nam, giúp khách nhận ra ngay bạn là doanh nghiệp trong nước. Quản lý theo quy định của pháp luật Việt Nam.</p>
+      <% if (vn) { %>
+        <div class="tc-gia">Năm đầu <strong><%= giaDangKy(vn) %></strong></div>
+      <% } %>
+      <a class="btn btn-block" href="#tim-ten-mien">Đăng ký tên miền .vn</a>
     </div>
   </div>
+</section>
 
-  <h2 class="section-heading">Bảng giá nổi bật</h2>
-  <div class="card">
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>Đuôi</th><th>Loại</th><th class="right">Đăng ký năm đầu</th><th class="right">Gia hạn / năm</th><th></th></tr>
-        </thead>
-        <tbody>
-          <% chips.slice(0, 12).forEach(function (t) { %>
-            <tr>
-              <td><strong>.<%= t.tld %></strong><% if (t.label) { %><div class="tiny muted"><%= t.label %></div><% } %></td>
-              <td><span class="badge badge-muted"><%= t.kind === 'vn' ? 'Việt Nam' : 'Quốc tế' %></span></td>
-              <td class="right"><strong><%= formatVnd(priceFor(t, 'register', 1).total) %></strong></td>
-              <td class="right"><%= formatVnd(priceFor(t, 'renew', 1).total) %></td>
-              <td class="right"><a class="btn btn-sm btn-outline" href="<%= base %>/tim-kiem?q=<%= encodeURIComponent('ten-mien-cua-ban.' + t.tld) %>">Kiểm tra</a></td>
-            </tr>
-          <% }); %>
-        </tbody>
-      </table>
+<!-- 5. Dich vu noi bat: 6 the duoi + 3 the cong cu -->
+<section class="tc-section">
+  <div class="container">
+    <div class="tc-head">
+      <h2>Dịch vụ nổi bật</h2>
+      <p>Giá lấy trực tiếp từ bảng giá, đã gồm VAT nếu có. Giá gia hạn ghi rõ bên dưới.</p>
     </div>
-    <p class="tiny muted" style="margin:14px 0 0">Giá đã bao gồm VAT nếu được cấu hình. Xem đầy đủ tại <a href="<%= base %>/bang-gia">bảng giá</a>.</p>
+
+    <div class="tc-grid">
+      <% noiBat.forEach(function (t) { %>
+        <article class="tc-card">
+          <span class="tc-nhom"><%= t.kind === 'vn' ? 'Tên miền Việt Nam' : 'Tên miền quốc tế' %></span>
+          <span class="tc-ic"><%- icon('cau') %></span>
+          <h3>Tên miền .<%= t.tld %></h3>
+          <p><%= t.label || 'Đăng ký nhanh, quản lý DNS miễn phí.' %></p>
+          <div class="tc-gia">Chỉ từ <strong><%= giaDangKy(t) %></strong>/năm đầu</div>
+          <div class="tc-giahan">Gia hạn <%= giaGiaHan(t) %>/năm</div>
+          <a class="tc-card-link" href="#tim-ten-mien">Tìm tên miền .<%= t.tld %></a>
+        </article>
+      <% }); %>
+
+      <article class="tc-card">
+        <span class="tc-nhom">Công cụ</span>
+        <span class="tc-ic"><%- icon('chuyen') %></span>
+        <h3>Chuyển tên miền về</h3>
+        <p>Đưa tên miền từ nơi khác về quản lý chung một chỗ, giữ nguyên thời hạn còn lại.</p>
+        <% if (giaChuyenTu !== null) { %>
+          <div class="tc-gia">Chỉ từ <strong><%= formatVnd(giaChuyenTu) %></strong>/năm</div>
+        <% } %>
+        <a class="tc-card-link" href="<%= base %>/chuyen-ten-mien">Chuyển tên miền về</a>
+      </article>
+
+      <article class="tc-card">
+        <span class="tc-nhom">Công cụ</span>
+        <span class="tc-ic"><%- icon('kinhLup') %></span>
+        <h3>Tra cứu WHOIS</h3>
+        <p>Xem chủ thể, nhà đăng ký và ngày hết hạn của một tên miền bất kỳ.</p>
+        <div class="tc-gia"><strong>Miễn phí</strong></div>
+        <a class="tc-card-link" href="<%= base %>/whois">Tra cứu ngay</a>
+      </article>
+
+      <article class="tc-card">
+        <span class="tc-nhom">Công cụ</span>
+        <span class="tc-ic"><%- icon('dns') %></span>
+        <h3>Quản lý DNS</h3>
+        <p>Bản ghi A, AAAA, CNAME, MX, TXT, NS, SRV, CAA và đổi nameserver trong Control Panel.</p>
+        <div class="tc-gia"><strong>Miễn phí</strong> kèm tên miền</div>
+        <a class="tc-card-link" href="<%= base %>/control-panel">Mở Control Panel</a>
+      </article>
+    </div>
   </div>
-</div>
+</section>
+
+<!-- 6. Gioi thieu thuong hieu + 3 ly do chon -->
+<section class="tc-section tc-about-wrap">
+  <div class="container tc-about">
+    <div class="tc-about-text">
+      <span class="tc-kicker">Về MienTay Media</span>
+      <h2>Tên miền là bước đầu, MienTay Media đồng hành cả chặng đường</h2>
+      <p>MienTay Media xây dựng giải pháp số cho doanh nghiệp: website, Zalo OA, công cụ bán hàng và chăm sóc khách hàng. Đăng ký tên miền tại đây, bạn có người hỗ trợ trỏ tên miền về website, email và các kênh bán hàng sau này.</p>
+      <a class="tc-link" href="https://mientaymedia.com" rel="noopener">Tìm hiểu MienTay Media</a>
+    </div>
+    <div class="tc-lydo">
+      <div class="tc-lydo-item">
+        <span class="tc-ic"><%- icon('khien') %></span>
+        <div><h3>Giá minh bạch</h3><p>Giá năm đầu, giá gia hạn và VAT (nếu có) đều hiện rõ trước khi bạn thanh toán.</p></div>
+      </div>
+      <div class="tc-lydo-item">
+        <span class="tc-ic"><%- icon('banhRang') %></span>
+        <div><h3>Tự động từ đầu đến cuối</h3><p>Đăng ký, gia hạn, đổi DNS đều chạy tự động. Bạn tự làm được bất cứ lúc nào.</p></div>
+      </div>
+      <div class="tc-lydo-item">
+        <span class="tc-ic"><%- icon('nguoi') %></span>
+        <div><h3>Có người thật hỗ trợ</h3><p>Đội ngũ MienTay Media hướng dẫn bạn cấu hình tên miền khi cần.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. Khach hang tin dung: logo that cua MienTay Media -->
+<section class="tc-section">
+  <div class="container">
+    <div class="tc-head">
+      <h2>Khách hàng tin dùng</h2>
+      <p>Doanh nghiệp đã đồng hành cùng MienTay Media.</p>
+    </div>
+    <ul class="tc-logos">
+      <% KHACH_HANG.forEach(function (k) { %>
+        <li><img src="<%= base %>/img/khach-hang/<%= k[0] %>.png" alt="Logo khách hàng <%= k[1] %>" width="300" height="89" loading="lazy"></li>
+      <% }); %>
+    </ul>
+  </div>
+</section>
+
+<!-- 8. Cau hoi thuong gap: details/summary, khong can JavaScript -->
+<section class="tc-section tc-faq-wrap">
+  <div class="container tc-faq">
+    <div class="tc-head">
+      <h2>Câu hỏi thường gặp</h2>
+    </div>
+    <details>
+      <summary>Nên chọn đuôi .vn hay .com?</summary>
+      <p>Nếu khách hàng chủ yếu ở Việt Nam, .vn hoặc .com.vn giúp nhận diện doanh nghiệp trong nước. Nếu bán ra nước ngoài, .com dễ nhớ hơn. Nhiều doanh nghiệp đăng ký cả hai để giữ tên.</p>
+    </details>
+    <details>
+      <summary>Đăng ký tên miền .vn cần thông tin gì?</summary>
+      <p>Bạn khai thông tin chủ thể: cá nhân gồm họ tên, số giấy tờ tùy thân và địa chỉ; tổ chức gồm tên, mã số thuế và địa chỉ. Thông tin cần chính xác vì đây là căn cứ xác định ai sở hữu tên miền.</p>
+    </details>
+    <details>
+      <summary>Bao lâu thì tên miền dùng được?</summary>
+      <p>Ngay khi thanh toán được xác nhận, hệ thống tự gửi lệnh đăng ký. Tên miền thường hoạt động sau vài phút; thay đổi DNS có thể cần vài giờ để cập nhật trên toàn Internet.</p>
+    </details>
+    <details>
+      <summary>Quên gia hạn thì sao?</summary>
+      <p>Hệ thống gửi nhắc nhiều lần trước ngày hết hạn và có thể tự gia hạn nếu bạn bật tính năng này. Quá hạn mà không gia hạn, tên miền có thể ngừng hoạt động và người khác có thể đăng ký mất.</p>
+    </details>
+    <details>
+      <summary>Chuyển tên miền từ nơi khác về cần gì?</summary>
+      <p>Bạn cần mã chuyển đổi (EPP hoặc Auth Code) lấy từ nhà đăng ký hiện tại, tên miền đã mở khóa chuyển và đã quá 60 ngày kể từ lần đăng ký hoặc chuyển gần nhất. Xem hướng dẫn tại trang <a href="<%= base %>/chuyen-ten-mien">Chuyển tên miền về</a>.</p>
+    </details>
+  </div>
+</section>
 
 <%- include('partials/footer') %>
