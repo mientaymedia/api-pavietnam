@@ -122,3 +122,26 @@ test('dich vu khac va gioi thieu theo brain: dung gia Rate card, link mientaymed
   // Cau cu khong co nguon trong brain da bo
   assert.doesNotMatch(html, /đồng hành cả chặng đường/);
 });
+
+test('QA vong 3: 5 o phap ly va gio lam viec thoat ky tu HTML khi in ra footer', async () => {
+  const doc: Record<string, string> = {
+    'site.legal_name': '<script>alert(1)</script>"><img src=x onerror=alert(2)> Công ty QA',
+    'site.tax_code': `0000000001"><b>dam</b>'`,
+    'site.tax_issued': `Sở KH&ĐT <i>độc</i> ' "`,
+    'site.address': '</p><svg onload=alert(3)> Số 1 đường QA',
+    'site.working_hours': '<a href=javascript:alert(4)>bấm</a> Thứ 2',
+  };
+  for (const [k, v] of Object.entries(doc)) setSetting(k, v);
+  try {
+    const { html } = await trang('/');
+    const footer = html.slice(html.indexOf('<footer'));
+    for (const tho of ['<script>alert(1)', '<img src=x', '<b>dam</b>', '<i>độc</i>', '<svg onload', '<a href=javascript']) {
+      assert.ok(!html.includes(tho), `the doc khong duoc in tho: ${tho}`);
+    }
+    assert.match(footer, /<p class="footer-legal">&lt;script&gt;alert\(1\)&lt;\/script&gt;&#34;&gt;&lt;img src=x onerror=alert\(2\)&gt; Công ty QA\. MST 0000000001&#34;&gt;&lt;b&gt;dam&lt;\/b&gt;&#39;, do Sở KH&amp;ĐT &lt;i&gt;độc&lt;\/i&gt; &#39; &#34;\. Trụ sở: &lt;\/p&gt;&lt;svg onload=alert\(3\)&gt; Số 1 đường QA\.<\/p>/);
+    assert.match(footer, /Giờ làm việc: &lt;a href=javascript:alert\(4\)&gt;bấm&lt;\/a&gt; Thứ 2</);
+    assert.equal((html.match(/class="footer-legal"/g) ?? []).length, 1);
+  } finally {
+    for (const k of Object.keys(doc)) setSetting(k, '');
+  }
+});
