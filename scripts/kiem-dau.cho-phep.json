@@ -20,5 +20,6 @@
   { "tep": "src/pavietnam/client.ts", "chua": "Registrar: P.A Viet Nam (sandbox)", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
   { "tep": "src/pavietnam/client.ts", "chua": "123 Le Loi", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
   { "tep": "src/pavietnam/client.ts", "chua": "Da cap nhat thong tin lien he", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
-  { "tep": "src/pavietnam/client.ts", "chua": "Da cap nhat trang thai khoa", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" }
+  { "tep": "src/pavietnam/client.ts", "chua": "Da cap nhat trang thai khoa", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
+  { "tep": "src/routes/webhooks.ts", "chua": "Phuong thuc khong duoc ho tro", "ly_do": "Phản hồi JSON cho máy của cổng thanh toán; spec 3.4 và mục 4 khóa cứng webhooks.ts (không được có diff)" }
 ]

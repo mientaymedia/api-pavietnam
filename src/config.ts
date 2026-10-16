@@ -24,7 +24,7 @@ function secret(key: string): string {
   if (v && v.length >= 16) return v;
   if (isProd) {
     throw new Error(
-      `Thieu bien moi truong ${key}. Sinh bang: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`,
+      `Thiếu biến môi trường ${key}. Sinh bằng: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`,
     );
   }
   // Dev: sinh tam thoi (phien dang nhap se mat sau moi lan restart)
