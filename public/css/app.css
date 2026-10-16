@@ -109,6 +109,7 @@ code, kbd, .mono { font-family: var(--mono); font-size: .9em; }
 .site-header .container { display: flex; align-items: center; gap: 16px; min-height: 62px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; color: var(--ink); flex: none; }
 .brand-text { white-space: nowrap; }
+.brand-logo { height: 26px; width: auto; display: block; }
 .brand:hover { text-decoration: none; }
 .brand-mark {
   width: 30px; height: 30px; border-radius: 8px; flex: none;
@@ -123,6 +124,21 @@ code, kbd, .mono { font-family: var(--mono); font-size: .9em; }
 }
 .nav a:hover, .nav button:hover { background: var(--bg); color: var(--ink); text-decoration: none; }
 .nav a.active { color: var(--brand); background: var(--brand-light); }
+.nav-sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
+.nav .btn { color: #fff; }
+.nav .btn-outline { color: var(--ink); }
+.nav .btn:hover { color: #fff; background: var(--brand-dark); }
+.nav .btn-outline:hover { color: var(--brand); background: var(--brand-light); border-color: var(--brand); }
+
+/* Gio hang: bieu tuong + so mon, nam ngoai menu de luon thay tren dien thoai */
+.cart-link {
+  position: relative; flex: none; display: grid; place-items: center;
+  width: 42px; height: 42px; border-radius: 50%; color: var(--ink);
+  background: var(--brand-light);
+}
+.cart-link:hover, .cart-link.active { color: var(--brand); text-decoration: none; }
+.cart-link .cart-badge { position: absolute; top: -2px; right: -4px; margin: 0; border: 2px solid var(--surface); line-height: 16px; }
+.cart-link .cart-badge-trong { background: var(--ink-muted); }
 .cart-badge {
   display: inline-block; min-width: 18px; padding: 0 5px; margin-left: 5px;
   background: var(--brand); color: #fff; border-radius: 9px;
@@ -271,7 +287,15 @@ tbody tr:hover { background: var(--bg); }
 .tabs a.active { color: var(--brand); border-bottom-color: var(--brand); }
 
 /* ------------------------------------------------------------------ footer */
-.site-footer { border-top: 1px solid var(--line); background: var(--surface); padding: 28px 0; color: var(--ink-soft); font-size: .87rem; }
+.site-footer { background: var(--brand-navy); color: rgba(255,255,255,.78); font-size: .88rem; padding: 44px 0 0; }
+.footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 28px; }
+.footer-grid h4 { color: #fff; font-size: .95rem; margin-bottom: 12px; }
+.footer-grid a { display: block; color: rgba(255,255,255,.78); padding: 3px 0; }
+.footer-grid a:hover { color: #fff; }
+.footer-logo img { height: 28px; width: auto; display: block; margin-bottom: 14px; }
+.footer-brand p { margin: 0 0 8px; max-width: 360px; }
+.footer-bottom { border-top: 1px solid rgba(255,255,255,.15); margin-top: 32px; padding-top: 16px; padding-bottom: 18px; font-size: .8rem; color: rgba(255,255,255,.6); }
+@media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: 1 / -1; } }
 
 pre.raw {
   background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: var(--r);
@@ -282,12 +306,14 @@ pre.raw {
 
 /* =========================================================================
    Man hinh hep (dien thoai, may tinh bang)
-   Duoi 900px thanh dieu huong doi thanh nut mo menu: neu de nguyen, cac muc
-   tran ra ngoai va keo ca trang bi tran ngang.
+   Duoi 1024px thanh dieu huong doi thanh nut mo menu: neu de nguyen, cac muc
+   tran ra ngoai va keo ca trang bi tran ngang. (Truoc la 900px, nang len khi
+   menu co them nut Dang nhap / Dang ky dang nut va gio hang tach rieng.)
    ========================================================================= */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .nav-desktop { display: none; }
-  .nav-toggle { display: block; }
+  .nav-toggle { display: block; margin-left: 0; }
+  .cart-link { margin-left: auto; }
 
   .nav-toggle > summary {
     list-style: none; cursor: pointer; padding: 8px;
@@ -319,6 +345,9 @@ pre.raw {
   .nav-mobile form { width: 100%; }
 
   .site-header .container { position: relative; }
+}
+
+@media (max-width: 900px) {
   .container { padding: 0 16px; }
   main { padding: 20px 0 48px; }
   h1 { font-size: 1.45rem; }
@@ -335,6 +364,7 @@ pre.raw {
   /* Van du cho cho ten thuong hieu o be ngang dien thoai pho bien (360-430px):
      logo 30 + ten ~130 + nut menu 40 = 200px. Chi thu nho chu lai mot chut. */
   .brand { font-size: .95rem; gap: 8px; }
+  .brand-logo { height: 21px; }
   .brand-text { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
   .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
   .result { flex-direction: column; align-items: flex-start; gap: 10px; }

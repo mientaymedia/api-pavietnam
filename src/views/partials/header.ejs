@@ -3,10 +3,14 @@
     <a class="brand" href="<%= base %>/">
       <% if (site.logoUrl) { %>
         <img src="<%= site.logoUrl %>" alt="<%= site.name %>" style="height:30px">
+        <span class="brand-text"><%= site.name %></span>
       <% } else { %>
-        <span class="brand-mark"><%= site.name.trim().charAt(0).toUpperCase() %></span>
+        <%
+          // Logo chu MienTay Media (chep tu repo mientay-web): anh da mang ten
+          // thuong hieu nen khong in them chu ben canh, ten van nam trong alt.
+        %>
+        <img class="brand-logo" src="<%= base %>/img/mientaymedia-logo.png" alt="<%= site.name %>" width="600" height="76">
       <% } %>
-      <span class="brand-text"><%= site.name %></span>
     </a>
 
     <%
@@ -15,8 +19,8 @@
       var menu = [
         { url: '/', nhan: 'Tìm tên miền', khop: currentPath === '/' },
         { url: '/bang-gia', nhan: 'Bảng giá', khop: currentPath === '/bang-gia' },
-        { url: '/whois', nhan: 'WHOIS', khop: currentPath === '/whois' },
-        { url: '/chuyen-ten-mien', nhan: 'Chuyển về', khop: currentPath === '/chuyen-ten-mien' }
+        { url: '/chuyen-ten-mien', nhan: 'Chuyển tên miền về', khop: currentPath === '/chuyen-ten-mien' },
+        { url: '/whois', nhan: 'WHOIS', khop: currentPath === '/whois' }
       ];
       if (currentUser) {
         menu.push({ url: '/control-panel', nhan: 'Control Panel', khop: currentPath.indexOf('/control-panel') === 0 });
@@ -26,6 +30,30 @@
         }
       }
     %>
+
+    <nav class="nav nav-desktop">
+      <% menu.forEach(function (m) { %>
+        <a href="<%= base %><%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
+      <% }); %>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <% if (currentUser) { %>
+        <a href="<%= base %>/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
+        <form method="post" action="<%= base %>/dang-xuat" style="display:inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit">Thoát</button>
+        </form>
+      <% } else { %>
+        <a href="<%= base %>/dang-nhap" class="btn btn-sm btn-outline">Đăng nhập</a>
+        <a href="<%= base %>/dang-ky" class="btn btn-sm">Đăng ký</a>
+      <% } %>
+    </nav>
+
+    <!-- Gio hang dung ngoai menu: tren dien thoai van thay so mon ma khong
+         phai mo menu. Bieu tuong SVG noi tuyen, khong can anh hay font ngoai. -->
+    <a class="cart-link<%= currentPath.indexOf('/gio-hang') === 0 ? ' active' : '' %>" href="<%= base %>/gio-hang" aria-label="Giỏ hàng<%= cartCount ? ' (' + cartCount + ')' : '' %>">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h3l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.4a1.5 1.5 0 0 0 1.5-1.1l1.7-6.8H6.6"/></svg>
+      <span class="cart-badge<%= cartCount ? '' : ' cart-badge-trong' %>"><%= cartCount %></span>
+    </a>
 
     <!-- Nut mo menu: chi hien tren man hinh hep. Dung <details> nen khong can
          JavaScript - menu van mo duoc ke ca khi script loi. -->
@@ -48,23 +76,6 @@
         <% } %>
       </nav>
     </details>
-
-    <nav class="nav nav-desktop">
-      <% menu.forEach(function (m) { %>
-        <a href="<%= base %><%= m.url %>" class="<%= m.khop ? 'active' : '' %>"><%= m.nhan %></a>
-      <% }); %>
-      <a href="<%= base %>/gio-hang">Giỏ hàng<% if (cartCount) { %><span class="cart-badge"><%= cartCount %></span><% } %></a>
-      <% if (currentUser) { %>
-        <a href="<%= base %>/tai-khoan"><%= currentUser.full_name || currentUser.email %></a>
-        <form method="post" action="<%= base %>/dang-xuat" style="display:inline">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit">Thoát</button>
-        </form>
-      <% } else { %>
-        <a href="<%= base %>/dang-nhap">Đăng nhập</a>
-        <a href="<%= base %>/dang-ky" class="btn btn-sm">Đăng ký</a>
-      <% } %>
-    </nav>
   </div>
 </header>
 <% if (typeof needsEmailVerify !== 'undefined' && needsEmailVerify) { %>
@@ -83,4 +94,8 @@
     </div>
   </div>
 <% } %>
-<main>
+<%
+  // Trang chu tu lo khoang cach tung khoi (nen hero tran sat header), cac
+  // trang khac giu le tren duoi chung cua <main>.
+%>
+<main<% if (currentPath === '/') { %> class="main-flush"<% } %>>

@@ -1,16 +1,51 @@
 </main>
+<%
+  // Email ho tro mac dinh lay tu MAIL_FROM, co the la "Ten <no-reply@...>" hoac
+  // no-reply@localhost: hien ra thi khach gui vao hop thu khong ai doc. Chi
+  // hien khi la dia chi tran va khong phai hop thu no-reply.
+  var emailHoTro = String(site.supportEmail || '').trim();
+  if (!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(emailHoTro) || /no-?reply/i.test(emailHoTro)) emailHoTro = '';
+%>
 <footer class="site-footer">
-  <div class="container row-between">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="<%= base %>/" class="footer-logo">
+        <img src="<%= base %>/img/mientaymedia-logo-trang.png" alt="<%= site.name %>" width="1200" height="152">
+      </a>
+      <p><%= site.tagline %></p>
+      <% if (site.address) { %><p class="footer-line"><%= site.address %></p><% } %>
+    </div>
+
     <div>
-      <strong><%= site.name %></strong>
-      <% if (site.address) { %><span class="muted"> &middot; <%= site.address %></span><% } %>
-      <% if (site.hotline) { %><span class="muted"> &middot; Hotline: <%= site.hotline %></span><% } %>
+      <h4>Tên miền</h4>
+      <a href="<%= base %>/">Tìm tên miền</a>
+      <a href="<%= base %>/bang-gia">Bảng giá</a>
+      <a href="<%= base %>/chuyen-ten-mien">Chuyển tên miền về</a>
+      <a href="<%= base %>/whois">Tra cứu WHOIS</a>
     </div>
-    <div class="muted small">
-      <a href="<%= base %>/bang-gia">Bảng giá</a> &middot;
-      <a href="<%= base %>/whois">WHOIS</a>
-      <% if (currentUser) { %> &middot; <a href="<%= base %>/tai-khoan">Tài khoản</a><% } %>
+
+    <div>
+      <h4>Tài khoản</h4>
+      <% if (currentUser) { %>
+        <a href="<%= base %>/tai-khoan">Tài khoản</a>
+        <a href="<%= base %>/don-hang">Đơn hàng</a>
+        <a href="<%= base %>/control-panel">Control Panel</a>
+      <% } else { %>
+        <a href="<%= base %>/dang-nhap">Đăng nhập</a>
+        <a href="<%= base %>/dang-ky">Đăng ký</a>
+      <% } %>
+      <a href="<%= base %>/gio-hang">Giỏ hàng</a>
     </div>
+
+    <div>
+      <h4>Liên hệ</h4>
+      <% if (site.hotline) { %><a href="tel:<%= site.hotline.replace(/[^\d+]/g, '') %>">Hotline: <%= site.hotline %></a><% } %>
+      <% if (emailHoTro) { %><a href="mailto:<%= emailHoTro %>"><%= emailHoTro %></a><% } %>
+      <a href="https://mientaymedia.com" rel="noopener">mientaymedia.com</a>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    &copy; <%= new Date().getFullYear() %> <%= site.name %>
   </div>
 </footer>
 <script src="<%= base %>/js/app.js" defer></script>
