@@ -1,7 +1,7 @@
 ---
 type: nguon-cau-chu
 du_an: trang-chu
-cap_nhat: 16/10/2026
+cap_nhat: 16/10/2026 (thêm mục Chủ đã chốt)
 nguon_su_that:
   - D:\javis\brains\Brain Default (brain MienTay Media, chỉ đọc)
   - D:\mientay-web\web\src\lib\seo-content\ (câu đang đăng trên mientaymedia.com, chỉ đọc)
@@ -25,6 +25,8 @@ Thương hiệu hiển thị là "MienTay Media" (chủ đã chốt), dù site g
 | hello@mientaymedia.com (`site.support_email` mặc định, seed) | `sp/01-mineflow.md:49`, `sp/07-javis-os.md:46` ("Email: hello@mientaymedia.com") |
 | mientaymedia.com (link cột "Liên hệ", có sẵn) | `sp/00-huong-dan-dien.md:9` ("website công khai mientaymedia.com"), `sp/04-google-workspace.md:5` |
 | `MAIL_FROM` giữ `no-reply@...` | không đổi theo yêu cầu; footer vẫn ẩn mọi địa chỉ no-reply |
+| Giờ làm việc: Thứ 2 đến thứ 7, 8:00 đến 17:30 (`site.working_hours`, setting mới, sửa được trong Cấu hình) | chủ chốt 16/10/2026; khớp `site/lien-he.ts:19`, `:26` |
+| Dòng pháp lý cuối footer: "Công ty TNHH Phần mềm Mientay Media. MST 1602182849, do Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024. Trụ sở: 12A5 Lê Thị Hồng Gấm, Khóm Bình Khánh 2, Phường Bình Đức, An Giang." (`site.legal_name`, `site.tax_code`, `site.tax_issued`, `site.address`) | chủ chốt 16/10/2026; tên: `site/gioi-thieu.ts:13`, `:29`; MST và nơi cấp: `site/lien-he.ts:28`, `D:\mientay-web\web\src\lib\site-data.ts:57`; trụ sở: `site/gioi-thieu.ts:33`, `site-data.ts:33` |
 
 ## 2. Khối "Về MienTay Media" và 3 lý do chọn (`src/views/home.ejs`, khối 6)
 
@@ -75,17 +77,29 @@ Tiền viết theo kiểu của web này ("149.000 đ", có dấu cách), brain 
 | "Quên gia hạn thì sao?" | khớp `site/ten-mien.ts:32` ("nhắc hạn trước khi tên miền hết hạn") |
 | "Chuyển tên miền từ nơi khác về cần gì?" | brain và site không nói; câu mô tả quy trình chuyển của hệ thống này |
 
+## Chủ đã chốt (16/10/2026)
+
+1. **Footer in đủ thông tin pháp lý** (giải quyết ý 1, 2, 3 bên dưới). Giá trị mặc định trong `src/lib/settings.ts` và seed, footer đọc từ Cấu hình, quản trị sửa được:
+   - Tên pháp lý `site.legal_name`: "Công ty TNHH Phần mềm Mientay Media", đúng như chủ ghi và như `site/gioi-thieu.ts:13`, `:29`. Lưu ý: chính site viết hoa không thống nhất, các trang pháp lý ghi "Công ty TNHH Phần Mềm Mientay Media" (`D:\mientay-web\web\src\app\dieu-khoan-dich-vu\page.tsx:25`, `:640`, `chinh-sach-bao-mat\page.tsx:30`, `dieu-khoan-su-dung\page.tsx:110`), còn `site-data.ts:34` và `app\gioi-thieu\page.tsx:281` ghi chữ in hoa toàn bộ. Web này theo cách chủ ghi; sửa trong Cấu hình nếu chủ muốn kiểu khác.
+   - Mã số thuế `site.tax_code`: 1602182849; nơi cấp `site.tax_issued`: "Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024" (cách viết của `site-data.ts:57` và `components\policy\Prose.tsx:28`).
+   - Trụ sở `site.address`: "12A5 Lê Thị Hồng Gấm, Khóm Bình Khánh 2, Phường Bình Đức, An Giang" (`site/gioi-thieu.ts:33`, `site-data.ts:33`, giống nhau ở mọi trang pháp lý của site).
+   - Hotline 0976.788.840, email hello@mientaymedia.com: giữ như mục 1.
+   - Giờ làm việc `site.working_hours` (setting mới): "Thứ 2 đến thứ 7, 8:00 đến 17:30", theo site; brain ghi T2 đến T6 nên brain cần sửa cho khớp.
+   - Thương hiệu hiển thị vẫn là "MienTay Media" (`site.name`); tên pháp lý chỉ ở dòng pháp lý cuối footer.
+2. **Giữ nguyên bảng giá web bán tên miền** (.com 319.000 đ, .vn 830.000 đ). Không sửa mientay-web trong việc này. Việc riêng của chủ: **mientaymedia.com cần sửa giá tên miền cho khớp web bán tên miền** (`site/ten-mien.ts:24` đang ghi .com 280.000đ, .vn 650.000đ). Giải quyết ý 6.
+3. **Địa chỉ cổng tên miền là `https://mientaymedia.com/ten-mien`.** `domain.mientaymedia.com` (site đang giới thiệu, `site/ten-mien.ts:10`, `:12`) phải chuyển hướng 301 về đó; ghi trong `plan.md` cho bước Deploy. Giải quyết ý 7.
+
 ## Cần chủ xác minh
 
 Các ý dưới đây chưa đưa lên web vì brain không có hoặc brain và site lệch nhau, trừ khi ghi rõ "đang có trên web".
 
-1. **Tên pháp lý và mã số thuế trong footer.** Site ghi "Công ty TNHH Phần mềm Mientay Media" (`site/gioi-thieu.ts:13`, `:29`) và MST 1602182849 do Sở Kế hoạch và Đầu tư tỉnh An Giang cấp 13/06/2024 (`site/lien-he.ts:28`, `site/gioi-thieu.ts:33`); tên trên tài khoản ngân hàng là "CONG TY TNHH PHAN MEM MIENTAY MEDIA". Brain không có tên pháp lý hay MST (tìm trong `Tài liệu sản phẩm/`, `FAQ/`, `wiki/`), nên chưa nhất quán giữa brain và site: chưa đưa vào footer. Chủ xác nhận rồi ghi vào brain thì thêm được.
-2. **Giờ làm việc.** Brain ghi "T2-T6, 8:00-17:30" (brain viết bằng dấu gạch dài, chép lại bằng gạch nối) (`sp/01-mineflow.md:49` và các tệp 02 đến 16), site ghi "thứ 2 đến thứ 7, 8:00 đến 17:30" (`site/lien-he.ts:19`, `:26`, `:39`). Lệch thứ 7: không in giờ làm việc lên web.
-3. **Địa chỉ trụ sở trong footer.** Site có địa chỉ đầy đủ "12A5 Lê Thị Hồng Gấm, Khóm Bình Khánh 2, Phường Bình Đức, An Giang" (`site/gioi-thieu.ts:33`), brain không có. Không seed `site.address`; quản trị điền trong Cấu hình nếu chủ đồng ý.
+1. **(Đã chốt 16/10/2026, xem mục Chủ đã chốt.) Tên pháp lý và mã số thuế trong footer.** Site ghi "Công ty TNHH Phần mềm Mientay Media" (`site/gioi-thieu.ts:13`, `:29`) và MST 1602182849 do Sở Kế hoạch và Đầu tư tỉnh An Giang cấp 13/06/2024 (`site/lien-he.ts:28`, `site/gioi-thieu.ts:33`); tên trên tài khoản ngân hàng là "CONG TY TNHH PHAN MEM MIENTAY MEDIA". Brain không có tên pháp lý hay MST (tìm trong `Tài liệu sản phẩm/`, `FAQ/`, `wiki/`), nên chưa nhất quán giữa brain và site: chưa đưa vào footer. Chủ xác nhận rồi ghi vào brain thì thêm được.
+2. **(Đã chốt: theo site, thứ 2 đến thứ 7.) Giờ làm việc.** Brain ghi "T2-T6, 8:00-17:30" (brain viết bằng dấu gạch dài, chép lại bằng gạch nối) (`sp/01-mineflow.md:49` và các tệp 02 đến 16), site ghi "thứ 2 đến thứ 7, 8:00 đến 17:30" (`site/lien-he.ts:19`, `:26`, `:39`). Lệch thứ 7: không in giờ làm việc lên web.
+3. **(Đã chốt: in địa chỉ đầy đủ.) Địa chỉ trụ sở trong footer.** Site có địa chỉ đầy đủ "12A5 Lê Thị Hồng Gấm, Khóm Bình Khánh 2, Phường Bình Đức, An Giang" (`site/gioi-thieu.ts:33`), brain không có. Không seed `site.address`; quản trị điền trong Cấu hình nếu chủ đồng ý.
 4. **Rate card và tài liệu sản phẩm còn là nháp** (đang có trên web: giá 3 thẻ dịch vụ khác). `Rate card MienTay Media.md:5` ghi "nhap - cho nguoi phu trach duyet", `sp/00-huong-dan-dien.md:9` ghi các tệp 01 đến 05, 09 đến 16 "đang ở trạng thái nháp chờ người phụ trách xác nhận". Chủ duyệt giá Google Workspace 7 $, Microsoft 365 149.000 đ, Mineflow Free và Pro 99.000 đ trước khi mở bán.
 5. **Cách ghi giá Google Workspace** (đang có trên web). Giá khách trả thật = giá hãng USD x tỷ giá Vietcombank x 1,10 (thuế nhà thầu) rồi cộng VAT 10% (`Rate card MienTay Media.md:61`), và có ưu đãi hãng 3,50 $ năm đầu cho khách mới tối đa 20 người (`:62`). Thẻ chỉ ghi "Chỉ từ 7 $/người/tháng, giá hãng ... quy đổi ... chưa gồm VAT", không ghi thuế nhà thầu và ưu đãi. Chủ chọn cách ghi cuối cùng.
-6. **Giá tên miền trên site lệch bảng giá của web này.** `site/ten-mien.ts:24` ghi .com 280.000đ/năm, .vn 650.000đ/năm; bảng giá mẫu khi seed (`src/db/seed.ts`) là .vn 830.000 đ, .com 319.000 đ. Giá trên web này luôn lấy từ bảng giá trong CSDL; chủ thống nhất giá thật rồi sửa một trong hai nơi.
-7. **Địa chỉ cổng tên miền.** `site/ten-mien.ts:10`, `:12` giới thiệu cổng là `domain.mientaymedia.com`, còn web này chạy ở `mientaymedia.com/ten-mien` (`.env.example`). Chủ chọn một địa chỉ và sửa site cho khớp.
+6. **(Đã chốt: giữ bảng giá web này, sửa site sau.) Giá tên miền trên site lệch bảng giá của web này.** `site/ten-mien.ts:24` ghi .com 280.000đ/năm, .vn 650.000đ/năm; bảng giá mẫu khi seed (`src/db/seed.ts`) là .vn 830.000 đ, .com 319.000 đ. Giá trên web này luôn lấy từ bảng giá trong CSDL; chủ thống nhất giá thật rồi sửa một trong hai nơi.
+7. **(Đã chốt: mientaymedia.com/ten-mien, domain. chuyển hướng 301.) Địa chỉ cổng tên miền.** `site/ten-mien.ts:10`, `:12` giới thiệu cổng là `domain.mientaymedia.com`, còn web này chạy ở `mientaymedia.com/ten-mien` (`.env.example`). Chủ chọn một địa chỉ và sửa site cho khớp.
 8. **"Hơn 500 doanh nghiệp"** (đang có trên web). Chỉ có trên site (`site/lien-he.ts:27`, `site/gioi-thieu.ts:13`), brain không có. Đưa lên vì site là nguồn hợp lệ theo chỉ dẫn; chủ xác nhận và ghi vào brain.
 9. **Năm khởi đầu 2022** (`site/gioi-thieu.ts:11`, `:13`, `:32`): brain không có, chưa đưa lên web.
 10. **"Hỗ trợ kỹ thuật tiếng Việt 24/7"** (`sp/05-microsoft-365.md:15`): lệch với giờ làm việc 8:00 đến 17:30 ở ý 2, chưa đưa lên web (lý do 3 chỉ ghi "hỗ trợ tiếng Việt").

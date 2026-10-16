@@ -50,3 +50,16 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - [x] U5. Liên hệ mặc định theo brain: hotline, email hỗ trợ, website (settings, seed, footer). Không đổi `MAIL_FROM`. Kiểm: cổng chặn, footer CSDL mới có đủ ba mục. Commit `1a3bf2c`; footer CSDL mới có hotline, email, website; 217/217. Nguồn ở `nguon-cau-chu.md` mục 1.
 - [x] U6. Câu chữ trang chủ (giới thiệu, 3 lý do, thẻ dịch vụ khác, 5 câu hỏi) theo brain, nguồn từng câu trong `nguon-cau-chu.md`. Kiểm: cổng chặn, mọi câu mới có nguồn. Commit `59d75c5`; 3 thẻ mới (Google Workspace, Microsoft 365, Mineflow), giới thiệu và 3 lý do viết lại, 5 câu hỏi giữ nguyên sau đối chiếu; 218/218.
 - [x] U7. Chụp lại trang chủ (1366px, 360px) và trang đơn hàng 360px vào thư mục này. Xong: `trang-chu-desktop.png`, `trang-chu-dien-thoai.png`, `don-hang-dien-thoai.png` (đơn chờ thanh toán có QR; Chrome headless, 360px DPR 2; ép tải logo lazy trước khi chụp). Đo lại 14 trang ở 360px và 1366px trên CSDL mới: 28/28 không tràn.
+
+## Thông tin pháp lý chủ chốt 16/10/2026 (đợt 3)
+
+Đầu vào: mục "Chủ đã chốt" trong `nguon-cau-chu.md`. Cổng chặn mỗi commit: `npx tsc --noEmit`, `npm test` đạt hết (mốc 218/218), `npm run kiem-dau` 0, `MSYS_NO_PATHCONV=1 node scripts/kiem-base.mjs` 0; footer không tràn ở 360px (Chrome headless).
+
+- [x] V1. Ghi quyết định của chủ vào `nguon-cau-chu.md` và plan này (cả ghi chú Deploy). Kiểm: không em dash, en dash. Xong trong commit V1.
+- [ ] V2. Footer in dòng pháp lý và giờ làm việc từ Cấu hình. Tệp: `src/lib/settings.ts` (mặc định `site.address`, `site.legal_name`, `site.tax_code`, `site.tax_issued`, `site.working_hours`), `src/db/seed.ts`, `src/routes/admin.ts` (ô sửa trong Cấu hình), `src/views/partials/footer.ejs`, `public/css/app.css`, `test/trang-chu.test.ts`. Kiểm: cổng chặn; test footer mới; Chrome headless 360px và 1366px footer không tràn.
+- [ ] V3. Chụp lại trang chủ máy tính và điện thoại vào thư mục này. Kiểm: ảnh có footer mới.
+
+## Ghi cho bước Deploy
+
+- `domain.mientaymedia.com` (đang được mientaymedia.com giới thiệu, `site/ten-mien.ts:10`, `:12`) phải chuyển hướng 301 về `https://mientaymedia.com/ten-mien`, giữ đường dẫn con nếu có. Chủ chốt 16/10/2026. Kiểm sau Deploy: `curl -sI https://domain.mientaymedia.com/` trả `301` và `Location: https://mientaymedia.com/ten-mien`.
+- Giá tên miền trên mientaymedia.com chưa khớp web này (việc riêng của chủ, không làm trong repo này): xem `nguon-cau-chu.md`, mục Chủ đã chốt, ý 2.
