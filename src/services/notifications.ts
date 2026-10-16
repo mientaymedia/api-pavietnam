@@ -491,6 +491,27 @@ export async function alertAdmin(subject: string, bodyHtml: string): Promise<voi
   await sendMail({ to, template: 'admin_alert', subject: `[${settings.site().name}] ${subject}`, html: layout(subject, bodyHtml) });
 }
 
+/**
+ * Thu kiem tra cau hinh SMTP (nut "Gửi email thử" o trang cau hinh). Truoc day
+ * route tu dung HTML tran, khong qua layout nen thieu <meta charset>: trinh doc
+ * thu bo qua header MIME se hien sai dau. Tach phan dung thu de test duoc.
+ */
+export function buildSmtpTest(): { subject: string; html: string } {
+  const s = settings.smtp();
+  return {
+    subject: `[${settings.site().name}] Thử cấu hình SMTP`,
+    html: layout('Thử cấu hình SMTP', `
+      <p>Nếu bạn đọc được email này, cấu hình SMTP đã hoạt động.</p>
+      <p>Máy chủ: <b>${esc(s.host)}:${esc(s.port)}</b> (${s.secure ? 'SSL/TLS' : 'không mã hóa'})<br>
+      Gửi từ: <b>${esc(s.from)}</b></p>
+    `),
+  };
+}
+
+export async function sendSmtpTest(to: string): Promise<boolean> {
+  return sendMail({ to, template: 'smtp_test', ...buildSmtpTest() });
+}
+
 /** Ten mien dau tien trong don - dung lam noi dung tom tat cho tin ZNS. */
 function firstDomainOf(orderId: number): string {
   const rows = db.prepare('SELECT domain FROM order_items WHERE order_id = ? ORDER BY id').all(orderId) as

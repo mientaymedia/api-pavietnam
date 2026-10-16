@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import nodemailer from 'nodemailer';
 import { db, nowIso } from '../src/db/index.js';
 import { settings } from '../src/lib/settings.js';
-import { sendDomainActivated, sendPasswordReset } from '../src/services/notifications.js';
+import { buildSmtpTest, sendDomainActivated, sendPasswordReset } from '../src/services/notifications.js';
 
 test('tieu de co dau duoc ma hoa chuan MIME, than thu khai bao utf-8', async () => {
   // Dung streamTransport: dung thu y nhu khi gui that nhung khong mo ket noi mang
@@ -49,4 +49,13 @@ test('email khoi phuc mat khau va kich hoat ten mien luu tieu de co dau, dang NF
   const active = tieuDeGanNhat(email);
   assert.equal(active, 'Tên miền vidu.vn đã được kích hoạt');
   assert.equal(active, active.normalize('NFC'));
+});
+
+test('email thu cau hinh SMTP di qua khung chung, co meta charset (loi evals 4)', () => {
+  const { subject, html } = buildSmtpTest();
+  assert.match(html, /^<!doctype html>/i);
+  assert.match(html, /<meta charset="utf-8">/);
+  assert.match(html, /Thử cấu hình SMTP/);
+  assert.match(subject, /Thử cấu hình SMTP$/);
+  assert.equal(html, html.normalize('NFC'));
 });

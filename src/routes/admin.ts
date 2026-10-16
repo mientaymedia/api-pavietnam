@@ -29,7 +29,7 @@ import { kickWorker } from '../jobs/worker.js';
 import { credit } from '../payments/balance.js';
 import { audit } from '../services/audit.js';
 import { buildSepayQrUrl } from '../payments/sepay.js';
-import { sendMail } from '../lib/mailer.js';
+import { sendSmtpTest } from '../services/notifications.js';
 import { buildPermissionUrl, exchangeAuthorizationCode, isZnsReady, normalizePhone, sendZns } from '../lib/zns.js';
 import { ZNS_EVENTS, ZNS_EVENT_LIST } from '../services/znsEvents.js';
 import { pendingRefundCount, refundFailedItems, refundOrderItem } from '../services/refunds.js';
@@ -268,17 +268,8 @@ router.post(
   '/cau-hinh/kiem-tra-smtp',
   wrap(async (req, res) => {
     const to = String(req.body?.test_email ?? '').trim() || req.currentUser!.email;
-    const s = settings.smtp();
-
-    const ok = await sendMail({
-      to,
-      template: 'smtp_test',
-      subject: `[${settings.site().name}] Thử cấu hình SMTP`,
-      html:
-        `<p>Nếu bạn đọc được email này, cấu hình SMTP đã hoạt động.</p>` +
-        `<p>Máy chủ: <b>${s.host}:${s.port}</b> (${s.secure ? 'SSL/TLS' : 'không mã hóa'})<br>` +
-        `Gửi từ: <b>${s.from}</b></p>`,
-    });
+    // Qua khung email chung (meta charset utf-8) nhu moi mau khac
+    const ok = await sendSmtpTest(to);
 
     if (ok) {
       flash(req, 'success', `Đã gửi email thử tới ${to}. Kiểm tra hộp thư (cả thư mục spam).`);
