@@ -37,8 +37,8 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 
 Đầu vào: `docs/mtm/api-pavietnam/evals-vong-2.md` (quan sát 1, 2), `docs/mtm/trang-chu/evals.md` (lỗi 1, 2), yêu cầu chủ: câu chữ trang chủ theo brain MienTay Media (`D:\javis\brains\Brain Default`, chỉ đọc) và nội dung đang đăng trên mientaymedia.com (`D:\mientay-web\web\src\lib\seo-content\`, chỉ đọc). Cổng chặn mỗi commit như trên, thêm `kiem-base` 0.
 
-- [ ] U1. `interpret`: status nghiệp vụ chỉ thành công khi khớp nguyên token hoặc không có dấu hiệu phủ định/lỗi. Tệp: `src/pavietnam/client.ts`, `test/text-match.test.ts`. Kiểm: test hai chiều mới, 38/38 ca `pa-probe` của QA vòng 2 vẫn đạt.
-- [ ] U2. Giới hạn đăng nhập theo email đã chuẩn hóa (trim + chữ thường). Tệp: `src/routes/auth.ts`, test mới. Kiểm: 42 lần đổi hoa thường email bị 429.
+- [x] U1. `interpret`: status nghiệp vụ chỉ thành công khi khớp nguyên token hoặc không có dấu hiệu phủ định/lỗi. Tệp: `src/pavietnam/client.ts`, `test/text-match.test.ts`. Kiểm: test hai chiều mới, 38/38 ca `pa-probe` của QA vòng 2 vẫn đạt. Commit `7207d7a`; 213/213, pa-probe 38/38.
+- [x] U2. Giới hạn đăng nhập theo email đã chuẩn hóa (trim + chữ thường). Tệp: `src/routes/auth.ts`, test mới. Kiểm: 42 lần đổi hoa thường email bị 429. Xong; 214/214, test mới đỏ trên mã cũ, xanh sau sửa.
 - [ ] U3. Trang đơn hàng và chi tiết tên miền không tràn ngang ở 360px. Tệp: `public/css/app.css`, view liên quan. Kiểm: Chrome headless 360px `scrollWidth` = 360; 1366px không đổi bố cục.
 - [ ] U4. `/admin/bao-cao`: bảng "Dự kiến doanh thu gia hạn" cuộn ngang trong khung riêng. Kiểm: 360px `scrollWidth` = 360.
 - [ ] U5. Liên hệ mặc định theo brain: hotline, email hỗ trợ, website (settings, seed, footer). Không đổi `MAIL_FROM`. Kiểm: cổng chặn, footer CSDL mới có đủ ba mục.

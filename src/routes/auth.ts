@@ -103,7 +103,9 @@ router.post(
   rateLimit({
     windowMs: 15 * 60_000,
     max: 15,
-    key: (req) => `${req.ip}:${String((req.body as Record<string, unknown>)?.['email'] ?? '')}`,
+    // Chuan hoa email nhu luc tra nguoi dung (COLLATE NOCASE): de khoa tho thi
+    // ke do mat khau chi can doi hoa thuong ("Khach@", "kHach@"...) la ne duoc gioi han.
+    key: (req) => `${req.ip}:${String((req.body as Record<string, unknown>)?.['email'] ?? '').trim().toLowerCase()}`,
     message: 'Sai thông tin đăng nhập quá nhiều lần. Vui lòng thử lại sau 15 phút.',
   }),
   wrap(async (req, res) => {
