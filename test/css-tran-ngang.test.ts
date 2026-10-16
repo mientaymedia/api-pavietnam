@@ -10,7 +10,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const css = fs.readFileSync('public/css/app.css', 'utf8');
+// Bo chu thich truoc: chu thich dat ngay tren bo chon (co dau phay) lam lech viec tach bo chon.
+const css = fs.readFileSync('public/css/app.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
 
 /** Moi gia tri grid-template-columns gan cho mot bo chon co chua `ten`. */
 function cotCua(ten: string): string[] {
@@ -34,4 +35,13 @@ test('sidebar-layout mot cot dung minmax(0, 1fr), khong de bang keo rong (evals 
   assert.ok(ds.length >= 2, `phai co ca ban may tinh lan ban hep: ${ds.join(' | ')}`);
   for (const v of ds) assert.doesNotMatch(boMinmax(v), /\dfr/, `.sidebar-layout: ${v}`);
   assert.ok(ds.includes('minmax(0, 1fr)'));
+});
+
+test('luoi grid-2/3/4 mot cot tren dien thoai dung minmax(0, 1fr) (evals trang chu, loi 1: /admin/bao-cao)', () => {
+  for (const ten of ['.grid-2', '.grid-3', '.grid-4']) {
+    const ds = cotCua(ten);
+    assert.ok(ds.length >= 2, `${ten}: ${ds.join(' | ')}`);
+    for (const v of ds) assert.doesNotMatch(boMinmax(v), /\dfr/, `${ten}: ${v}`);
+    assert.ok(ds.includes('minmax(0, 1fr)'), ten);
+  }
 });
