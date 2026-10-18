@@ -1,7 +1,7 @@
 # Web ban ten mien MienTay Media tren VPS GData (Coolify + Traefik + Cloudflare Tunnel).
 # Duong di: Cloudflare -> cloudflared (mang host) -> Traefik coolify-proxy :80 -> container nay.
 # - mientaymedia.com/ten-mien/*  -> app (luat dai hon nen uu tien hon luat mientay-web)
-# - domain.mientaymedia.com/*     -> 301 ve https://mientaymedia.com/ten-mien/*
+
 # TRAEFIK_ENABLE=false de dung thu container ma chua nhan luu luong that.
 services:
   tenmien:
@@ -26,13 +26,6 @@ services:
       - traefik.http.routers.tenmien.middlewares=tenmien-chi-tunnel,tenmien-gzip
       - traefik.http.routers.tenmien.service=tenmien
       - traefik.http.services.tenmien.loadbalancer.server.port=3000
-      - traefik.http.routers.tenmien-domain.entrypoints=http
-      - traefik.http.routers.tenmien-domain.rule=Host(`domain.mientaymedia.com`)
-      - traefik.http.routers.tenmien-domain.middlewares=tenmien-domain-301
-      - traefik.http.routers.tenmien-domain.service=tenmien
-      - traefik.http.middlewares.tenmien-domain-301.redirectregex.regex=^https?://domain\.mientaymedia\.com/?(.*)$$
-      - traefik.http.middlewares.tenmien-domain-301.redirectregex.replacement=https://mientaymedia.com/ten-mien/$${1}
-      - traefik.http.middlewares.tenmien-domain-301.redirectregex.permanent=true
 
 networks:
   coolify:
