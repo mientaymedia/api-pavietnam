@@ -153,10 +153,19 @@ export function biCam(nhan: string, tuCam: string[]): boolean {
   return tuCam.some((w) => (w.length >= 4 ? lien.includes(w) : khuc.includes(w)));
 }
 
+function duoiDangBan(): Tld[] {
+  const tlds = listTlds({ activeOnly: true });
+  return [...tlds.filter((t) => t.is_featured), ...tlds.filter((t) => !t.is_featured)];
+}
+
+/** O chon duoi tren form: duoi dang ban, noi bat truoc, toi da 6 cho gon tren dien thoai. */
+export function duoiChoChon(): Tld[] {
+  return duoiDangBan().slice(0, 6);
+}
+
 /** Duoi khach chon (chi duoi dang ban), khong chon thi duoi noi bat, toi da 2. */
 export function chonDuoi(duoiKhach: string[]): Tld[] {
-  const tlds = listTlds({ activeOnly: true });
-  const xep = [...tlds.filter((t) => t.is_featured), ...tlds.filter((t) => !t.is_featured)];
+  const xep = duoiDangBan();
   const muon = new Set(duoiKhach.map((d) => String(d).replace(/^\./, '').trim().toLowerCase()));
   const chon = xep.filter((t) => muon.has(t.tld.toLowerCase()));
   if (chon.length) return chon.slice(0, DUOI_MOI_TEN);

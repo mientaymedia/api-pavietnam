@@ -60,15 +60,18 @@
     <p class="tc-lead">Tra cứu, đăng ký và quản lý tên miền Việt Nam lẫn quốc tế ở một nơi. Thanh toán bằng mã QR, tên miền tự kích hoạt.</p>
 
     <%
-      // Hai tab bang radio + CSS (:checked ~): doi tab khong can JavaScript.
-      // Radio nam ngoai hai form nen khong bi gui kem.
+      // Cac tab bang radio + CSS (:checked ~): doi tab khong can JavaScript.
+      // Radio nam ngoai cac form nen khong bi gui kem. Tab AI chi co khi AI
+      // san sang (bat, du khoa, chua cham tran chi phi ngay).
     %>
     <div class="tc-tabs">
       <input class="tc-tab-input" type="radio" name="tc-tab" id="tc-tab-tim" checked>
       <input class="tc-tab-input" type="radio" name="tc-tab" id="tc-tab-chuyen">
+      <% if (aiBat) { %><input class="tc-tab-input" type="radio" name="tc-tab" id="tc-tab-ai"><% } %>
       <div class="tc-tab-labels">
         <label for="tc-tab-tim">Tìm tên miền</label>
         <label for="tc-tab-chuyen">Chuyển tên miền về</label>
+        <% if (aiBat) { %><label for="tc-tab-ai">Tìm cùng AI</label><% } %>
       </div>
 
       <form class="tc-search tc-panel-tim" action="<%= base %>/tim-kiem" method="get" role="search">
@@ -82,6 +85,10 @@
         <input type="text" name="domain" aria-label="Tên miền cần chuyển về" placeholder="Tên miền đang dùng, ví dụ: tenmien.com" required>
         <button class="btn" type="submit">Chuyển về</button>
       </form>
+
+      <% if (aiBat) { %>
+        <%- include('partials/ai-form', { lop: 'tc-panel-ai', moTa: '', duoiCho: duoiCho, duoiChon: [] }) %>
+      <% } %>
     </div>
 
     <% if (chips.length) { %>

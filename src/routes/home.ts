@@ -6,6 +6,7 @@ import { rateLimit } from '../middleware/ratelimit.js';
 import { normalizeDomain } from '../pavietnam/client.js';
 import { config } from '../config.js';
 import { BASE } from '../lib/basePath.js';
+import { aiSanSang, duoiChoChon } from '../services/goiYTenMien.js';
 
 const router = Router();
 
@@ -25,6 +26,9 @@ router.get('/', (_req, res) => {
     // Thanh uu dai va the .vn chi neu gia dang ban, khong bia khuyen mai.
     uuDai: tlds.find((t) => t.tld === 'vn') ?? xep[0] ?? null,
     giaChuyenTu: giaChuyen.length ? Math.min(...giaChuyen) : null,
+    // Tab Tim cung AI chi hien khi bat, du khoa, model va chua cham tran ngay
+    aiBat: aiSanSang(),
+    duoiCho: duoiChoChon(),
     priceFor,
   });
 });

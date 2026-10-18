@@ -77,6 +77,11 @@ const adminId = db.prepare('SELECT id FROM users WHERE email = ?').get(process.e
 db.prepare('INSERT INTO two_factor (user_id, secret_enc, confirmed_at) VALUES (?, ?, ?)')
   .run(adminId, encryptSecret('JBSWY3DPEHPK3PXP'), nowIso());
 
+// Bat Tim cung AI bang khoa gia de tab va form AI cung duoc kiem tien to. Khong
+// goi OpenAI: kiem-base chi bo trang GET, loi goi AI chi co o POST.
+const { setSettings, SECRET_KEYS } = await nap('src/lib/settings.ts');
+setSettings({ 'ai.enabled': '1', 'ai.model': 'kiem-base', 'ai.openai_key': 'sk-kiem-base' }, SECRET_KEYS);
+
 /* ------------------------------------------------ route GET khong tham so */
 
 function routeGoc() {

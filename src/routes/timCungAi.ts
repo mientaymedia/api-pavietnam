@@ -9,19 +9,12 @@ import { Router, type Response } from 'express';
 import { wrap } from '../middleware/error.js';
 import { rateLimit } from '../middleware/ratelimit.js';
 import { settings } from '../lib/settings.js';
-import { listTlds } from '../services/pricing.js';
 import {
-  MO_TA_TOI_DA, THONG_BAO, chuanHoaMoTa, demThongKe, goiYTenMien, trangThaiAi,
+  MO_TA_TOI_DA, THONG_BAO, chuanHoaMoTa, demThongKe, duoiChoChon, goiYTenMien, trangThaiAi,
   type KetQuaGoiYTenMien,
 } from '../services/goiYTenMien.js';
 
 const router = Router();
-
-/** O chon duoi: duoi dang ban, noi bat truoc, toi da 6 cho gon tren dien thoai. */
-export function duoiChoChon() {
-  const tlds = listTlds({ activeOnly: true });
-  return [...tlds.filter((t) => t.is_featured), ...tlds.filter((t) => !t.is_featured)].slice(0, 6);
-}
 
 function thongBaoKhiTat(): string {
   const tt = trangThaiAi();
