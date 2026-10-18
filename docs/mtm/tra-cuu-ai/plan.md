@@ -16,7 +16,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 ## Các bước
 
 - [x] A0. Tài liệu `spec.md`, `plan.md`. Kiểm: tệp có trong `docs/mtm/tra-cuu-ai`. Commit `9a27a57`.
-- [ ] A1. Nền: bảng `ai_usage_daily` (`src/db/schema.sql`), cấu hình `settings.ai()` và `ai.openai_key` trong `SECRET_KEYS` (`src/lib/settings.ts`), `OPENAI_BASE_URL` (`src/config.ts`, `.env.example`), `rateLimit` nhận `max` là hàm và `onLimit` (`src/middleware/ratelimit.ts`). Kiểm: cổng chặn; `migrate` tạo được bảng.
+- [x] A1. Nền: bảng `ai_usage_daily` (`src/db/schema.sql`), cấu hình `settings.ai()` và `ai.openai_key` trong `SECRET_KEYS` (`src/lib/settings.ts`), `OPENAI_BASE_URL` (`src/config.ts`, `.env.example`), `rateLimit` nhận `max` là hàm và `onLimit` (`src/middleware/ratelimit.ts`). Kiểm: cổng chặn; `migrate` tạo được bảng. Commit `68acbe5`; 233/233 đạt.
 - [ ] A2. Lớp nhà cung cấp `src/lib/ai/types.ts`, `src/lib/ai/openai.ts`, `src/lib/ai/index.ts`. Kiểm: tsc sạch; test ở A4.
 - [ ] A3. Dịch vụ `src/services/goiYTenMien.ts` (sẵn sàng, chuẩn hóa, lọc từ, đuôi, trần, thống kê) và tách `kiemTraNhieu` khỏi `searchDomains` (`src/services/domains.ts`). Kiểm: cổng chặn, test cũ của tìm kiếm vẫn đạt.
 - [ ] A4. Test đơn vị dịch vụ và nhà cung cấp (`test/tra-cuu-ai.test.ts` phần 1): chuẩn hóa, lọc từ, đuôi, trần 16 lệnh, an toàn trạng thái, chi phí, lỗi AI. Kiểm: test mới đạt.
