@@ -46,6 +46,25 @@ test('logo do quan tri dat duoc them vao img-src theo goc, khong theo duong dan'
   }
 });
 
+test('anh bieu tuong da thong bao o online.gov.vn duoc them vao img-src theo goc', () => {
+  setSetting('site.bct_badge_img', 'https://online.gov.vn/Content/EndUser/logo.png');
+  try {
+    const d = chiThi('img-src');
+    assert.ok(d.includes('https://online.gov.vn'), d);
+    assert.equal(d.includes('/Content/'), false);
+  } finally {
+    setSetting('site.bct_badge_img', '');
+  }
+  // Anh tu phuc vu (duong dan /img/...) khong mo them nguon nao
+  setSetting('site.bct_badge_img', '/img/da-thong-bao.png');
+  try {
+    assert.ok(chiThi('img-src').startsWith("img-src 'self' data: https://qr.sepay.vn"));
+    assert.equal(chiThi('img-src').includes('da-thong-bao'), false);
+  } finally {
+    setSetting('site.bct_badge_img', '');
+  }
+});
+
 test('logo dat sai dinh dang thi bo qua, khong lam hong chinh sach', () => {
   for (const xau of ['khong-phai-url', 'javascript:alert(1)', '   ', '/anh/logo.png']) {
     setSetting('site.logo_url', xau);

@@ -30,10 +30,11 @@ function goc(url: string): string | null {
 /**
  * Dung chuoi CSP.
  *
- * `img-src` phai mo hon cac muc khac vi hai anh khong nam tren may chu nay:
+ * `img-src` phai mo hon cac muc khac vi vai anh khong nam tren may chu nay:
  *  - ma QR chuyen khoan do SePay sinh (qr.sepay.vn)
  *  - logo do quan tri vien tu dat, co the tro toi bat ky dau
- * Ta chi mo dung hai nguon do chu khong mo `https:` chung chung.
+ *  - bieu tuong "da thong bao" (ND 248/2026) neu quan tri dat anh o ngoai
+ * Ta chi mo dung cac nguon do chu khong mo `https:` chung chung.
  */
 export function buildCsp(): string {
   const anh = new Set<string>(["'self'", 'data:']);
@@ -43,6 +44,9 @@ export function buildCsp(): string {
 
   const logo = goc(settings.site().logoUrl);
   if (logo) anh.add(logo);
+
+  const bieuTuong = goc(settings.site().bctBadgeImg);
+  if (bieuTuong) anh.add(bieuTuong);
 
   const chiThi: string[] = [
     "default-src 'self'",

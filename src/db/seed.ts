@@ -105,6 +105,7 @@ const DEFAULTS: Record<string, string> = {
   'site.legal_name': 'Công ty TNHH Phần mềm Mientay Media',
   'site.tax_code': '1602182849',
   'site.tax_issued': 'Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024',
+  'site.legal_rep': 'Đinh Văn Tạo Em',
   'site.working_hours': 'Thứ 2 đến thứ 7, 8:00 đến 17:30',
   'dns.default_ns': 'ns1.pavietnam.vn,ns2.pavietnam.vn',
   'pricing.markup_percent': '0',

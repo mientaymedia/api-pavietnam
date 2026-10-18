@@ -96,6 +96,15 @@ export const settings = {
     legalName: getSetting('site.legal_name', 'Công ty TNHH Phần mềm Mientay Media'),
     taxCode: getSetting('site.tax_code', '1602182849'),
     taxIssued: getSetting('site.tax_issued', 'Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024'),
+    // Nguoi dai dien theo phap luat (Dieu 11 khoan 1 diem a Luat TMDT 122/2025,
+    // Dieu 4 ND 248/2026). Mac dinh lay tu site-data.ts va trang Dieu khoan dich
+    // vu cua mientaymedia.com; quan tri xoa trang thi footer an dong nay.
+    legalRep: getSetting('site.legal_rep', 'Đinh Văn Tạo Em'),
+    // Bieu tuong "da thong bao" chi co sau khi UBND tinh xac nhan thong bao theo
+    // ND 248/2026 (Dieu 45 khoan 2 diem a). Mac dinh trong: khong tu gan bieu
+    // tuong khi chua duoc cap. Footer chi hien khi co du anh va link online.gov.vn.
+    bctBadgeImg: getSetting('site.bct_badge_img', ''),
+    bctBadgeUrl: getSetting('site.bct_badge_url', ''),
     workingHours: getSetting('site.working_hours', 'Thứ 2 đến thứ 7, 8:00 đến 17:30'),
     logoUrl: getSetting('site.logo_url', ''),
     primaryColor: getSetting('site.primary_color', '#0a6cff'),
