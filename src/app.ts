@@ -15,6 +15,7 @@ import { BASE, outsideBase, redirectWithBase, withBase } from './lib/basePath.js
 import { clientIpMiddleware } from './lib/clientIp.js';
 
 import homeRoutes from './routes/home.js';
+import timCungAiRoutes from './routes/timCungAi.js';
 import authRoutes from './routes/auth.js';
 import cartRoutes from './routes/cart.js';
 import checkoutRoutes from './routes/checkout.js';
@@ -100,6 +101,7 @@ export function createApp() {
   site.use(csrfMiddleware);
 
   site.use('/', homeRoutes);
+  site.use('/', timCungAiRoutes);
   site.use('/', authRoutes);
   site.use('/gio-hang', cartRoutes);
   site.use('/thanh-toan', checkoutRoutes);

@@ -102,6 +102,8 @@ router.get('/robots.txt', (_req, res) => {
       'Disallow: /api/',
       'Disallow: /webhooks/',
       'Disallow: /tim-kiem',
+      // Trang ket qua goi y AI: mong, nhieu bien the, moi lan xem ton tien AI
+      'Disallow: /tim-cung-ai',
       'Allow: /',
       '',
       `Sitemap: ${config.appUrl}/sitemap.xml`,

@@ -1,0 +1,70 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container ai-trang">
+  <%- include('partials/flash') %>
+  <h1>Tìm tên miền cùng AI</h1>
+  <p class="muted">Mô tả ngành nghề hoặc ý tưởng bằng lời, AI gợi ý tên, hệ thống kiểm tra thật từng tên với nhà đăng ký.</p>
+
+  <% if (thongBao) { %>
+    <div class="alert alert-warn">
+      <%= thongBao %>
+      <a href="<%= base %>/#tim-ten-mien">Tìm theo từ khóa</a>
+    </div>
+  <% } %>
+
+  <% if (aiBat) { %>
+    <%- include('partials/ai-form', { lop: 'ai-form-trang', moTa: moTa, duoiCho: duoiCho, duoiChon: duoiChon }) %>
+  <% } %>
+
+  <% if (ketQua) { %>
+    <h2 class="ai-tieu-de">Gợi ý cho bạn</h2>
+    <%
+      // Ly do do AI viet: da lam sach, cat 120 ky tu o may chu, in bang the co thoat ky tu.
+      // Trang thai, gia: tu P.A va bang gia, khong bao gio tu AI.
+    %>
+    <% ketQua.dong.forEach(function (r) { %>
+      <div class="result <%= r.trangThai === 'con-trong' ? '' : 'taken' %>">
+        <div style="min-width:0">
+          <div class="result-name"><%= r.sld %><span class="tld">.<%= r.tld %></span></div>
+          <% if (r.lyDo) { %><div class="small muted ai-ly-do"><%= r.lyDo %></div><% } %>
+          <div class="tiny muted">
+            <% if (r.trangThai === 'con-trong') { %>
+              <span class="badge badge-ok">Còn trống</span>
+              <% if (r.requiresVnContact) { %> Cần hồ sơ chủ thể (.vn)<% } %>
+            <% } else if (r.trangThai === 'da-co-chu') { %>
+              <span class="badge badge-muted">Đã có người đăng ký</span>
+            <% } else { %>
+              <span class="badge badge-warn">Chưa kiểm tra được</span>
+            <% } %>
+          </div>
+        </div>
+
+        <div class="result-meta">
+          <% if (r.trangThai === 'con-trong' && r.price) { %>
+            <div class="result-price"><%= formatVnd(r.price.total) %></div>
+            <div class="tiny muted">năm đầu<%= r.price.vat ? ' (đã gồm VAT)' : '' %></div>
+            <form method="post" action="<%= base %>/gio-hang/them" style="margin-top:6px">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="domain" value="<%= r.domain %>">
+              <input type="hidden" name="years" value="1">
+              <input type="hidden" name="action" value="register">
+              <input type="hidden" name="nguon" value="ai">
+              <button class="btn btn-sm" type="submit">Thêm vào giỏ</button>
+            </form>
+          <% } else if (r.trangThai === 'da-co-chu') { %>
+            <a class="btn btn-sm btn-outline" href="<%= base %>/whois?domain=<%= encodeURIComponent(r.domain) %>">Xem WHOIS</a>
+          <% } %>
+        </div>
+      </div>
+    <% }); %>
+    <p class="small muted">Bạn tự chịu trách nhiệm về quyền sử dụng tên (thương hiệu, nhãn hiệu) trước khi đăng ký. Tên miền tiếng Việt có dấu chưa được gợi ý ở đây.</p>
+  <% } %>
+
+  <div class="ai-lien-ket">
+    <% if (aiBat) { %><a class="btn btn-sm btn-outline" href="#mo-ta">Thử mô tả khác</a><% } %>
+    <a class="btn btn-sm btn-outline" href="<%= base %>/#tim-ten-mien">Tìm theo từ khóa</a>
+  </div>
+</div>
+
+<%- include('partials/footer') %>

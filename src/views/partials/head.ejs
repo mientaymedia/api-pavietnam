@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><%= typeof title !== 'undefined' ? title + ' - ' + site.name : site.name %></title>
 <meta name="description" content="<%= site.tagline %>">
+<% if (typeof noindex !== 'undefined' && noindex) { %>
+<meta name="robots" content="noindex, nofollow">
+<% } %>
 <link rel="stylesheet" href="<%= base %>/css/app.css">
 <%
   // #0f766e la mau mac dinh cu do seed ghi san vao CSDL, khong phai mau quan
