@@ -98,7 +98,8 @@ export const settings = {
     taxIssued: getSetting('site.tax_issued', 'Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024'),
     // Nguoi dai dien theo phap luat (Dieu 11 khoan 1 diem a Luat TMDT 122/2025,
     // Dieu 4 ND 248/2026). Mac dinh lay tu site-data.ts va trang Dieu khoan dich
-    // vu cua mientaymedia.com; quan tri xoa trang thi footer an dong nay.
+    // vu cua mientaymedia.com. Footer van kiem rong de neu sau nay bo mac dinh
+    // thi chi an dong nay (o de trong trong Cau hinh se ve mac dinh, nhu cac o khac).
     legalRep: getSetting('site.legal_rep', 'Đinh Văn Tạo Em'),
     // Bieu tuong "da thong bao" chi co sau khi UBND tinh xac nhan thong bao theo
     // ND 248/2026 (Dieu 45 khoan 2 diem a). Mac dinh trong: khong tu gan bieu

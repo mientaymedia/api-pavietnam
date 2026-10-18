@@ -83,7 +83,7 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'site.legal_name', label: 'Tên pháp lý công ty', hint: 'Chỉ in ở dòng pháp lý cuối trang; tên hiển thị là Tên website' },
   { key: 'site.tax_code', label: 'Mã số thuế' },
   { key: 'site.tax_issued', label: 'Nơi cấp và ngày cấp mã số thuế', hint: 'Ví dụ: Sở KH&ĐT tỉnh An Giang cấp ngày 13/06/2024' },
-  { key: 'site.legal_rep', label: 'Người đại diện theo pháp luật', hint: 'In ở khối pháp lý cuối trang; để trống thì ẩn dòng này' },
+  { key: 'site.legal_rep', label: 'Người đại diện theo pháp luật', hint: 'In ở khối pháp lý cuối trang; để trống thì dùng mặc định Đinh Văn Tạo Em' },
   { key: 'site.bct_badge_img', label: 'Ảnh biểu tượng "Đã thông báo"', hint: 'Chỉ điền sau khi được xác nhận thông báo TMĐT. Đường dẫn ảnh, ví dụ /img/da-thong-bao.png' },
   { key: 'site.bct_badge_url', label: 'Link biểu tượng "Đã thông báo"', hint: 'Link do hệ thống online.gov.vn cấp, bắt đầu bằng https://online.gov.vn/' },
   { key: 'site.primary_color', label: 'Màu chủ đạo', hint: 'Ví dụ: #0a6cff' },

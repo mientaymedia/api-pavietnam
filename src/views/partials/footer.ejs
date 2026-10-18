@@ -5,6 +5,30 @@
   // thu khong ai doc. Chi hien khi la dia chi tran va khong phai hop thu no-reply.
   var emailHoTro = String(site.supportEmail || '').trim();
   if (!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(emailHoTro) || /no-?reply/i.test(emailHoTro)) emailHoTro = '';
+
+  // Cot Chinh sach: ten muc theo ND 248/2026 (Dieu 5 den 10, 15, 16), tro toi
+  // trang dang co tren mientaymedia.com. Web ten mien khong tu viet chinh sach
+  // rieng, nen moi lan sua noi dung chi lam o mot cho ben site chinh.
+  var chinhSach = [
+    ['Điều kiện giao dịch chung', 'dieu-khoan-su-dung'],
+    ['Thỏa thuận sử dụng dịch vụ', 'dieu-khoan-dich-vu'],
+    ['Chính sách giá', 'chinh-sach-gia'],
+    ['Điều kiện, hạn chế cung cấp dịch vụ', 'dieu-kien-cung-cap-dich-vu'],
+    ['Chính sách thanh toán', 'chinh-sach-thanh-toan'],
+    ['Cung cấp, chấm dứt dịch vụ và hoàn tiền', 'chinh-sach-hoan-tien'],
+    ['Chính sách bảo mật thông tin', 'chinh-sach-quyen-rieng-tu'],
+    ['Bảo vệ dữ liệu cá nhân', 'chinh-sach-bao-mat'],
+    ['Giải quyết khiếu nại', 'phuong-thuc-khieu-nai'],
+  ];
+
+  // Bieu tuong da thong bao chi hien khi quan tri da dien du anh va link, va
+  // link dung la cua he thong online.gov.vn: khong tu gan bieu tuong khi chua
+  // duoc cap, va khong de o cau hinh thanh noi chen link la (javascript:...).
+  var bieuTuongAnh = String(site.bctBadgeImg || '').trim();
+  var bieuTuongLink = String(site.bctBadgeUrl || '').trim();
+  if (bieuTuongAnh.charAt(0) === '/' && bieuTuongAnh.charAt(1) !== '/') bieuTuongAnh = base + bieuTuongAnh;
+  else if (!/^https:\/\//i.test(bieuTuongAnh)) bieuTuongAnh = '';
+  if (!/^https:\/\/(www\.)?online\.gov\.vn\//i.test(bieuTuongLink)) bieuTuongLink = '';
 %>
 <footer class="site-footer">
   <div class="container footer-grid">
@@ -21,6 +45,18 @@
       <a href="<%= base %>/bang-gia">Bảng giá</a>
       <a href="<%= base %>/chuyen-ten-mien">Chuyển tên miền về</a>
       <a href="<%= base %>/whois">Tra cứu WHOIS</a>
+      <a href="<%= base %>/bieu-mau-ho-so">Biểu mẫu hồ sơ</a>
+      <a href="<%= base %>/bieu-mau-ho-so#quy-trinh-dang-ky">Quy trình đăng ký</a>
+      <a href="https://vnnic.vn/vi/whois-information?lang=vi" rel="noopener">WHOIS .vn tại VNNIC</a>
+      <a href="https://vnnic.vn/vi/ten-mien-vn/chinh-sach-quy-dinh" rel="noopener">Quy định sử dụng tên miền .vn</a>
+      <a href="https://mientaymedia.com/quy-trinh-bao-cao-lam-dung" rel="noopener">Báo cáo lạm dụng</a>
+    </div>
+
+    <div>
+      <h4>Chính sách</h4>
+      <% chinhSach.forEach(function (cs) { %>
+        <a href="https://mientaymedia.com/<%= cs[1] %>" rel="noopener"><%= cs[0] %></a>
+      <% }) %>
     </div>
 
     <div>
@@ -40,22 +76,35 @@
       <h4>Liên hệ</h4>
       <% if (site.hotline) { %><a href="tel:<%= site.hotline.replace(/[^\d+]/g, '') %>">Hotline: <%= site.hotline %></a><% } %>
       <% if (emailHoTro) { %><a href="mailto:<%= emailHoTro %>"><%= emailHoTro %></a><% } %>
+      <%# Kenh lien he truc tuyen: Dieu 7 khoan 1 ND 248/2026 bat buoc co it nhat mot kenh %>
+      <a href="https://mientaymedia.com/ho-tro-truc-tuyen" rel="noopener">Hỗ trợ trực tuyến</a>
       <a href="https://mientaymedia.com" rel="noopener">mientaymedia.com</a>
       <% if (site.workingHours) { %><p class="footer-text">Giờ làm việc: <%= site.workingHours %></p><% } %>
     </div>
   </div>
   <div class="container footer-bottom">
-    <div>&copy; <%= new Date().getFullYear() %> <%= site.name %></div>
     <%
-      // Dong phap ly: ten phap ly chi xuat hien o day, moi cho khac dung ten hien
-      // thi site.name. Moi truong deu co mac dinh (settings.ts) nhung van
-      // kiem tung truong: neu sau nay bo mac dinh thi chi an muc do, khong in nhan "MST" treo.
+      // Khoi phap ly theo Dieu 11 khoan 1 diem a Luat TMDT 122/2025 va Dieu 4
+      // ND 248/2026. Ten phap ly chi xuat hien o day, moi cho khac dung ten hien
+      // thi site.name. Moi truong deu co mac dinh (settings.ts) nhung van kiem
+      // tung truong: quan tri xoa truong nao thi chi an dong do, khong in nhan treo.
       var phapLy = [];
-      if (site.legalName) phapLy.push(site.legalName);
-      if (site.taxCode) phapLy.push('MST ' + site.taxCode + (site.taxIssued ? ', do ' + site.taxIssued : ''));
+      if (site.taxCode) phapLy.push('Mã số doanh nghiệp: ' + site.taxCode + (site.taxIssued ? ', do ' + site.taxIssued : ''));
+      if (site.legalRep) phapLy.push('Người đại diện theo pháp luật: ' + site.legalRep);
       if (site.address) phapLy.push('Trụ sở: ' + site.address);
     %>
-    <% if (phapLy.length) { %><p class="footer-legal"><%= phapLy.join('. ') %>.</p><% } %>
+    <div class="footer-legal-row">
+      <div class="footer-legal">
+        <% if (site.legalName) { %><p class="footer-legal-name"><%= site.legalName %></p><% } %>
+        <% phapLy.forEach(function (dong) { %><p><%= dong %></p><% }) %>
+        <%# Dai ly, khong phai nha dang ky: ND 147/2024 Dieu 12 khoan 4 diem c %>
+        <p class="footer-agent"><%= site.name %> là đại lý của Công ty TNHH P.A Việt Nam, nhà đăng ký tên miền quốc gia .vn và quốc tế. Tên miền do P.A Việt Nam đăng ký, quản lý.</p>
+      </div>
+      <% if (bieuTuongAnh && bieuTuongLink) { %>
+        <a class="footer-badge" href="<%= bieuTuongLink %>" rel="noopener"><img src="<%= bieuTuongAnh %>" alt="Đã thông báo hoạt động thương mại điện tử" width="150" height="57"></a>
+      <% } %>
+    </div>
+    <div class="footer-copy">&copy; <%= new Date().getFullYear() %> <%= site.name %></div>
   </div>
 </footer>
 <script src="<%= base %>/js/app.js" defer></script>

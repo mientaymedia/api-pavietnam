@@ -277,16 +277,29 @@ tbody tr:hover { background: var(--bg); }
 
 /* ------------------------------------------------------------------ footer */
 .site-footer { background: var(--brand-navy); color: rgba(255,255,255,.78); font-size: .88rem; padding: 44px 0 0; }
-.footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 28px; }
+/* Nam cot tu khi co cot Chinh sach (ND 248/2026). minmax(0, ...) de nhan dai
+   xuong dong thay vi keo cot rong ra (cung ly do voi .grid-2/3/4 o man hep). */
+.footer-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1.1fr) minmax(0, 1.2fr) minmax(0, .8fr) minmax(0, 1fr); gap: 28px; }
 .footer-grid h4 { color: #fff; font-size: .95rem; margin-bottom: 12px; }
-.footer-grid a { display: block; color: rgba(255,255,255,.78); padding: 3px 0; }
+.footer-grid a { display: block; color: rgba(255,255,255,.78); padding: 3px 0; overflow-wrap: anywhere; }
 .footer-grid a:hover { color: #fff; }
 .footer-logo img { height: 28px; width: auto; display: block; margin-bottom: 14px; }
 .footer-brand p { margin: 0 0 8px; max-width: 360px; }
 .footer-bottom { border-top: 1px solid rgba(255,255,255,.15); margin-top: 32px; padding-top: 16px; padding-bottom: 18px; font-size: .8rem; color: rgba(255,255,255,.6); }
 .footer-text { margin: 6px 0 0; padding: 3px 0; overflow-wrap: anywhere; }
-.footer-legal { margin: 6px 0 0; line-height: 1.55; overflow-wrap: anywhere; }
-@media (max-width: 760px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: 1 / -1; } }
+.footer-legal-row { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
+.footer-legal { min-width: 0; line-height: 1.55; overflow-wrap: anywhere; }
+.footer-legal p { margin: 0 0 2px; }
+.footer-legal-name { color: #fff; font-weight: 700; }
+.footer-agent { margin-top: 8px !important; color: rgba(255,255,255,.78); }
+.footer-badge { flex: none; }
+.footer-badge img { display: block; width: 150px; height: auto; }
+.footer-copy { margin-top: 12px; }
+@media (max-width: 1024px) { .footer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } .footer-brand { grid-column: 1 / -1; } }
+@media (max-width: 760px) {
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 18px; }
+  .footer-legal-row { flex-direction: column; }
+}
 
 pre.raw {
   background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: var(--r);
