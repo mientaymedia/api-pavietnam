@@ -1,0 +1,63 @@
+<%- include('partials/head') %>
+<%- include('partials/header') %>
+
+<div class="container container-mid bm">
+  <h1>Biểu mẫu hồ sơ tên miền</h1>
+  <p class="muted">
+    <%= site.name %> là đại lý của Công ty TNHH P.A Việt Nam, nhà đăng ký tên miền quốc gia .vn và quốc tế.
+    Hồ sơ tên miền được nộp cho P.A Việt Nam theo quy trình của nhà đăng ký, nên biểu mẫu dưới đây dẫn thẳng về bản P.A Việt Nam đang công bố hoặc về văn bản gốc của nhà nước.
+  </p>
+  <p class="bm-note">
+    Biểu mẫu do nhà đăng ký P.A Việt Nam cung cấp; nếu cần hỗ trợ điền hồ sơ, liên hệ hotline<% if (site.hotline) { %> <a href="tel:<%= site.hotline.replace(/[^\d+]/g, '') %>"><%= site.hotline %></a><% } %>.
+  </p>
+
+  <nav class="bm-toc" aria-label="Mục lục">
+    <a href="#quy-trinh-dang-ky">Quy trình đăng ký</a>
+    <% nhom.forEach(function (n) { %><a href="#<%= n.id %>"><%= n.ten %></a><% }) %>
+    <a href="#van-ban-goc">Văn bản gốc</a>
+  </nav>
+
+  <section class="card bm-group" id="quy-trinh-dang-ky">
+    <h2>Quy trình đăng ký tên miền</h2>
+    <ol class="bm-steps">
+      <li>Tra cứu tên miền còn trống bằng ô tìm kiếm ở <a href="<%= base %>/">trang chủ</a>. Với tên miền .vn, có thể đối chiếu thêm trên <a href="<%= whoisVnnic %>" rel="noopener">WHOIS của VNNIC</a>.</li>
+      <li>Chọn tên miền và số năm sử dụng, thêm vào giỏ hàng. Giá theo <a href="<%= base %>/bang-gia">Bảng giá</a>.</li>
+      <li>Khai thông tin chủ thể (cá nhân hoặc tổ chức). Với tên miền .vn, thông tin phải đầy đủ, chính xác theo Nghị định 147/2024/NĐ-CP (đã sửa đổi bởi Nghị định 116/2026/NĐ-CP).</li>
+      <li>Thanh toán bằng chuyển khoản qua mã QR; hệ thống tự ghi nhận khi tiền về.</li>
+      <li>Hệ thống gửi yêu cầu đăng ký tới nhà đăng ký P.A Việt Nam. Với tên miền .vn, nhà đăng ký có thể yêu cầu bản khai theo mẫu ở trang này để xác thực thông tin chủ thể theo Thông tư 48/2025/TT-BKHCN.</li>
+      <li>Tên miền được kích hoạt, bạn quản lý DNS trong Control Panel. Với tên miền quốc tế, chủ thể cần thông báo thông tin sử dụng tại <a href="https://thongbaotenmien.vn" rel="noopener">thongbaotenmien.vn</a> (khoản 2 Điều 19 Nghị định 147/2024/NĐ-CP).</li>
+    </ol>
+    <p class="small muted">Xem thêm <a href="<%= huongDanVnnic %>" rel="noopener">hướng dẫn đăng ký tên miền .vn của VNNIC</a>.</p>
+  </section>
+
+  <% nhom.forEach(function (n) { %>
+    <section class="card bm-group" id="<%= n.id %>">
+      <h2><%= n.ten %></h2>
+      <ul class="bm-list">
+        <% n.muc.forEach(function (m) { %>
+          <li>
+            <strong><%= m.ten %></strong>
+            <div class="tiny muted">Căn cứ: <%= m.canCu %></div>
+            <% if (m.ghiChu) { %><div class="small bm-ghichu"><%= m.ghiChu %></div><% } %>
+            <div class="bm-links">
+              <% m.tai.forEach(function (l) { %><a href="<%= l.url %>" rel="noopener"><%= l.nhan %></a><% }) %>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+      <% if (n.id === 'chuyen-nha-dang-ky') { %>
+        <p class="small muted">Có thể đặt chuyển tên miền về ngay trên web tại trang <a href="<%= base %>/chuyen-ten-mien">Chuyển tên miền về</a>.</p>
+      <% } %>
+    </section>
+  <% }) %>
+
+  <section class="card bm-group" id="van-ban-goc">
+    <h2>Văn bản gốc và trang chính thức</h2>
+    <ul class="bm-refs">
+      <% vanBanGoc.forEach(function (l) { %><li><a href="<%= l.url %>" rel="noopener"><%= l.nhan %></a></li><% }) %>
+    </ul>
+    <p class="tiny muted">Bản PDF của Thông tư 48/2025/TT-BKHCN và Nghị định 115/2025/NĐ-CP trên Cổng Thông tin điện tử Chính phủ là bản scan.</p>
+  </section>
+</div>
+
+<%- include('partials/footer') %>

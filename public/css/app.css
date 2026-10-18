@@ -629,3 +629,21 @@ main.main-flush { padding: 0; }
   .tc-tab-labels label { padding: 7px 12px; font-size: .84rem; }
   .tc-logos { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ------------------------------------------------------- bieu mau ho so (bm-)
+   Trang /bieu-mau-ho-so: danh sach doc, khong dung bang, de ten mau dai va link
+   tai xuong dong duoc o 360px ma khong tran ngang. */
+.bm h1 { margin-bottom: 8px; }
+.bm-note { background: var(--brand-light); border-radius: var(--r); padding: 12px 14px; margin: 14px 0; }
+.bm-toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 18px; }
+.bm-toc a { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: .85rem; }
+.bm-group h2 { font-size: 1.15rem; margin: 0 0 12px; }
+.bm-group { scroll-margin-top: 80px; }
+.bm-steps { margin: 0 0 10px; padding-left: 22px; line-height: 1.6; }
+.bm-steps li + li { margin-top: 6px; }
+.bm-list { list-style: none; margin: 0; padding: 0; }
+.bm-list li { padding: 12px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.bm-list li:first-child { border-top: 0; padding-top: 0; }
+.bm-ghichu { margin-top: 4px; color: var(--ink-soft); }
+.bm-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; font-size: .9rem; }
+.bm-refs { margin: 0 0 8px; padding-left: 20px; line-height: 1.7; overflow-wrap: anywhere; }

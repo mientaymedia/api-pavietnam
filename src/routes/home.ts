@@ -6,6 +6,7 @@ import { rateLimit } from '../middleware/ratelimit.js';
 import { normalizeDomain } from '../pavietnam/client.js';
 import { config } from '../config.js';
 import { BASE } from '../lib/basePath.js';
+import { HUONG_DAN_VNNIC, NHOM_BIEU_MAU, VAN_BAN_GOC, WHOIS_VNNIC } from '../lib/bieuMau.js';
 
 const router = Router();
 
@@ -86,6 +87,17 @@ router.get('/bang-gia', (_req, res) => {
   });
 });
 
+/** Bieu mau ho so ten mien: footer tro toi day (xem lib/bieuMau.ts). */
+router.get('/bieu-mau-ho-so', (_req, res) => {
+  res.render('bieu-mau-ho-so', {
+    title: 'Biểu mẫu hồ sơ tên miền',
+    nhom: NHOM_BIEU_MAU,
+    vanBanGoc: VAN_BAN_GOC,
+    huongDanVnnic: HUONG_DAN_VNNIC,
+    whoisVnnic: WHOIS_VNNIC,
+  });
+});
+
 /* ------------------------------------------------------------- SEO co ban */
 
 router.get('/robots.txt', (_req, res) => {
@@ -120,6 +132,7 @@ router.get('/sitemap.xml', (_req, res) => {
     { loc: '/bang-gia', priority: '0.9', freq: 'weekly' },
     { loc: '/chuyen-ten-mien', priority: '0.7', freq: 'monthly' },
     { loc: '/whois', priority: '0.6', freq: 'monthly' },
+    { loc: '/bieu-mau-ho-so', priority: '0.5', freq: 'monthly' },
     { loc: '/dang-ky', priority: '0.5', freq: 'monthly' },
   ];
 
