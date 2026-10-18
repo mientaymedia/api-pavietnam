@@ -12,6 +12,7 @@ import { getCart } from './services/cart.js';
 import { formatVnd } from './lib/money.js';
 import { isVerified } from './services/verification.js';
 import { BASE, outsideBase, redirectWithBase, withBase } from './lib/basePath.js';
+import { clientIpMiddleware } from './lib/clientIp.js';
 
 import homeRoutes from './routes/home.js';
 import authRoutes from './routes/auth.js';
@@ -30,7 +31,13 @@ const projectRoot = path.resolve(here, '..');
 export function createApp() {
   const app = express();
 
-  if (config.trustProxy) app.set('trust proxy', 1);
+  if (config.clientIpHeader) {
+    // IP lay tu header cua Cloudflare, dat vao X-Forwarded-For roi tin dung mot lop
+    app.use(clientIpMiddleware(config.clientIpHeader));
+    app.set('trust proxy', 1);
+  } else if (config.trustProxy) {
+    app.set('trust proxy', 1);
+  }
   app.set('view engine', 'ejs');
   app.set('views', path.join(here, 'views'));
   app.disable('x-powered-by');
