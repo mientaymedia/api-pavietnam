@@ -54,5 +54,50 @@
       <% } %>
     </div>
   </div>
+
+  <%
+    // Tim cung AI: chi so dem an danh theo ngay (gio Viet Nam), khong co mo ta cua khach
+    var AI_TRANG_THAI = {
+      'san-sang': ['badge-ok', 'Đang bật'],
+      'tat': ['badge-muted', 'Đang tắt'],
+      'thieu-cau-hinh': ['badge-warn', 'Đã bật nhưng thiếu khóa hoặc tên model'],
+      'cham-tran': ['badge-danger', 'Chạm trần chi phí hôm nay, tự chạy lại vào ngày mai']
+    };
+    var aiNhan = AI_TRANG_THAI[ai.trangThai];
+  %>
+  <div class="card" style="margin-top:18px">
+    <div class="card-title"><h2>Tìm cùng AI</h2><a class="small" href="<%= base %>/admin/cau-hinh">Cấu hình</a></div>
+    <p class="small">
+      <span class="badge <%= aiNhan[0] %>"><%= aiNhan[1] %></span>
+      Chi phí ước tính hôm nay: <strong><%= formatVnd(Math.round(ai.chiPhiHomNay)) %></strong> trên trần <%= formatVnd(ai.tran) %>.
+    </p>
+    <% if (!ai.thongKe.length) { %>
+      <p class="muted small">Chưa có lượt gợi ý nào.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Ngày</th><th class="right">Lượt gọi AI</th><th class="right">Bị chặn</th><th class="right">Lỗi</th>
+            <th class="right">Tên gợi ý</th><th class="right">Còn trống</th><th class="right">Thêm vào giỏ</th><th class="right">Chi phí</th>
+          </tr></thead>
+          <tbody>
+            <% ai.thongKe.forEach(function (d) { %>
+              <tr>
+                <td class="mono"><%= d.day %></td>
+                <td class="right"><%= d.calls %></td>
+                <td class="right"><%= d.blocked %></td>
+                <td class="right"><%= d.errors %></td>
+                <td class="right"><%= d.suggested %></td>
+                <td class="right"><%= d.available %></td>
+                <td class="right"><%= d.added_to_cart %></td>
+                <td class="right"><%= formatVnd(Math.round(d.cost_vnd)) %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <p class="tiny muted">Chi phí ước tính từ số token OpenAI trả về và đơn giá trong Cấu hình; số tiền thật xem trong tài khoản OpenAI.</p>
+    <% } %>
+  </div>
 </div>
 <%- include('../partials/footer') %>
