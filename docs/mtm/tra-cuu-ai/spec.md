@@ -68,14 +68,14 @@ Giá trị trống, không phải số hoặc nhỏ hơn hoặc bằng 0 của �
 
 `goiYTenMien({ moTa, duoi }, deps)`; `deps` mặc định là nhà cung cấp thật và bộ kiểm tra có bộ đệm; test truyền bản giả.
 
-1. Chưa sẵn sàng: trả `tat` hoặc `het-han-muc` (đếm `bi_chan` khi do trần), không gọi AI.
+1. Chưa sẵn sàng: trả `tat` hoặc `het-han-muc` (đếm `blocked` khi do trần), không gọi AI.
 2. Mô tả: gộp khoảng trắng, 3 đến 200 ký tự (đếm theo ký tự Unicode); sai thì `khong-hop-le`, không gọi AI. Route cũng kiểm trước để trả mã 400.
 3. Gọi AI; cộng chi phí vào bảng ngày NGAY khi có `usage` (kể cả khi đầu ra hỏng). Lỗi không có `usage` (hết giờ, mất mạng sau khi đã gửi) thì cộng chi phí xấu nhất (500 token vào + 1200 token ra) vì OpenAI có thể vẫn tính tiền. Lỗi HTTP 4xx (yêu cầu bị từ chối) không cộng.
 4. Hậu xử lý từng tên: bỏ dấu (`boDau` + `đ`), chữ thường; có dấu chấm thì chỉ lấy nhãn đầu (đuôi do AI đưa bị bỏ, dùng đuôi của mục 5); khoảng trắng và `_` thành `-`; bỏ ký tự ngoài `[a-z0-9-]`; gộp `-` liên tiếp; bỏ `-` đầu cuối; độ dài nhãn 2 đến 63, dài hơn thì LOẠI (không cắt); bỏ trùng; lọc từ cấm; giữ tối đa `max_names`.
 5. Đuôi: các đuôi khách chọn có trong `listTlds({ activeOnly: true })` (tối đa 2, theo thứ tự hiển thị); không chọn thì 2 đuôi nổi bật đầu; không có thì 2 đuôi đang bán đầu. Ghép tên x đuôi, mỗi tên qua `domainSchema`, cắt ở `max_checks`.
 6. Kiểm tra: hàm `kiemTraNhieu` tách từ `searchDomains` (`src/services/domains.ts`, dùng chung bộ đệm 120 giây, `checkDomains` song song 4). "Còn trống" CHỈ khi P.A (hoặc bộ đệm từ P.A) trả có; không có kết quả, lỗi hoặc thiếu dòng thì "Chưa kiểm tra được"; giá chỉ gắn cho dòng còn trống.
 7. Lý do: bỏ ký tự điều khiển, gộp khoảng trắng, cắt 120 ký tự; không bao giờ hiện nguyên văn phản hồi AI ngoài trường này.
-8. Thống kê: cộng `luot`, `goi_y` (số tên sau lọc), `con_trong`, `loi`.
+8. Thống kê: cộng `calls`, `suggested` (số tên sau lọc), `available`, `errors`.
 
 ### Lọc từ cấm
 
@@ -83,7 +83,7 @@ So khớp trên tên đã bỏ dấu. Từ cấm cũng bỏ dấu và bỏ `-`. 
 
 ## 7. Giới hạn và trần
 
-- `rateLimit` sẵn có, thêm 2 tùy chọn nhỏ: `max` nhận hàm (đọc cấu hình lúc chạy) và `onLimit` (để đếm `bi_chan`). Hai lớp trên `POST /tim-cung-ai` có khóa riêng (`phut:`/`ngay:` + IP) vì khóa mặc định theo đường dẫn sẽ làm hai lớp dùng chung một bộ đếm. IP là `req.ip`, đã là IP thật khi đặt `CLIENT_IP_HEADER`.
+- `rateLimit` sẵn có, thêm 2 tùy chọn nhỏ: `max` nhận hàm (đọc cấu hình lúc chạy) và `onLimit` (để đếm `blocked`). Hai lớp trên `POST /tim-cung-ai` có khóa riêng (`phut:`/`ngay:` + IP) vì khóa mặc định theo đường dẫn sẽ làm hai lớp dùng chung một bộ đếm. IP là `req.ip`, đã là IP thật khi đặt `CLIENT_IP_HEADER`.
 - Thông báo 429 bằng tiếng Việt, trang lỗi sẵn có.
 - Trần chi phí lưu trong bảng mới (mục 8), không trong bộ nhớ: khởi động lại không đếm lại.
 
@@ -91,21 +91,21 @@ So khớp trên tên đã bỏ dấu. Từ cấm cũng bỏ dấu và bỏ `-`. 
 
 ```sql
 CREATE TABLE IF NOT EXISTS ai_usage_daily (
-  ngay        TEXT PRIMARY KEY,           -- YYYY-MM-DD theo gio Viet Nam
-  luot        INTEGER NOT NULL DEFAULT 0, -- so lan da goi AI
-  bi_chan     INTEGER NOT NULL DEFAULT 0, -- bi chan do gioi han IP hoac tran
-  loi         INTEGER NOT NULL DEFAULT 0,
-  goi_y       INTEGER NOT NULL DEFAULT 0,
-  con_trong   INTEGER NOT NULL DEFAULT 0,
-  them_gio    INTEGER NOT NULL DEFAULT 0,
-  token_vao   INTEGER NOT NULL DEFAULT 0,
-  token_ra    INTEGER NOT NULL DEFAULT 0,
-  chi_phi_vnd REAL    NOT NULL DEFAULT 0,
-  updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  day           TEXT PRIMARY KEY,            -- YYYY-MM-DD theo gio Viet Nam
+  calls         INTEGER NOT NULL DEFAULT 0,  -- so lan da goi AI
+  blocked       INTEGER NOT NULL DEFAULT 0,  -- bi chan do gioi han IP hoac tran ngay
+  errors        INTEGER NOT NULL DEFAULT 0,
+  suggested     INTEGER NOT NULL DEFAULT 0,  -- so ten con lai sau chuan hoa va loc
+  available     INTEGER NOT NULL DEFAULT 0,  -- so dong P.A bao con trong
+  added_to_cart INTEGER NOT NULL DEFAULT 0,
+  tokens_in     INTEGER NOT NULL DEFAULT 0,
+  tokens_out    INTEGER NOT NULL DEFAULT 0,
+  cost_vnd      REAL    NOT NULL DEFAULT 0,  -- chi phi uoc tinh tu usage va don gia cau hinh
+  updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
 ```
 
-Chỉ số đếm, không có cột nào chứa mô tả, IP hay tên miền.
+Chỉ số đếm, không có cột nào chứa mô tả, IP hay tên miền. Tên cột tiếng Anh như các bảng khác trong `schema.sql`.
 
 ## 9. Quản trị
 

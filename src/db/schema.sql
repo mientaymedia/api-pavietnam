@@ -429,15 +429,15 @@ CREATE TABLE IF NOT EXISTS domain_check_cache (
 -- nen phai ben qua khoi dong lai. Co y KHONG co cot mo ta, IP hay ten mien:
 -- chu chot chi giu thong ke an danh.
 CREATE TABLE IF NOT EXISTS ai_usage_daily (
-  ngay        TEXT PRIMARY KEY,            -- YYYY-MM-DD theo gio Viet Nam
-  luot        INTEGER NOT NULL DEFAULT 0,  -- so lan da goi AI
-  bi_chan     INTEGER NOT NULL DEFAULT 0,  -- bi chan do gioi han IP hoac tran ngay
-  loi         INTEGER NOT NULL DEFAULT 0,
-  goi_y       INTEGER NOT NULL DEFAULT 0,  -- so ten con lai sau chuan hoa va loc
-  con_trong   INTEGER NOT NULL DEFAULT 0,
-  them_gio    INTEGER NOT NULL DEFAULT 0,
-  token_vao   INTEGER NOT NULL DEFAULT 0,
-  token_ra    INTEGER NOT NULL DEFAULT 0,
-  chi_phi_vnd REAL    NOT NULL DEFAULT 0,
-  updated_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+  day           TEXT PRIMARY KEY,            -- YYYY-MM-DD theo gio Viet Nam
+  calls         INTEGER NOT NULL DEFAULT 0,  -- so lan da goi AI
+  blocked       INTEGER NOT NULL DEFAULT 0,  -- bi chan do gioi han IP hoac tran ngay
+  errors        INTEGER NOT NULL DEFAULT 0,
+  suggested     INTEGER NOT NULL DEFAULT 0,  -- so ten con lai sau chuan hoa va loc
+  available     INTEGER NOT NULL DEFAULT 0,  -- so dong P.A bao con trong
+  added_to_cart INTEGER NOT NULL DEFAULT 0,
+  tokens_in     INTEGER NOT NULL DEFAULT 0,
+  tokens_out    INTEGER NOT NULL DEFAULT 0,
+  cost_vnd      REAL    NOT NULL DEFAULT 0,  -- chi phi uoc tinh tu usage va don gia cau hinh
+  updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );

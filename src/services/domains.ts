@@ -1,6 +1,6 @@
 import { db, nowIso } from '../db/index.js';
 import { checkDomains, normalizeDomain, splitDomain, whois } from '../pavietnam/client.js';
-import type { WhoisResult } from '../pavietnam/types.js';
+import type { CheckResult, WhoisResult } from '../pavietnam/types.js';
 import { knownTlds, listTlds, priceFor, type PriceBreakdown, type Tld } from './pricing.js';
 import { log } from '../lib/logger.js';
 
@@ -54,30 +54,7 @@ export async function searchDomains(
 
   const candidates = chosen.slice(0, 12).map((t) => ({ tld: t, domain: `${sld}.${t.tld}` }));
 
-  // Lay tu cache truoc, chi goi API cho phan con thieu
-  const fresh = new Map<string, { available: boolean }>();
-  const needCheck: string[] = [];
-  for (const c of candidates) {
-    const cached = readCache(c.domain);
-    if (cached) fresh.set(c.domain, cached);
-    else needCheck.push(c.domain);
-  }
-
-  const messages = new Map<string, string>();
-  const failed = new Set<string>();
-  if (needCheck.length) {
-    const checked = await checkDomains(needCheck);
-    for (const r of checked) {
-      if (r.ok) {
-        fresh.set(r.domain, { available: r.available });
-        writeCache(r.domain, r.available, r.raw);
-      } else {
-        failed.add(r.domain);
-        messages.set(r.domain, r.message || 'Không kiểm tra được');
-        log.warn('domain_check_failed', { domain: r.domain, message: r.message });
-      }
-    }
-  }
+  const { fresh, failed, messages } = await kiemTraNhieu(candidates.map((c) => c.domain));
 
   const years = opts.years ?? 1;
   const results: SearchResult[] = candidates.map(({ tld, domain }) => {
@@ -98,6 +75,43 @@ export async function searchDomains(
   });
 
   return { query: raw, sld, results };
+}
+
+/**
+ * Kiem tra nhieu ten mien: lay tu cache truoc, chi goi API cho phan con thieu.
+ * Dung chung cho o tim thuong va Tim cung AI de ca hai chung mot bo dem.
+ *
+ * Ten nao khong co trong `fresh` la CHUA BIET trang thai: noi goi khong duoc
+ * coi do la con trong. `kiem` truyen vao duoc de test dem so lenh gui P.A.
+ */
+export async function kiemTraNhieu(
+  domains: string[],
+  kiem: (ds: string[]) => Promise<CheckResult[]> = checkDomains,
+): Promise<{ fresh: Map<string, { available: boolean }>; failed: Set<string>; messages: Map<string, string> }> {
+  const fresh = new Map<string, { available: boolean }>();
+  const needCheck: string[] = [];
+  for (const d of domains) {
+    const cached = readCache(d);
+    if (cached) fresh.set(d, cached);
+    else needCheck.push(d);
+  }
+
+  const messages = new Map<string, string>();
+  const failed = new Set<string>();
+  if (needCheck.length) {
+    const checked = await kiem(needCheck);
+    for (const r of checked) {
+      if (r.ok) {
+        fresh.set(r.domain, { available: r.available });
+        writeCache(r.domain, r.available, r.raw);
+      } else {
+        failed.add(r.domain);
+        messages.set(r.domain, r.message || 'Không kiểm tra được');
+        log.warn('domain_check_failed', { domain: r.domain, message: r.message });
+      }
+    }
+  }
+  return { fresh, failed, messages };
 }
 
 /** Tra cuu WHOIS (co bat loi de trang van hien thi duoc thong bao than thien). */
