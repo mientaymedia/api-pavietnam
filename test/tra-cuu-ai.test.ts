@@ -330,3 +330,230 @@ test('nha cung cap OpenAI: doc usage, phan loai loi, het gio, khong lo khoa tron
   assert.equal((await loi('cat'))?.ma, 'dinh-dang');
   assert.equal((await loi('cham', 200))?.ma, 'timeout');
 });
+
+/* ======================================================= phan 2: HTTP */
+
+async function phien(ip: string): Promise<{ cookie: string; csrf: string }> {
+  const r = await fetch(`${goc}/dang-nhap`, { headers: { 'cf-connecting-ip': ip } });
+  const cookie = (r.headers.get('set-cookie') ?? '').split(';')[0] ?? '';
+  const csrf = (await r.text()).match(/name="_csrf" value="([^"]+)"/)?.[1] ?? '';
+  assert.ok(cookie && csrf);
+  return { cookie, csrf };
+}
+
+async function gui(
+  ip: string,
+  truong: Record<string, string | string[]>,
+  p?: { cookie: string; csrf: string },
+): Promise<{ status: number; html: string; headers: Headers }> {
+  const ph = p ?? (await phien(ip));
+  const body = new URLSearchParams();
+  if (!('_csrf' in truong)) body.append('_csrf', ph.csrf);
+  for (const [k, v] of Object.entries(truong)) for (const x of [v].flat()) body.append(k, x);
+  const r = await fetch(`${goc}/tim-cung-ai`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: ph.cookie, 'cf-connecting-ip': ip },
+    body: body.toString(),
+  });
+  return { status: r.status, html: await r.text(), headers: r.headers };
+}
+
+async function trang(p: string, ip = ipMoi()): Promise<{ status: number; html: string }> {
+  const r = await fetch(goc + p, { redirect: 'manual', headers: { 'cf-connecting-ip': ip } });
+  return { status: r.status, html: await r.text() };
+}
+
+test('trang chu: tab AI khi san sang; tat hoac cham tran thi an tab, duong dan AI bao than thien, khong goi AI', async () => {
+  const bat = await trang('/');
+  assert.match(bat.html, /id="tc-tab-ai"/);
+  assert.match(bat.html, /<label for="tc-tab-ai">Tìm cùng AI<\/label>/);
+  assert.match(bat.html, /<form class="tc-ai tc-panel-ai"[^>]*action="\/tim-cung-ai" method="post"/);
+  assert.match(bat.html, /name="mo_ta"[^>]*maxlength="200"/);
+  assert.match(bat.html, /Gợi ý do AI tạo, trạng thái còn trống được kiểm tra thật qua nhà đăng ký\./);
+
+  const truoc = soLanGoiAi;
+  M.setSetting('ai.enabled', '0');
+  assert.doesNotMatch((await trang('/')).html, /tc-tab-ai|tim-cung-ai/);
+  const g = await trang('/tim-cung-ai');
+  assert.equal(g.status, 200);
+  assert.match(g.html, /đang tạm tắt/);
+  const p = await gui(ipMoi(), { mo_ta: 'tiệm bánh mì ở Cần Thơ' });
+  assert.equal(p.status, 200);
+  assert.match(p.html, /đang tạm tắt/);
+
+  batAi();
+  datChiPhiHomNay(50_000);
+  assert.doesNotMatch((await trang('/')).html, /tc-tab-ai/);
+  const c = await gui(ipMoi(), { mo_ta: 'tiệm bánh mì ở Cần Thơ' });
+  assert.equal(c.status, 200);
+  assert.match(c.html, /hết lượt của hôm nay/);
+  assert.match(c.html, /href="\/#tim-ten-mien">Tìm theo từ khóa/);
+  assert.equal(soLanGoiAi, truoc, 'tat hoac cham tran thi khong goi OpenAI');
+});
+
+test('POST hop le: ten loc xong, trang thai tu P.A sandbox, noindex, khong script noi tuyen', async () => {
+  const s = ngauNhien();
+  tenGia = [
+    { ten: `Bánh Mì ${s}`, ly_do: 'Gọn, đúng ngành <b>nghề</b>' },
+    { ten: `google-${s}`, ly_do: 'Không được hiện' },
+    { ten: `tiem-${s}.xyz`, ly_do: 'Đuôi lạ bị đổi' },
+  ];
+  const truoc = soLanGoiAi;
+  const r = await gui(ipMoi(), { mo_ta: 'tiệm bánh mì nhà làm ở Cần Thơ', duoi: ['aimot', 'aihai'] });
+  assert.equal(r.status, 200);
+  assert.equal(soLanGoiAi, truoc + 1);
+  assert.equal(r.headers.get('x-robots-tag'), 'noindex, nofollow');
+  assert.match(r.html, /<meta name="robots" content="noindex, nofollow">/);
+  assert.match(r.html, new RegExp(`banh-mi-${s}<span class="tld">\\.aimot`));
+  assert.match(r.html, new RegExp(`tiem-${s}<span class="tld">\\.aihai`));
+  assert.doesNotMatch(r.html, /google-|\.xyz/);
+  assert.match(r.html, /Gọn, đúng ngành &lt;b&gt;nghề&lt;\/b&gt;/);
+  // Moi dong Con trong co dung mot nut gio hang gan nguon=ai; khong dong nao khac co
+  const conTrong = (r.html.match(/badge-ok">Còn trống/g) ?? []).length;
+  assert.equal((r.html.match(/name="nguon" value="ai"/g) ?? []).length, conTrong);
+  assert.equal((r.html.match(/class="result-price"/g) ?? []).length, conTrong);
+  assert.equal((r.html.match(/class="result /g) ?? []).length, 4);
+  // CSP: khong script noi tuyen, khong thuoc tinh on*=
+  assert.doesNotMatch(r.html, /<script(?![^>]*\ssrc=)[^>]*>/i);
+  assert.doesNotMatch(r.html, /\son[a-z]+=/i);
+  // Mo ta chi dien lai trong form cua chinh phan hoi nay
+  assert.match(r.html, /name="mo_ta" value="tiệm bánh mì nhà làm ở Cần Thơ"/);
+});
+
+test('gioi han: luot thu 6 trong mot phut cua cung IP tra 429 tieng Viet va dem bi chan', async () => {
+  tenGia = [{ ten: `gh${ngauNhien()}`, ly_do: '' }];
+  const ip = ipMoi();
+  const p = await phien(ip);
+  const ma: number[] = [];
+  let cuoi = '';
+  for (let i = 0; i < 6; i++) {
+    const r = await gui(ip, { mo_ta: 'quán phở gia truyền', duoi: 'aimot' }, p);
+    ma.push(r.status);
+    cuoi = r.html;
+  }
+  assert.deepEqual(ma, [200, 200, 200, 200, 200, 429]);
+  assert.match(cuoi, /quá nhanh/);
+  assert.equal(homNay()['blocked'], 1);
+  // IP khac khong bi anh huong
+  assert.equal((await gui(ipMoi(), { mo_ta: 'quán phở gia truyền', duoi: 'aimot' })).status, 200);
+});
+
+test('gioi han ngay: vuot so luot moi ngay cua mot IP tra 429', async () => {
+  batAi({ 'ai.rate_per_day': '2', 'ai.rate_per_minute': '100' });
+  tenGia = [{ ten: `gn${ngauNhien()}`, ly_do: '' }];
+  const ip = ipMoi();
+  const p = await phien(ip);
+  const ma: number[] = [];
+  for (let i = 0; i < 3; i++) ma.push((await gui(ip, { mo_ta: 'quán phở gia truyền' }, p)).status);
+  assert.deepEqual(ma, [200, 200, 429]);
+});
+
+test('mo ta 201 ky tu tra 400 truoc khi goi AI', async () => {
+  const truoc = soLanGoiAi;
+  const r = await gui(ipMoi(), { mo_ta: 'ấ'.repeat(201) });
+  assert.equal(r.status, 400);
+  assert.match(r.html, /3 đến 200 ký tự/);
+  assert.equal(soLanGoiAi, truoc);
+});
+
+test('CSRF: thieu hoac sai token tra 403, khong goi AI', async () => {
+  const truoc = soLanGoiAi;
+  const ip = ipMoi();
+  const p = await phien(ip);
+  assert.equal((await gui(ip, { _csrf: '', mo_ta: 'quán phở' }, p)).status, 403);
+  assert.equal((await gui(ip, { _csrf: 'sai-token', mo_ta: 'quán phở' }, p)).status, 403);
+  // Khong co cookie phien: token cua phien khac khong dung duoc
+  assert.equal((await gui(ip, { mo_ta: 'quán phở' }, { cookie: '', csrf: p.csrf })).status, 403);
+  assert.equal(soLanGoiAi, truoc);
+});
+
+test('OpenAI loi 500, het han muc hoac tra sai dinh dang: trang than thien, khong 500', async () => {
+  for (const c of ['500', 'quota', 'hong'] as const) {
+    cheDo = c;
+    const r = await gui(ipMoi(), { mo_ta: 'quán phở gia truyền' });
+    assert.equal(r.status, 200, c);
+    assert.match(r.html, /chưa gợi ý được tên/, c);
+    assert.match(r.html, /Tìm theo từ khóa/, c);
+  }
+});
+
+test('robots chan /tim-cung-ai, sitemap khong co duong dan AI', async () => {
+  assert.match((await trang('/robots.txt')).html, /^Disallow: \/tim-cung-ai$/m);
+  assert.doesNotMatch((await trang('/sitemap.xml')).html, /tim-cung-ai/);
+});
+
+test('them vao gio tu trang AI dem added_to_cart', async () => {
+  const { createHash } = await import('node:crypto');
+  // Ten ma P.A sandbox bao con trong (cung cong thuc voi sandboxResponse)
+  let domain = '';
+  for (let i = 0; !domain; i++) {
+    const d = `giohang${ngauNhien()}${i}.aimot`;
+    if (parseInt(createHash('sha256').update(d).digest('hex').slice(0, 2), 16) % 3 === 0) domain = d;
+  }
+  const ip = ipMoi();
+  const p = await phien(ip);
+  const r = await fetch(`${goc}/gio-hang/them`, {
+    method: 'POST',
+    redirect: 'manual',
+    headers: { 'content-type': 'application/x-www-form-urlencoded', cookie: p.cookie, 'cf-connecting-ip': ip },
+    body: new URLSearchParams({ _csrf: p.csrf, domain, years: '1', action: 'register', nguon: 'ai' }).toString(),
+  });
+  assert.equal(r.status, 302);
+  assert.equal(homNay()['added_to_cart'], 1);
+});
+
+test('bi mat: khoa OpenAI ma hoa trong CSDL, trang cau hinh chi hien dang che, log khong co khoa va mo ta', async () => {
+  assert.ok(M.SECRET_KEYS.includes('ai.openai_key'));
+  const row = M.db.prepare(`SELECT value, is_secret FROM settings WHERE key = 'ai.openai_key'`).get() as { value: string; is_secret: number };
+  assert.equal(row.is_secret, 1);
+  assert.ok(!row.value.includes(KHOA_THU) && !row.value.includes('KHOA-BI-MAT'));
+
+  // Phien quan tri da bat 2FA (nhu kiem-base)
+  const { nowIso, isoIn } = await import('../src/db/index.js');
+  const { encryptSecret, randomToken } = await import('../src/lib/crypto.js');
+  const { config } = await import('../src/config.js');
+  const { createHmac } = await import('node:crypto');
+  const email = `quantri-ai-${ngauNhien()}@test.vn`;
+  const adminId = Number(M.db.prepare(
+    `INSERT INTO users (email, password_hash, full_name, role, created_at, updated_at) VALUES (?, 'x', 'Quản trị', 'admin', ?, ?)`,
+  ).run(email, nowIso(), nowIso()).lastInsertRowid);
+  M.db.prepare('INSERT INTO two_factor (user_id, secret_enc, confirmed_at) VALUES (?, ?, ?)').run(adminId, encryptSecret('JBSWY3DPEHPK3PXP'), nowIso());
+  const sid = randomToken(24);
+  M.db.prepare(`INSERT INTO sessions (sid, user_id, data, ip, user_agent, expires_at, created_at) VALUES (?, ?, ?, '', '', ?, ?)`)
+    .run(sid, adminId, JSON.stringify({ userId: adminId }), isoIn(3600_000), nowIso());
+  const cookie = `sid=${sid}.${createHmac('sha256', config.sessionSecret).update(sid).digest('base64url')}`;
+
+  const cauHinh = await fetch(`${goc}/admin/cau-hinh`, { headers: { cookie, 'cf-connecting-ip': ipMoi() } });
+  const html = await cauHinh.text();
+  assert.equal(cauHinh.status, 200);
+  assert.match(html, /name="ai\.openai_key"\s+value="[^"]*\*[^"]*"/);
+  assert.ok(!html.includes(KHOA_THU) && !html.includes('KHOA-BI-MAT'));
+  assert.match(html, /<textarea id="ai\.blocked_words"/);
+
+  // Ghi lai moi dong log trong mot luot goi y (ca luot loi) roi tim khoa va mo ta
+  const dong: string[] = [];
+  const goc1 = console.log;
+  const goc2 = console.error;
+  console.log = (...a: unknown[]) => { dong.push(a.map(String).join(' ')); };
+  console.error = (...a: unknown[]) => { dong.push(a.map(String).join(' ')); };
+  try {
+    tenGia = [{ ten: `log${ngauNhien()}`, ly_do: '' }];
+    await gui(ipMoi(), { mo_ta: 'MO-TA-RIENG-TU số 0909 tiệm bánh', duoi: 'aimot' });
+    cheDo = 'quota';
+    await gui(ipMoi(), { mo_ta: 'MO-TA-RIENG-TU số 0909 tiệm bánh', duoi: 'aimot' });
+  } finally {
+    console.log = goc1;
+    console.error = goc2;
+  }
+  assert.ok(dong.some((l) => l.includes('ai_goi_y')), 'co log luot goi y');
+  for (const l of dong) {
+    assert.ok(!l.includes(KHOA_THU) && !l.includes('KHOA-BI-MAT'), l);
+    assert.ok(!l.includes('MO-TA-RIENG-TU') && !l.includes('0909'), l);
+  }
+
+  // Thong ke an danh hien o Tong quan quan tri
+  const tongQuan = await (await fetch(`${goc}/admin`, { headers: { cookie, 'cf-connecting-ip': ipMoi() } })).text();
+  assert.match(tongQuan, /<h2>Tìm cùng AI<\/h2>/);
+  assert.match(tongQuan, /Thêm vào giỏ/);
+});

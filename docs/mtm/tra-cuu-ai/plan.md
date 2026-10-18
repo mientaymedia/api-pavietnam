@@ -22,7 +22,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - [x] A4. Test đơn vị dịch vụ và nhà cung cấp (`test/tra-cuu-ai.test.ts` phần 1): chuẩn hóa, lọc từ, đuôi, trần 16 lệnh, an toàn trạng thái, chi phí, lỗi AI. Kiểm: test mới đạt. Commit `c2472f5`; 244/244 đạt.
 - [x] A5. Route `src/routes/timCungAi.ts` (GET/POST, 2 lớp giới hạn, noindex), gắn trong `src/app.ts`, robots (`src/routes/home.ts`), view `src/views/tim-cung-ai.ejs`, `noindex` trong `src/views/partials/head.ejs`, đếm "thêm vào giỏ" (`src/routes/cart.ts`). Kiểm: cổng chặn + kiem-base. Commit `96e8e9c`; 244/244 đạt, kiem-base 0.
 - [x] A6. Tab "Tìm cùng AI" ở `src/views/home.ejs` + CSS (`public/css/app.css`), cờ `aiBat` từ route `/`. Kiểm: cổng chặn + kiem-base. Commit `6de3bd4`; 244/244 đạt, kiem-base 0 (đã bật AI bằng khóa giả trong kiem-base để bò cả tab và form AI).
-- [ ] A7. Quản trị: nhóm cấu hình `ai.` (`src/routes/admin.ts`, `src/views/admin/settings.ejs` vẽ `textarea`), thẻ thống kê ở `src/views/admin/dashboard.ejs`. Kiểm: cổng chặn + kiem-base.
+- [x] A7. Quản trị: nhóm cấu hình `ai.` (`src/routes/admin.ts`, `src/views/admin/settings.ejs` vẽ `textarea`), thẻ thống kê ở `src/views/admin/dashboard.ejs`. Kiểm: cổng chặn + kiem-base. Commit `3d9e6df`; 244/244 đạt, kiem-base 0.
 - [ ] A8. Test HTTP (`test/tra-cuu-ai.test.ts` phần 2): giới hạn 429, mô tả dài 400, CSRF 403, bật tắt, noindex, robots, sitemap, bí mật, CSP, trần qua HTTP. Kiểm: `npm test` đạt hết.
 - [ ] A9. Chạy thử cục bộ (P.A sandbox, OpenAI giả lập trong scratchpad), chụp `docs/mtm/tra-cuu-ai/tab-ai-1366.png`, `tab-ai-360.png`, `ket-qua-1366.png`, `ket-qua-360.png`; sửa lỗi nhìn thấy. Kiểm: ảnh có trong thư mục, 360px không tràn ngang.
 
