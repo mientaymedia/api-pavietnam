@@ -7,6 +7,7 @@ import { authCodeSchema, domainSchema, yearsSchema } from '../lib/validate.js';
 import { rateLimit } from '../middleware/ratelimit.js';
 import { stripBase } from '../lib/basePath.js';
 import { duongDanNoiBo } from '../lib/redirect.js';
+import { demThongKe } from '../services/goiYTenMien.js';
 
 const router = Router();
 
@@ -99,6 +100,9 @@ router.post(
       flash(req, 'error', result.error);
       return res.redirect(quayLai(req));
     }
+
+    // Nut tren trang Tim cung AI gui kem nguon=ai: chi de dem ty le them vao gio
+    if (req.body?.nguon === 'ai') demThongKe('added_to_cart');
 
     flash(req, 'success', `Đã thêm ${domain.data} vào giỏ hàng.`);
     res.redirect('/gio-hang');

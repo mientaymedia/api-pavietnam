@@ -10,6 +10,7 @@
  *   - Vi dien tu MoMo / ZaloPay
  *   - SMTP gui email
  *   - Thuong hieu (ten site, mau sac, hotline)
+ *   - Tim cung AI (khoa OpenAI, model, tran chi phi, gioi han, tu cam)
  */
 import { Router } from 'express';
 import { db, nowIso, parseJson } from '../db/index.js';
@@ -42,6 +43,7 @@ import {
   tongQuan, xuatDoanhThu, xuatDonHang, xuatTenMien,
 } from '../services/reports.js';
 import { config } from '../config.js';
+import { chiPhiHomNay, thongKeGanDay, trangThaiAi } from '../services/goiYTenMien.js';
 
 const router = Router();
 router.use(requireAuth, requireAdmin);
@@ -66,6 +68,13 @@ router.get('/', (_req, res) => {
     jobs: jobStats(),
     recentOrders: db.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 10').all(),
     recentErrors: db.prepare(`SELECT * FROM api_logs WHERE ok = 0 ORDER BY id DESC LIMIT 8`).all(),
+    // Thong ke an danh Tim cung AI: chi so dem, khong co mo ta cua khach
+    ai: {
+      trangThai: trangThaiAi(),
+      chiPhiHomNay: chiPhiHomNay(),
+      tran: settings.ai().dailyCapVnd,
+      thongKe: thongKeGanDay(14),
+    },
   });
 });
 
@@ -150,6 +159,23 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'smtp.pass', label: 'SMTP password', type: 'password' },
   { key: 'smtp.from', label: 'Địa chỉ gửi đi' },
   { key: 'smtp.admin_alert', label: 'Email nhận cảnh báo nội bộ' },
+
+  // Tim cung AI (OpenAI). Chu chot 18/10/2026: mac dinh tat, 50.000 d/ngay,
+  // 8 ten x 2 duoi, 5 luot/phut va 30 luot/ngay moi IP.
+  { key: 'ai.enabled', label: 'Bật Tìm cùng AI ở trang chủ', type: 'checkbox', hint: 'Chỉ chạy khi đã có khóa OpenAI và tên model' },
+  { key: 'ai.openai_key', label: 'Khóa API OpenAI', type: 'password', hint: 'Tạo trong tài khoản OpenAI, mục API keys. Lưu mã hóa, không hiện ra trình duyệt' },
+  { key: 'ai.model', label: 'Tên model OpenAI', hint: 'Nhập đúng tên một model nhỏ, rẻ đang có trong tài khoản OpenAI của bạn' },
+  { key: 'ai.reasoning_effort', label: 'Mức suy luận (tùy chọn)', hint: 'Để trống nếu model không phải model suy luận; model suy luận nên đặt minimal hoặc low cho nhanh và rẻ' },
+  { key: 'ai.daily_cap_vnd', label: 'Trần chi phí mỗi ngày (VND)', type: 'number', hint: 'Chạm trần thì AI tự tắt đến hết ngày (giờ Việt Nam), ô tìm thường vẫn chạy' },
+  { key: 'ai.price_input_usd', label: 'Đơn giá token vào (USD cho 1 triệu token)', hint: 'Theo bảng giá OpenAI của model đã chọn. Mặc định 1, cố ý cao để ước tính dư' },
+  { key: 'ai.price_output_usd', label: 'Đơn giá token ra (USD cho 1 triệu token)', hint: 'Gồm cả token suy luận. Mặc định 5' },
+  { key: 'ai.usd_vnd', label: 'Tỷ giá USD sang VND', type: 'number' },
+  { key: 'ai.max_names', label: 'Số tên gợi ý mỗi lượt (tối đa 8)', type: 'number' },
+  { key: 'ai.max_checks', label: 'Số lệnh kiểm tra P.A mỗi lượt (tối đa 16)', type: 'number' },
+  { key: 'ai.rate_per_minute', label: 'Số lượt mỗi phút cho một IP', type: 'number' },
+  { key: 'ai.rate_per_day', label: 'Số lượt mỗi ngày cho một IP', type: 'number' },
+  { key: 'ai.timeout_sec', label: 'Thời gian chờ OpenAI (giây)', type: 'number' },
+  { key: 'ai.blocked_words', label: 'Từ cấm và thương hiệu', type: 'textarea', hint: 'Cách nhau bằng dấu phẩy hoặc xuống dòng. Tên gợi ý chứa các từ này bị loại trước khi kiểm tra với P.A' },
 ];
 
 /** Gia tri hien tai de do vao form; secret duoc che di. */
@@ -165,6 +191,7 @@ function currentSettingValues(): Record<string, string> {
     ...flatten('zalopay', settings.zalopay()),
     ...flatten('smtp', settings.smtp()),
     ...flatten('security', settings.security()),
+    ...flatten('ai', settings.ai()),
   };
   for (const key of SECRET_KEYS) {
     if (resolved[key]) resolved[key] = maskSecret(resolved[key]!);

@@ -82,6 +82,13 @@ export const config = {
     log: bool('PAVIETNAM_LOG', true),
   },
 
+  /**
+   * Dia chi API OpenAI cho Tim cung AI. Khoa, model, gioi han nam trong Cau hinh;
+   * rieng dia chi chi doi duoc o .env: o quan tri ma doi duoc thi khoa co the
+   * bi gui toi may la. Test tro ve may chu gia lap cuc bo qua bien nay.
+   */
+  openaiBaseUrl: str('OPENAI_BASE_URL', 'https://api.openai.com/v1').replace(/\/+$/, ''),
+
   smtp: {
     host: str('SMTP_HOST'),
     port: num('SMTP_PORT', 587),

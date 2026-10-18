@@ -26,7 +26,8 @@
         { key: 'security.', title: 'Bảo mật quản trị', note: 'Tài khoản quản trị nắm API key P.A (tiêu tiền thật), token cổng thanh toán và dữ liệu cá nhân của khách.' },
         { key: 'auth.',    title: 'Xác thực tài khoản', note: 'Email là kênh giao thông tin quản trị tên miền - email sai đồng nghĩa khách mất liên lạc với tài sản của họ.' },
         { key: 'smtp.',    title: 'Email (SMTP)', note: 'Dùng để gửi email xác thực, thông tin quản trị tên miền, nhắc gia hạn và cảnh báo nội bộ.' },
-        { key: 'zns.',     title: 'Zalo ZNS', note: 'Gửi thông báo qua Zalo Official Account. Cần duyệt mẫu tin trước khi gửi được.' }
+        { key: 'zns.',     title: 'Zalo ZNS', note: 'Gửi thông báo qua Zalo Official Account. Cần duyệt mẫu tin trước khi gửi được.' },
+        { key: 'ai.',      title: 'Tìm cùng AI (OpenAI)', note: 'Khách mô tả ý tưởng, AI gợi ý tên, hệ thống kiểm tra thật qua P.A. Không lưu nguyên văn mô tả của khách; thống kê theo ngày xem ở trang Tổng quan.' }
       ];
     %>
 
@@ -58,6 +59,12 @@
                   <input type="checkbox" name="<%= f.key %>" value="1" <%= values[f.key] === '1' ? 'checked' : '' %>>
                   <span><%= f.label %></span>
                 </label>
+                <% if (f.hint) { %><div class="hint"><%= f.hint %></div><% } %>
+              </div>
+            <% } else if (f.type === 'textarea') { %>
+              <div class="field" style="grid-column:1 / -1">
+                <label for="<%= f.key %>"><%= f.label %></label>
+                <textarea id="<%= f.key %>" name="<%= f.key %>" rows="4"><%= values[f.key] || '' %></textarea>
                 <% if (f.hint) { %><div class="hint"><%= f.hint %></div><% } %>
               </div>
             <% } else { %>

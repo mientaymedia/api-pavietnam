@@ -194,7 +194,56 @@ export const settings = {
     from: getSetting('smtp.from', config.smtp.from),
     adminAlert: getSetting('smtp.admin_alert', config.smtp.adminAlert),
   }),
+
+  ai: () => ({
+    /** Chu chot 18/10/2026: mac dinh TAT cho toi khi nhap khoa va bat tay. */
+    enabled: getSettingBool('ai.enabled', false),
+    openaiKey: getSetting('ai.openai_key', ''),
+    model: getSetting('ai.model', '').trim(),
+    reasoningEffort: getSetting('ai.reasoning_effort', '').trim(),
+    // Don gia, ty gia, tran: rong hoac <= 0 thi ve mac dinh. Neu de 0 lot qua,
+    // chi phi uoc tinh luon bang 0 va tran ngay khong bao gio cham.
+    dailyCapVnd: soDuong('ai.daily_cap_vnd', 50_000),
+    /** USD / 1 trieu token. Mac dinh co y cao hon gia model nho: uoc tinh du, tran cham som. */
+    priceInputUsd: soDuong('ai.price_input_usd', 1),
+    priceOutputUsd: soDuong('ai.price_output_usd', 5),
+    usdVnd: soDuong('ai.usd_vnd', 27_000),
+    // Kep trong quyet dinh cua chu (8 ten, 16 lenh P.A): cau hinh chi giam duoc.
+    maxNames: kep(soDuong('ai.max_names', 8), 1, 8),
+    maxChecks: kep(soDuong('ai.max_checks', 16), 1, 16),
+    ratePerMinute: kep(soDuong('ai.rate_per_minute', 5), 1, 1000),
+    ratePerDay: kep(soDuong('ai.rate_per_day', 30), 1, 100_000),
+    timeoutSec: kep(soDuong('ai.timeout_sec', 15), 3, 60),
+    blockedWords: getSetting('ai.blocked_words', TU_CAM_MAC_DINH),
+  }),
 };
+
+function soDuong(key: string, fallback: number): number {
+  const v = getSettingNumber(key, fallback);
+  return v > 0 ? v : fallback;
+}
+
+function kep(v: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, Math.floor(v)));
+}
+
+/**
+ * Tu cam mac dinh cho Tim cung AI (chu sua trong Cau hinh). So khop tren ten da
+ * bo dau: co quan nha nuoc va tu nhay cam theo quy dinh ten mien .vn, co bac,
+ * doi truy, ma tuy, va thuong hieu lon de khong goi y ten trung nhan hieu.
+ */
+const TU_CAM_MAC_DINH = [
+  'chinhphu', 'quochoi', 'chutichnuoc', 'thutuong', 'bochinhtri', 'trunguong', 'dangcongsan',
+  'nhanuoc', 'ubnd', 'hdnd', 'congan', 'quandoi', 'bocongan', 'quocphong',
+  'toaan', 'vienkiemsat', 'tongcucthue',
+  'casino', 'cacuoc', 'danhbac', 'lode', 'baccarat', 'bet', 'slot', 'taixiu',
+  'sex', 'sexy', 'porn', 'xxx', 'gaigoi',
+  'matuy', 'heroin', 'thuoclac', 'vaynong', 'phandong',
+  'google', 'youtube', 'facebook', 'instagram', 'tiktok', 'zalo', 'apple', 'iphone',
+  'microsoft', 'samsung', 'amazon', 'netflix', 'shopee', 'lazada', 'tiki', 'grab', 'momo',
+  'viettel', 'vinaphone', 'mobifone', 'vnpt', 'fpt', 'vingroup', 'vinfast', 'vinhomes', 'vinamilk',
+  'honda', 'toyota', 'yamaha', 'nike', 'adidas', 'gucci', 'chanel', 'cocacola', 'pepsi', 'openai', 'chatgpt',
+].join(', ');
 
 /** Danh sach key la secret - luon ma hoa khi luu, va che khi hien thi. */
 export const SECRET_KEYS = [
@@ -209,4 +258,5 @@ export const SECRET_KEYS = [
   'zns.secret_key',
   'zns.refresh_token',
   'zns.access_token',
+  'ai.openai_key',
 ];

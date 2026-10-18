@@ -1,0 +1,25 @@
+<%
+  // Form Tim cung AI dung chung cho tab o trang chu va trang ket qua.
+  // Bien: lop (lop them cho form), moTa, duoiCho (duoi de chon), duoiChon.
+  var lopForm = typeof lop !== 'undefined' ? lop : '';
+  var moTaHien = typeof moTa !== 'undefined' ? moTa : '';
+  var daChon = typeof duoiChon !== 'undefined' ? duoiChon : [];
+%>
+<form class="tc-ai <%= lopForm %>" id="mo-ta" action="<%= base %>/tim-cung-ai" method="post">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="tc-search">
+    <span class="tc-search-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5 11.8 8.2 16.5 10l-4.7 1.8L10 16.5l-1.8-4.7L3.5 10l4.7-1.8L10 3.5Z"/><path d="M18 14.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9.9-2.1Z"/></svg></span>
+    <input type="text" name="mo_ta" value="<%= moTaHien %>" maxlength="200" minlength="3" required
+           aria-label="Mô tả ngành nghề hoặc ý tưởng của bạn" placeholder="Ví dụ: tiệm bánh mì nhà làm ở Cần Thơ">
+    <button class="btn" type="submit">Gợi ý tên</button>
+  </div>
+  <% if (duoiCho.length) { %>
+    <fieldset class="tc-ai-duoi">
+      <legend>Đuôi ưa thích (tùy chọn, tối đa 2):</legend>
+      <% duoiCho.forEach(function (t) { %>
+        <label class="tc-ai-chip"><input type="checkbox" name="duoi" value="<%= t.tld %>" <%= daChon.indexOf(t.tld) >= 0 ? 'checked' : '' %>><span>.<%= t.tld %></span></label>
+      <% }); %>
+    </fieldset>
+  <% } %>
+  <p class="tc-ai-note">Gợi ý do AI tạo, trạng thái còn trống được kiểm tra thật qua nhà đăng ký.</p>
+</form>

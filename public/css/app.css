@@ -476,6 +476,26 @@ main.main-flush { padding: 0; }
 .tc-tabs .tc-panel-chuyen { display: none; }
 #tc-tab-chuyen:checked ~ .tc-panel-tim { display: none; }
 #tc-tab-chuyen:checked ~ .tc-panel-chuyen { display: flex; }
+/* Tab Tim cung AI: form khoi (o tim + chip duoi + ghi chu), cung co che :checked ~ */
+#tc-tab-ai:checked ~ .tc-tab-labels label[for="tc-tab-ai"] { background: var(--brand); color: #fff; }
+#tc-tab-ai:focus-visible ~ .tc-tab-labels label[for="tc-tab-ai"] { outline: 2px solid var(--brand-navy); outline-offset: 2px; }
+.tc-tabs .tc-panel-ai { display: none; }
+#tc-tab-ai:checked ~ .tc-panel-tim { display: none; }
+#tc-tab-ai:checked ~ .tc-panel-ai { display: block; }
+.tc-ai-duoi { border: 0; margin: 12px 0 0; padding: 0; min-width: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.tc-ai-duoi legend { width: 100%; padding: 0; margin-bottom: 6px; font-size: .85rem; color: var(--ink-soft); text-align: center; }
+.tc-ai-chip {
+  display: inline-flex; align-items: center; gap: 6px; margin: 0; cursor: pointer;
+  background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; font-size: .85rem; color: var(--ink);
+}
+.tc-ai-chip input { width: 15px; height: 15px; margin: 0; accent-color: var(--brand); }
+.tc-ai-note { margin: 10px 0 0; font-size: .82rem; color: var(--ink-soft); text-align: center; }
+/* Trang ket qua AI */
+.ai-trang h1 { margin-bottom: 6px; }
+.ai-form-trang { margin: 18px 0 22px; }
+.ai-tieu-de { font-size: 1.2rem; margin: 8px 0 12px; }
+.ai-ly-do { margin: 2px 0 4px; }
+.ai-lien-ket { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
 
 .tc-search {
   display: flex; align-items: center; gap: 6px; background: #fff;
@@ -626,6 +646,8 @@ main.main-flush { padding: 0; }
   .tc-search { padding-left: 8px; }
   .tc-search input { font-size: 1rem; padding: 10px 6px; }
   .tc-search .btn { padding: 11px 14px; font-size: .92rem; }
+  /* Ba nhan tab khong vua 360px tren mot hang: cho xuong dong, bo goc vua hai hang */
+  .tc-tab-labels { flex-wrap: wrap; justify-content: center; border-radius: 18px; }
   .tc-tab-labels label { padding: 7px 12px; font-size: .84rem; }
   .tc-logos { grid-template-columns: repeat(2, 1fr); }
 }

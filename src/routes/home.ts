@@ -7,6 +7,7 @@ import { normalizeDomain } from '../pavietnam/client.js';
 import { config } from '../config.js';
 import { BASE } from '../lib/basePath.js';
 import { HUONG_DAN_VNNIC, NHOM_BIEU_MAU, VAN_BAN_GOC, WHOIS_VNNIC } from '../lib/bieuMau.js';
+import { aiSanSang, duoiChoChon } from '../services/goiYTenMien.js';
 
 const router = Router();
 
@@ -26,6 +27,9 @@ router.get('/', (_req, res) => {
     // Thanh uu dai va the .vn chi neu gia dang ban, khong bia khuyen mai.
     uuDai: tlds.find((t) => t.tld === 'vn') ?? xep[0] ?? null,
     giaChuyenTu: giaChuyen.length ? Math.min(...giaChuyen) : null,
+    // Tab Tim cung AI chi hien khi bat, du khoa, model va chua cham tran ngay
+    aiBat: aiSanSang(),
+    duoiCho: duoiChoChon(),
     priceFor,
   });
 });
@@ -114,6 +118,8 @@ router.get('/robots.txt', (_req, res) => {
       'Disallow: /api/',
       'Disallow: /webhooks/',
       'Disallow: /tim-kiem',
+      // Trang ket qua goi y AI: mong, nhieu bien the, moi lan xem ton tien AI
+      'Disallow: /tim-cung-ai',
       'Allow: /',
       '',
       `Sitemap: ${config.appUrl}/sitemap.xml`,
