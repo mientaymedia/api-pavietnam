@@ -72,7 +72,7 @@ export async function call(
   const query = new URLSearchParams();
   query.set('username', cred.username || 'sandbox');
   query.set('apikey', cred.apikey || 'sandbox');
-  query.set('action', action);
+  query.set(FIELDS.command, action);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== '') query.set(k, String(v));
   }
@@ -209,20 +209,49 @@ export function availableFromText(text: string): boolean {
   return false; // An toan: khong ro thi coi nhu KHONG con trong
 }
 
+/** Bo ky tu BOM o dau va khoang trang - P.A tra van ban co BOM UTF-8. */
+export function lamSachPhanHoi(raw: string): string {
+  return (raw ?? '').replace(/^﻿/, '').trim();
+}
+
+/**
+ * Cau bao loi cua P.A dang `<pre>Array ( [ReturnCode] => 600 [ReturnText] => Lỗi: ... ) </pre>`:
+ * lay rieng phan ReturnText de hien cho nguoi dung, khong dua ca khoi HTML.
+ */
+export function thongBaoLoiPA(raw: string): string {
+  const m = lamSachPhanHoi(raw).match(/\[ReturnText\]\s*=>\s*([^\n\r)]+)/);
+  return (m?.[1] ?? '').trim();
+}
+
+/**
+ * Doc ket qua lenh kiem tra ten mien.
+ * - P.A `check_whois` tra so tran: '1' = con trong, '0' = da co chu.
+ * - Phan hoi dang JSON/khoa-gia tri (sandbox, API khac) doc qua truong available.
+ * - Phan hoi la loi (lenh sai, IP, xac thuc) -> nem loi de man hinh hien
+ *   "Chua kiem tra duoc" thay vi bao nham "Da co nguoi dang ky".
+ */
+export function docKetQuaKiemTra(res: Pick<RawResult, 'raw' | 'data' | 'ok' | 'message' | 'code'>): boolean {
+  const tran = lamSachPhanHoi(res.raw);
+  if (tran === '1') return true;
+  if (tran === '0') return false;
+
+  if (!res.ok) {
+    throw new RegistrarError(thongBaoLoiPA(res.raw) || res.message || 'Không kiểm tra được tên miền', res.code || 'ERROR', res.raw);
+  }
+
+  const availableRaw = pick(res.data, [...RESPONSE_KEYS.available]);
+  if (availableRaw !== undefined && /^(0|1|true|false|yes|no|y|n)$/i.test(availableRaw.trim())) {
+    return asBool(availableRaw);
+  }
+  return availableFromText(`${availableRaw ?? ''} ${res.message} ${res.raw}`);
+}
+
 /** Kiem tra ten mien con trong hay khong. */
 export async function checkDomain(domain: string): Promise<CheckResult> {
   const d = normalizeDomain(domain);
   const res = await call(ACTIONS.check, { [FIELDS.domain]: d }, { domainForLog: d });
-
-  const availableRaw = pick(res.data, [...RESPONSE_KEYS.available]);
-  let available: boolean;
-  if (availableRaw !== undefined && /^(0|1|true|false|yes|no|y|n)$/i.test(availableRaw.trim())) {
-    available = asBool(availableRaw);
-  } else {
-    available = availableFromText(`${availableRaw ?? ''} ${res.message} ${res.raw}`);
-  }
-
-  return { ...res, domain: d, available };
+  const available = docKetQuaKiemTra(res);
+  return { ...res, ok: true, domain: d, available };
 }
 
 /** Dau hieu P.A tu choi lenh (xac thuc, IP, lenh, tham so): ket noi chua dung. */
@@ -437,16 +466,30 @@ export function registeredFromWhoisText(text: string): boolean {
 export async function whois(domain: string): Promise<WhoisResult> {
   const d = normalizeDomain(domain);
   const res = await call(ACTIONS.whois, { [FIELDS.domain]: d }, { domainForLog: d });
-  const text = String(pick(res.data, ['raw_text', 'whois', 'result', 'data']) ?? res.raw);
+  if (!res.ok) {
+    throw new RegistrarError(thongBaoLoiPA(res.raw) || res.message || `Tra cứu WHOIS ${d} thất bại`, res.code || 'ERROR', res.raw);
+  }
+  // P.A `get_whois` tra van ban thuan, cac dong ngan cach bang <br/> va co BOM
+  const text = String(pick(res.data, ['raw_text', 'whois', 'result', 'data']) ?? res.raw)
+    .replace(/^﻿/, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
   return {
     ...res,
     domain: d,
     registered: registeredFromWhoisText(text),
-    registrar: pick(res.data, [...RESPONSE_KEYS.registrar]) ?? extract(text, /Registrar:\s*(.+)/i),
-    createdAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.created]) ?? extract(text, /Creat(?:ed|ion)\s*(?:on|Date)?:\s*(.+)/i)),
-    expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires]) ?? extract(text, /Expir\w*\s*(?:on|Date)?:\s*(.+)/i)),
+    // Doc tu van ban da lam sach truoc: phan hoi WHOIS thuan cua P.A co the bi
+    // parser khoa-gia tri tach nham va dinh ca the <br/> vao gia tri
+    registrar: extract(text, /^\s*Registrar:\s*(.+)$/im) ?? pick(res.data, [...RESPONSE_KEYS.registrar]),
+    createdAt: normalizeDate(
+      extract(text, /Creat(?:ed|ion)\s*(?:on|Date)?:\s*(.+)/i) ?? pick(res.data, [...RESPONSE_KEYS.created]),
+    ),
+    expiresAt: normalizeDate(
+      extract(text, /Expir\w*\s*(?:on|Date)?:\s*(.+)/i) ?? pick(res.data, [...RESPONSE_KEYS.expires]),
+    ),
     nameservers: parseNameservers(
-      pick(res.data, [...RESPONSE_KEYS.nameservers]) ?? (text.match(/Name\s*Server:\s*(.+)/gi) ?? []).join(','),
+      (text.match(/Name\s*Server:\s*(.+)/gi) ?? []).join(',') || pick(res.data, [...RESPONSE_KEYS.nameservers]),
     ),
     text,
   };

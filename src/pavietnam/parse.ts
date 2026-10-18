@@ -150,7 +150,9 @@ export function normalizeDate(value: string | undefined): string | undefined {
     ).toISOString().replace(/\.\d{3}Z$/, 'Z');
   }
   const ts = /^\d{10}$/.test(s) ? Number(s) * 1000 : /^\d{13}$/.test(s) ? Number(s) : NaN;
-  const dt = Number.isFinite(ts) ? new Date(ts) : new Date(s);
+  // WHOIS hay ghi mui gio dang +0000 (khong co dau hai cham), JS chi doc +00:00
+  const isoMuiGio = s.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
+  const dt = Number.isFinite(ts) ? new Date(ts) : new Date(isoMuiGio);
   if (Number.isNaN(dt.getTime())) return undefined;
   return dt.toISOString().replace(/\.\d{3}Z$/, 'Z');
 }

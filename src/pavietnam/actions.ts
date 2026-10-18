@@ -46,7 +46,11 @@ export type ActionKey =
 
 /** Ten action dang dung (co the ghi de qua .env). */
 export const ACTIONS: Record<ActionKey, string> = {
-  check: env('PA_ACTION_CHECK', 'checkdomain'),
+  // Da xac minh voi P.A that (18/10/2026, tu IP VPS da whitelist): tham so lenh
+  // ten la `cmd`; `check_whois` tra so tran 1 (con trong) / 0 (da co chu);
+  // `get_whois` tra van ban WHOIS (dong ngan cach bang <br/>). Cac lenh con lai
+  // chua xac minh, can doi chieu tai lieu API Reseller truoc khi ban that.
+  check: env('PA_ACTION_CHECK', 'check_whois'),
   register: env('PA_ACTION_REGISTER', 'regdomain'),
   renew: env('PA_ACTION_RENEW', 'renewdomain'),
   transfer: env('PA_ACTION_TRANSFER', 'transferdomain'),
@@ -54,7 +58,7 @@ export const ACTIONS: Record<ActionKey, string> = {
   contactSet: env('PA_ACTION_CONTACT_SET', 'updatecontact'),
   authCode: env('PA_ACTION_AUTH_CODE', 'geteppcode'),
   lockSet: env('PA_ACTION_LOCK_SET', 'lockdomain'),
-  whois: env('PA_ACTION_WHOIS', 'whois'),
+  whois: env('PA_ACTION_WHOIS', 'get_whois'),
   dnsGet: env('PA_ACTION_DNS_GET', 'getdns'),
   dnsSet: env('PA_ACTION_DNS_SET', 'updatedns'),
   nsSet: env('PA_ACTION_NS_SET', 'changens'),
@@ -68,7 +72,7 @@ export const ACTIONS: Record<ActionKey, string> = {
  * Khong dung trong luong chay that.
  */
 export const ACTION_CANDIDATES: Record<ActionKey, string[]> = {
-  check: ['checkdomain', 'check', 'domaincheck', 'checkdomains', 'availability'],
+  check: ['check_whois', 'checkdomain', 'check', 'domaincheck', 'checkdomains', 'availability'],
   register: ['regdomain', 'register', 'registerdomain', 'adddomain', 'createdomain'],
   renew: ['renewdomain', 'renew', 'extenddomain', 'gia_han'],
   transfer: ['transferdomain', 'transfer', 'movedomain', 'transferin', 'chuyen_ve'],
@@ -76,7 +80,7 @@ export const ACTION_CANDIDATES: Record<ActionKey, string[]> = {
   contactSet: ['updatecontact', 'modifycontact', 'updateowner', 'changecontact', 'updatedomaininfo'],
   authCode: ['geteppcode', 'getepp', 'getauthcode', 'authcode', 'eppcode', 'getauthinfo'],
   lockSet: ['lockdomain', 'setlock', 'domainlock', 'updatelock', 'setdomainlock'],
-  whois: ['whois', 'domainwhois', 'whoisdomain'],
+  whois: ['get_whois', 'whois', 'domainwhois', 'whoisdomain'],
   dnsGet: ['getdns', 'listdns', 'getrecord', 'dnsinfo', 'getdnsrecord'],
   dnsSet: ['updatedns', 'setdns', 'adddns', 'dnsupdate', 'updaterecord'],
   nsSet: ['changens', 'updatens', 'setns', 'changenameserver', 'updatenameserver'],
@@ -89,6 +93,8 @@ export const ACTION_CANDIDATES: Record<ActionKey, string[]> = {
  * Ten tham so gui len API. Cung co the ghi de qua .env neu tai lieu dung ten khac.
  */
 export const FIELDS = {
+  /** Ten tham so chua ten lenh. P.A dung `cmd` (gui `action` se bi bao INVALID COMMAND). */
+  command: env('PA_FIELD_COMMAND', 'cmd'),
   domain: env('PA_FIELD_DOMAIN', 'domain'),
   years: env('PA_FIELD_YEARS', 'year'),
   ns: env('PA_FIELD_NS', 'ns'),
