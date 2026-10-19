@@ -12,6 +12,7 @@ let running = false;
 let stopped = false;
 
 const POLL_MS = 2_000;
+const CHO_QUY_MS = 5 * 60_000;
 
 async function drain(): Promise<void> {
   if (running || stopped) return;
@@ -65,6 +66,13 @@ export function startWorker(): void {
     scheduleRecurring();
   }, 10 * 60_000);
   housekeeping.unref?.();
+
+  // Don cho nap quy: dung 5 phut mot lan (lich dinh ky chung 10 phut moi xep
+  // lai, khong du nhanh). dedupe_key giu khong qua mot job dang cho.
+  const choQuy = setInterval(() => {
+    enqueue('retry_awaiting_funds', {}, { dedupeKey: 'cho_nap_quy', maxAttempts: 1 });
+  }, CHO_QUY_MS);
+  choQuy.unref?.();
 
   log.info('worker_started', { pollMs: POLL_MS });
 }

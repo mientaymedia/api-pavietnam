@@ -18,7 +18,8 @@ export type JobType =
   | 'send_renewal_reminders'
   | 'auto_renew_domains'    // tu dong gia han ten mien da bat auto_renew
   | 'expire_stale_orders'
-  | 'reconcile_sepay';      // doi soat bu khi webhook SePay that lac
+  | 'reconcile_sepay'       // doi soat bu khi webhook SePay that lac
+  | 'retry_awaiting_funds'; // 5 phut: kiem so du P.A, dang ky cac dong cho nap quy
 
 export interface JobRow {
   id: number;

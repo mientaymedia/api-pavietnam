@@ -231,6 +231,13 @@ CREATE TABLE IF NOT EXISTS order_items (
   error        TEXT NOT NULL DEFAULT '',
   attempts     INTEGER NOT NULL DEFAULT 0,
   meta         TEXT NOT NULL DEFAULT '{}',
+  -- Dong dang bi GIU (status van 'pending', khach thay "dang xu ly"):
+  -- '' | 'cho_nap_quy' (dai ly het tien) | 'can_nguoi_xu_ly' (606, 302...) | 'sai_ho_so' (2xxx, 6020-6025...)
+  hold         TEXT NOT NULL DEFAULT '',
+  hold_since   TEXT,
+  pa_code      TEXT NOT NULL DEFAULT '',   -- ReturnCode P.A gan nhat
+  pa_trans_id  TEXT NOT NULL DEFAULT '',   -- trans_id P.A (return_full=1)
+  pa_trans_money INTEGER NOT NULL DEFAULT 0, -- so tien P.A da tru (dong)
   created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
   updated_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
@@ -308,6 +315,7 @@ CREATE TABLE IF NOT EXISTS domains (
   -- Khoa chuyen doi (clientTransferProhibited). 1 = khoa, an toan mac dinh.
   transfer_lock  INTEGER NOT NULL DEFAULT 1,
   auth_code_last_at TEXT,          -- lan gan nhat khach lay ma EPP
+  pa_password_enc TEXT NOT NULL DEFAULT '', -- mat khau quan ly ten mien tai P.A, ma hoa AES-GCM
   registered_at  TEXT,
   expires_at     TEXT,
   last_sync_at   TEXT,

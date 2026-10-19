@@ -181,6 +181,19 @@
         </form>
       </div>
 
+      <% if (typeof matKhauTenMien !== 'undefined' && matKhauTenMien) { %>
+      <!-- ------------------------------------ mat khau quan ly ten mien -->
+      <div class="card" id="mat-khau-ten-mien">
+        <div class="card-title"><h2>Mật khẩu quản lý tên miền</h2></div>
+        <div class="copy-row">
+          <span class="label">Mật khẩu</span>
+          <span class="value mono"><%= matKhauTenMien %></span>
+          <button class="btn btn-sm btn-outline" type="button" data-copy="<%= matKhauTenMien %>">Sao chép</button>
+        </div>
+        <p class="tiny muted" style="margin:8px 0 0">Hệ thống tạo ngẫu nhiên khi đăng ký với nhà đăng ký. Không chia sẻ mật khẩu này cho người khác.</p>
+      </div>
+      <% } %>
+
       <!-- ------------------------------------------ thong tin chu the -->
       <div class="card" id="chu-the">
         <div class="card-title"><h2>Chủ thể tên miền</h2></div>

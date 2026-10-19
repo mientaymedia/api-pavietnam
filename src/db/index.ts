@@ -38,6 +38,13 @@ function addMissingColumns(): void {
     { bang: 'domains', cot: 'auth_code_last_at', dinhNghia: 'TEXT' },
     // Phuong xa theo ten P.A (ownerWard / uiWard / adminWard bat buoc)
     { bang: 'contacts', cot: 'ward', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
+    // Cap phat qua P.A: giu dong khi thieu quy / can nguoi xu ly / sai ho so, doi soat giao dich
+    { bang: 'order_items', cot: 'hold', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
+    { bang: 'order_items', cot: 'hold_since', dinhNghia: 'TEXT' },
+    { bang: 'order_items', cot: 'pa_code', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
+    { bang: 'order_items', cot: 'pa_trans_id', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
+    { bang: 'order_items', cot: 'pa_trans_money', dinhNghia: 'INTEGER NOT NULL DEFAULT 0' },
+    { bang: 'domains', cot: 'pa_password_enc', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
   ];
 
   for (const { bang, cot, dinhNghia } of themCot) {

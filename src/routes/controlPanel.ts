@@ -25,9 +25,24 @@ import {
 import { db } from '../db/index.js';
 import { enqueue } from '../jobs/queue.js';
 import { settings } from '../lib/settings.js';
+import { decryptSecret } from '../lib/crypto.js';
 
 const router = Router();
 router.use(requireAuth);
+
+/**
+ * Mat khau quan ly ten mien do he thong sinh khi dang ky qua P.A: chu ten mien
+ * can de dang nhap trang quan ly cua nha dang ky. Chi hien trong Control Panel
+ * cua chinh chu (route da kiem quyen so huu), khong gui qua email.
+ */
+function docMatKhauTenMien(enc: string): string {
+  if (!enc) return '';
+  try {
+    return decryptSecret(enc);
+  } catch {
+    return '';
+  }
+}
 
 /** Nap ten mien theo duong dan va kiem tra quyen so huu. */
 function load(req: Parameters<typeof requireAuth>[0]) {
@@ -71,6 +86,7 @@ router.get(
         .all(req.currentUser!.id),
       hoSoDoiChuThe: ownershipRequestFor(domain.id),
       canHoSoDayDu: tld?.requires_vn_contact === 1,
+      matKhauTenMien: docMatKhauTenMien(domain.pa_password_enc),
     });
   }),
 );
