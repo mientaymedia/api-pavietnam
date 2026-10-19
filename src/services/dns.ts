@@ -94,7 +94,7 @@ async function currentRecords(domain: DomainRow): Promise<DnsRecord[]> {
   const view = await listRecords(domain);
   if (view.stale) {
     throw new Error(
-      `Không đọc được bản ghi DNS hiện tại từ P.A (${view.error ?? 'lỗi không xác định'}). ` +
+      `Không đọc được bản ghi DNS hiện tại từ nhà đăng ký (${view.error ?? 'lỗi không xác định'}). ` +
         'Để tránh mất bản ghi, hệ thống không cập nhật khi chưa đọc được dữ liệu gốc.',
     );
   }

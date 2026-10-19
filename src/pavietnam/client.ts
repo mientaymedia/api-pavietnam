@@ -63,8 +63,9 @@ export async function call(
   // (may dev, test). Che do that van bat buoc co du username + API Key.
   const sandbox = sandboxEnabled();
   if (!sandbox && (!cred.username || !cred.apikey)) {
+    // Loi nay co the hien ra o tim cua khach, nen khong neu ten nha dang ky.
     throw new RegistrarError(
-      'Chưa cấu hình username/API Key của P.A Việt Nam. Vào Control Panel > Cấu hình API hoặc đặt PAVIETNAM_USERNAME / PAVIETNAM_APIKEY trong .env.',
+      'Chưa cấu hình username/API Key của nhà đăng ký. Vào Control Panel > Cấu hình API hoặc đặt PAVIETNAM_USERNAME / PAVIETNAM_APIKEY trong .env.',
       'NO_CREDENTIALS',
     );
   }

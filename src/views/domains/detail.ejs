@@ -318,7 +318,8 @@
         <div class="card-title"><h3>Thông tin</h3></div>
         <div class="copy-row"><span class="label">Ngày đăng ký</span><span class="value small"><%= domain.registered_at ? domain.registered_at.slice(0, 10) : '-' %></span></div>
         <div class="copy-row"><span class="label">Ngày hết hạn</span><span class="value small"><%= domain.expires_at ? domain.expires_at.slice(0, 10) : '-' %></span></div>
-        <div class="copy-row"><span class="label">Nhà đăng ký</span><span class="value small">P.A Việt Nam</span></div>
+        <%# Trang khach khong neu ten nha dang ky (chu yeu cau 19/10/2026); WHOIS van la du lieu tra cuu goc %>
+        <div class="copy-row"><span class="label">Đại lý quản lý</span><span class="value small"><%= site.name %></span></div>
         <% if (domain.provider_ref) { %>
           <div class="copy-row"><span class="label">Mã tham chiếu</span><span class="value small"><%= domain.provider_ref %></span></div>
         <% } %>
