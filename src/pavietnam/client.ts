@@ -116,7 +116,7 @@ export async function call(
     writeApiLog(action, opts.domainForLog ?? String(params[FIELDS.domain] ?? ''), logged, `LỖI: ${message}`, false, durationMs);
     log.error('pavietnam_call_failed', { action, error: message });
     if (err instanceof RegistrarError) throw err;
-    throw new RegistrarError(`Không kết nối được API P.A Việt Nam: ${message}`, 'NETWORK', raw);
+    throw new RegistrarError(`Không kết nối được API nhà đăng ký: ${message}`, 'NETWORK', raw);
   }
 }
 

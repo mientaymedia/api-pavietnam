@@ -19,8 +19,8 @@ Cổng chặn mỗi commit mã: `npx tsc -p tsconfig.json --noEmit`, `npm test`,
 - [x] V2. Trang biểu mẫu: `src/lib/bieuMau.ts` (mẫu nhà nước dẫn văn bản gốc datafiles.chinhphu.vn, mst.gov.vn; mẫu riêng của nhà đăng ký đánh dấu `lienHe`, không link), `src/views/bieu-mau-ho-so.ejs`, `public/css/app.css`, `test/bieu-mau.test.ts`. Kiểm: test mới (không link pavietnam.vn hay docs.google.com, mẫu riêng có "Liên hệ MienTay Media để nhận mẫu" kèm hotline, không chữ P.A trong thân trang), cổng chặn. Xong: 264/264, kiem-dau 0, kiem-base 0.
 - [x] V3. Footer v2: `src/views/partials/footer.ejs`, `public/css/app.css`, `test/trang-chu.test.ts`, `test/css-tran-ngang.test.ts`. 5 cột (Thương hiệu, Tên miền, Dịch vụ MienTay Media, Chính sách, Hỗ trợ), dải pháp lý dưới, câu đại lý trung tính. Kiểm: test footer (cột dịch vụ đủ link 200 đã curl, câu đại lý mới, không P.A), cổng chặn. Xong: 266/266, kiem-dau 0, kiem-base 0. Xem L1 đến L3.
 - [x] V4. Zalo chat: `src/lib/settings.ts`, `src/routes/admin.ts`, `src/lib/csp.ts`, partial mới `src/views/partials/zalo-chat.ejs` gọi từ footer (không ở trang admin), CSS nút dự phòng, test mới `test/zalo-chat.test.ts`, `test/csp.test.ts`. Kiểm: widget có ở trang chủ, tìm kiếm, giỏ hàng, biểu mẫu; không có ở admin; tắt thì không có script; CSP có đúng nguồn Zalo; Chrome headless 0 lỗi CSP. Xong: 272/272, kiem-dau 0, kiem-base 0; Chrome headless (CSP thật, cổng 3117) nạp widget, bấm mở hộp chat, 0 lỗi CSP, 0 lỗi console. Xem L4 đến L6.
-- [ ] V5. Đo và chụp: sandbox cổng tạm, CSDL tạm, BASE_PATH=/ten-mien; tràn ngang 1366/768/360; ảnh footer 3 khổ, `/bieu-mau-ho-so`, trang chủ 1366/360 có nút Zalo vào `docs/mtm/footer-v2/`. Kiểm: scrollWidth = clientWidth, ảnh có trong thư mục.
-- [ ] V6. Grep cuối, liệt kê chỗ còn "P.A"/"pavietnam" và lý do (mục dưới).
+- [x] V5. Đo và chụp: sandbox cổng tạm, CSDL tạm, BASE_PATH=/ten-mien; tràn ngang 1366/768/360; ảnh footer 3 khổ, `/bieu-mau-ho-so`, trang chủ 1366/360 có nút Zalo vào `docs/mtm/footer-v2/`. Kiểm: scrollWidth = clientWidth, ảnh có trong thư mục. Xong: 8 trang (`/`, `/bieu-mau-ho-so`, `/bang-gia`, `/gio-hang`, `/tim-kiem`, `/whois`, `/chuyen-ten-mien`, `/dang-nhap`) ở 1366, 768, 360 đều scrollWidth = clientWidth, không lỗi console hay CSP. Ảnh: `footer-1366.png`, `footer-768.png`, `footer-360.png`, `bieu-mau-1366.png`, `bieu-mau-360.png`, `trang-chu-zalo-1366.png`, `trang-chu-zalo-360.png`. Ảnh cả trang biểu mẫu chụp dài nên nút Zalo cố định hiện ở vùng khung nhìn đầu trang, trên máy thật nút nằm góc dưới.
+- [x] V6. Grep cuối, liệt kê chỗ còn "P.A"/"pavietnam" và lý do (mục dưới). Thêm: lỗi mất kết nối API trong `src/pavietnam/client.ts` ghi "nhà đăng ký" (có thể hiện ra ô tìm của khách).
 
 ## Lệch spec
 
@@ -36,4 +36,12 @@ Cổng chặn mỗi commit mã: `npx tsc -p tsconfig.json --noEmit`, `npm test`,
 
 ## Chỗ còn "P.A"/"pavietnam" và lý do
 
-(điền ở V6)
+Lệnh: `grep -rniE "p\.a|pavietnam" src/views src/services src/lib src/routes public`, bỏ chú thích và import.
+
+- Tên trong mã: thư mục `src/pavietnam`, import, chú thích ASCII, `'pavietnam'` là mã nhà cung cấp lưu trong CSDL (`domainRepo.ts`, `client.ts`), tên sự kiện log `pavietnam_call_failed`. Không hiện cho khách; giữ để gộp và CSDL cũ vẫn chạy.
+- `src/lib/settings.ts`, `src/db/seed.ts`: nameserver mặc định `ns1.pavietnam.vn,ns2.pavietnam.vn`. Là tên máy chủ DNS thật, khách thấy ở ô gợi ý nameserver trong Control Panel; đổi chữ là hỏng DNS. Chủ muốn giấu thì cần nameserver mang tên riêng (việc kỹ thuật với nhà đăng ký, ngoài phạm vi).
+- Dữ liệu WHOIS thô và bản ghi DNS (trang `/whois`, chi tiết tên miền): trường Registrar, nameserver là dữ liệu tra cứu, giữ nguyên theo yêu cầu.
+- Trang quản trị nội bộ: `src/routes/admin.ts` (nhóm cấu hình API P.A, endpoint `daily.pavietnam.vn`, tên miền thử `pavietnam.vn`, nhắc whitelist IP, nhãn "Số lệnh kiểm tra P.A"), `src/views/admin/*`. Chủ cho phép giữ.
+- `src/pavietnam/client.ts` dữ liệu giả lập sandbox (WHOIS, MX `mail.pavietnam.vn`) và `probe.ts` (công cụ dòng lệnh): không chạy trên máy thật cho khách.
+- Lỗi thô nhà đăng ký trả về (`ReturnText`) vẫn được chuyển nguyên cho người dùng như trước; nếu nhà đăng ký tự ghi tên mình trong câu lỗi thì sẽ hiện. Chưa thấy trường hợp nào, không lọc để khỏi che lỗi thật.
+- `package.json` mô tả dự án: không hiện trên web.
