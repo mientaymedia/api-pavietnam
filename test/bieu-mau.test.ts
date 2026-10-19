@@ -79,8 +79,8 @@ test('trang 200, co ghi chu hotline, quy trinh dang ky va du nhom; link ngoai co
     (than.match(/Liên hệ MienTay Media để nhận mẫu: hotline <a href="tel:0976788840">0976\.788\.840<\/a>\./g) ?? []).length,
     soLienHe,
   );
-  // Than trang khong con chu P.A hay link pavietnam
-  assert.doesNotMatch(than, /P\.A|pavietnam/i);
+  // Ca trang (than va footer) khong con chu P.A hay link pavietnam
+  assert.doesNotMatch(html, /P\.A|pavietnam/i);
   for (const m of than.matchAll(/<a href="(https:[^"]+)"([^>]*)>/g)) {
     assert.match(m[2]!, /rel="noopener"/, m[1]!);
   }

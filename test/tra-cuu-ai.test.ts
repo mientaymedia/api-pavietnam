@@ -407,7 +407,8 @@ test('POST hop le: ten loc xong, trang thai tu P.A sandbox, noindex, khong scrip
   assert.match(r.html, /<meta name="robots" content="noindex, nofollow">/);
   assert.match(r.html, new RegExp(`banh-mi-${s}<span class="tld">\\.aimot`));
   assert.match(r.html, new RegExp(`tiem-${s}<span class="tld">\\.aihai`));
-  assert.doesNotMatch(r.html, /google-|\.xyz/);
+  // Chi xet phan ket qua: footer co link dich vu google-workspace cua MienTay Media
+  assert.doesNotMatch(r.html.slice(0, r.html.indexOf('<footer')), /google-|\.xyz/);
   assert.match(r.html, /Gọn, đúng ngành &lt;b&gt;nghề&lt;\/b&gt;/);
   // Moi dong Con trong co dung mot nut gio hang gan nguon=ai; khong dong nao khac co
   const conTrong = (r.html.match(/badge-ok">Còn trống/g) ?? []).length;

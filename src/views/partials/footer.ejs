@@ -6,19 +6,21 @@
   var emailHoTro = String(site.supportEmail || '').trim();
   if (!/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(emailHoTro) || /no-?reply/i.test(emailHoTro)) emailHoTro = '';
 
-  // Cot Chinh sach: ten muc theo ND 248/2026 (Dieu 5 den 10, 15, 16), tro toi
+  // Cot Chinh sach: muc theo ND 248/2026 (Dieu 5 den 10, 15, 16), tro toi
   // trang dang co tren mientaymedia.com. Web ten mien khong tu viet chinh sach
   // rieng, nen moi lan sua noi dung chi lam o mot cho ben site chinh.
+  // Footer v2 rut gon nhan cho vua mot dong (chu cho phep 19/10/2026); ten day
+  // du nam o thuoc tinh title va tren trang dich.
   var chinhSach = [
-    ['Điều kiện giao dịch chung', 'dieu-khoan-su-dung'],
-    ['Thỏa thuận sử dụng dịch vụ', 'dieu-khoan-dich-vu'],
-    ['Chính sách giá', 'chinh-sach-gia'],
-    ['Điều kiện, hạn chế cung cấp dịch vụ', 'dieu-kien-cung-cap-dich-vu'],
-    ['Chính sách thanh toán', 'chinh-sach-thanh-toan'],
-    ['Cung cấp, chấm dứt dịch vụ và hoàn tiền', 'chinh-sach-hoan-tien'],
-    ['Chính sách bảo mật thông tin', 'chinh-sach-quyen-rieng-tu'],
-    ['Bảo vệ dữ liệu cá nhân', 'chinh-sach-bao-mat'],
-    ['Giải quyết khiếu nại', 'phuong-thuc-khieu-nai'],
+    ['Điều kiện giao dịch chung', 'dieu-khoan-su-dung', 'Điều kiện giao dịch chung'],
+    ['Thỏa thuận dịch vụ', 'dieu-khoan-dich-vu', 'Thỏa thuận sử dụng dịch vụ'],
+    ['Chính sách giá', 'chinh-sach-gia', 'Chính sách giá'],
+    ['Điều kiện cung cấp', 'dieu-kien-cung-cap-dich-vu', 'Điều kiện, hạn chế cung cấp dịch vụ'],
+    ['Chính sách thanh toán', 'chinh-sach-thanh-toan', 'Chính sách thanh toán'],
+    ['Chấm dứt, hoàn tiền', 'chinh-sach-hoan-tien', 'Cung cấp, chấm dứt dịch vụ và hoàn tiền'],
+    ['Bảo mật thông tin', 'chinh-sach-quyen-rieng-tu', 'Chính sách bảo mật thông tin'],
+    ['Bảo vệ dữ liệu cá nhân', 'chinh-sach-bao-mat', 'Bảo vệ dữ liệu cá nhân'],
+    ['Giải quyết khiếu nại', 'phuong-thuc-khieu-nai', 'Giải quyết khiếu nại'],
   ];
 
   // Bieu tuong da thong bao chi hien khi quan tri da dien du anh va link, va
@@ -31,58 +33,89 @@
   if (!/^https:\/\/(www\.)?online\.gov\.vn\//i.test(bieuTuongLink)) bieuTuongLink = '';
 %>
 <footer class="site-footer">
+  <%
+    // Footer v2 (chu yeu cau 19/10/2026): 5 cot deu nhau, moi cot 6 den 9 muc,
+    // tieu de cung mot hang (logo cot dau cao bang tieu de). Cot Dich vu lay
+    // trang dang co tren mientaymedia.com (da curl 200 ngay 19/10/2026), thu tu
+    // theo Tai lieu san pham cua brain MienTay Media: Mineflow, Zalo, MienTay OS
+    // truoc. /javis-os giu duong dan cu nhung khach thay ten MienTay OS.
+    var dichVu = [
+      ['Mineflow CDP', 'mineflow-cdp'],
+      ['Giải pháp Zalo Business', 'giai-phap-zalo'],
+      ['MienTay OS', 'javis-os'],
+      ['Google Workspace', 'google-workspace'],
+      ['Microsoft 365', 'microsoft-365'],
+      ['Thiết kế website và app', 'thiet-ke-website'],
+      ['Marketing thuê ngoài', 'marketing-thue-ngoai'],
+      ['Nhận diện thương hiệu', 'nhan-dien-thuong-hieu'],
+    ];
+  %>
   <div class="container footer-grid">
-    <div class="footer-brand">
-      <a href="<%= base %>/" class="footer-logo">
+    <div class="footer-col footer-brand">
+      <a href="<%= base %>/" class="footer-title footer-logo">
         <img src="<%= base %>/img/mientaymedia-logo-trang.png" alt="<%= site.name %>" width="1200" height="152">
       </a>
-      <p><%= site.tagline %></p>
+      <p class="footer-intro"><%= site.tagline %></p>
+      <ul class="footer-links footer-contact">
+        <% if (site.hotline) { %><li><a href="tel:<%= site.hotline.replace(/[^\d+]/g, '') %>">Hotline: <%= site.hotline %></a></li><% } %>
+        <% if (emailHoTro) { %><li><a href="mailto:<%= emailHoTro %>"><%= emailHoTro %></a></li><% } %>
+        <% if (site.workingHours) { %><li><p class="footer-text">Giờ làm việc: <%= site.workingHours %></p></li><% } %>
+        <li><a href="https://mientaymedia.com" rel="noopener">mientaymedia.com</a></li>
+      </ul>
     </div>
 
-    <div>
-      <h4>Tên miền</h4>
-      <a href="<%= base %>/">Tìm tên miền</a>
-      <a href="<%= base %>/bang-gia">Bảng giá</a>
-      <a href="<%= base %>/chuyen-ten-mien">Chuyển tên miền về</a>
-      <a href="<%= base %>/whois">Tra cứu WHOIS</a>
-      <a href="<%= base %>/bieu-mau-ho-so">Biểu mẫu hồ sơ</a>
-      <a href="<%= base %>/bieu-mau-ho-so#quy-trinh-dang-ky">Quy trình đăng ký</a>
-      <a href="https://vnnic.vn/vi/whois-information?lang=vi" rel="noopener">WHOIS .vn tại VNNIC</a>
-      <a href="https://vnnic.vn/vi/ten-mien-vn/chinh-sach-quy-dinh" rel="noopener">Quy định sử dụng tên miền .vn</a>
-      <a href="https://mientaymedia.com/quy-trinh-bao-cao-lam-dung" rel="noopener">Báo cáo lạm dụng</a>
-    </div>
+    <nav class="footer-col" aria-label="Tên miền">
+      <h4 class="footer-title">Tên miền</h4>
+      <ul class="footer-links">
+        <li><a href="<%= base %>/">Tìm tên miền</a></li>
+        <li><a href="<%= base %>/bang-gia">Bảng giá</a></li>
+        <li><a href="<%= base %>/chuyen-ten-mien">Chuyển tên miền về</a></li>
+        <li><a href="<%= base %>/whois">Tra cứu WHOIS</a></li>
+        <li><a href="<%= base %>/bieu-mau-ho-so">Biểu mẫu hồ sơ</a></li>
+        <li><a href="<%= base %>/bieu-mau-ho-so#quy-trinh-dang-ky">Quy trình đăng ký</a></li>
+      </ul>
+    </nav>
 
-    <div>
-      <h4>Chính sách</h4>
-      <% chinhSach.forEach(function (cs) { %>
-        <a href="https://mientaymedia.com/<%= cs[1] %>" rel="noopener"><%= cs[0] %></a>
-      <% }) %>
-    </div>
+    <nav class="footer-col" aria-label="Dịch vụ <%= site.name %>">
+      <h4 class="footer-title">Dịch vụ <%= site.name %></h4>
+      <ul class="footer-links">
+        <% dichVu.forEach(function (dv) { %>
+          <li><a href="https://mientaymedia.com/<%= dv[1] %>" rel="noopener"><%= dv[0] %></a></li>
+        <% }) %>
+      </ul>
+    </nav>
 
-    <div>
-      <h4>Tài khoản</h4>
-      <% if (currentUser) { %>
-        <a href="<%= base %>/tai-khoan">Tài khoản</a>
-        <a href="<%= base %>/don-hang">Đơn hàng</a>
-        <a href="<%= base %>/control-panel">Control Panel</a>
-      <% } else { %>
-        <a href="<%= base %>/dang-nhap">Đăng nhập</a>
-        <a href="<%= base %>/dang-ky">Đăng ký</a>
-      <% } %>
-      <a href="<%= base %>/gio-hang">Giỏ hàng</a>
-    </div>
+    <nav class="footer-col" aria-label="Chính sách">
+      <h4 class="footer-title">Chính sách</h4>
+      <ul class="footer-links">
+        <% chinhSach.forEach(function (cs) { %>
+          <li><a href="https://mientaymedia.com/<%= cs[1] %>" rel="noopener"<% if (cs[2] !== cs[0]) { %> title="<%= cs[2] %>"<% } %>><%= cs[0] %></a></li>
+        <% }) %>
+      </ul>
+    </nav>
 
-    <div>
-      <h4>Liên hệ</h4>
-      <% if (site.hotline) { %><a href="tel:<%= site.hotline.replace(/[^\d+]/g, '') %>">Hotline: <%= site.hotline %></a><% } %>
-      <% if (emailHoTro) { %><a href="mailto:<%= emailHoTro %>"><%= emailHoTro %></a><% } %>
-      <%# Kenh lien he truc tuyen: Dieu 7 khoan 1 ND 248/2026 bat buoc co it nhat mot kenh %>
-      <a href="https://mientaymedia.com/ho-tro-truc-tuyen" rel="noopener">Hỗ trợ trực tuyến</a>
-      <a href="https://mientaymedia.com" rel="noopener">mientaymedia.com</a>
-      <% if (site.workingHours) { %><p class="footer-text">Giờ làm việc: <%= site.workingHours %></p><% } %>
-    </div>
+    <nav class="footer-col" aria-label="Hỗ trợ">
+      <h4 class="footer-title">Hỗ trợ</h4>
+      <ul class="footer-links">
+        <%# Kenh lien he truc tuyen: Dieu 7 khoan 1 ND 248/2026 bat buoc co it nhat mot kenh %>
+        <li><a href="https://mientaymedia.com/ho-tro-truc-tuyen" rel="noopener">Hỗ trợ trực tuyến</a></li>
+        <li><a href="https://vnnic.vn/vi/whois-information?lang=vi" rel="noopener">WHOIS .vn tại VNNIC</a></li>
+        <li><a href="https://vnnic.vn/vi/ten-mien-vn/chinh-sach-quy-dinh" rel="noopener">Quy định tên miền .vn</a></li>
+        <li><a href="https://mientaymedia.com/quy-trinh-bao-cao-lam-dung" rel="noopener">Báo cáo lạm dụng</a></li>
+        <% if (currentUser) { %>
+          <li><a href="<%= base %>/tai-khoan">Tài khoản</a></li>
+          <li><a href="<%= base %>/don-hang">Đơn hàng</a></li>
+          <li><a href="<%= base %>/control-panel">Control Panel</a></li>
+        <% } else { %>
+          <li><a href="<%= base %>/dang-nhap">Đăng nhập</a></li>
+          <li><a href="<%= base %>/dang-ky">Đăng ký</a></li>
+        <% } %>
+        <li><a href="<%= base %>/gio-hang">Giỏ hàng</a></li>
+      </ul>
+    </nav>
   </div>
-  <div class="container footer-bottom">
+
+  <div class="footer-bottom">
     <%
       // Khoi phap ly theo Dieu 11 khoan 1 diem a Luat TMDT 122/2025 va Dieu 4
       // ND 248/2026. Ten phap ly chi xuat hien o day, moi cho khac dung ten hien
@@ -93,18 +126,21 @@
       if (site.legalRep) phapLy.push('Người đại diện theo pháp luật: ' + site.legalRep);
       if (site.address) phapLy.push('Trụ sở: ' + site.address);
     %>
-    <div class="footer-legal-row">
+    <div class="container footer-legal-row">
       <div class="footer-legal">
         <% if (site.legalName) { %><p class="footer-legal-name"><%= site.legalName %></p><% } %>
         <% phapLy.forEach(function (dong) { %><p><%= dong %></p><% }) %>
-        <%# Dai ly, khong phai nha dang ky: ND 147/2024 Dieu 12 khoan 4 diem c %>
-        <p class="footer-agent"><%= site.name %> là đại lý của Công ty TNHH P.A Việt Nam, nhà đăng ký tên miền quốc gia .vn và quốc tế. Tên miền do P.A Việt Nam đăng ký, quản lý.</p>
       </div>
-      <% if (bieuTuongAnh && bieuTuongLink) { %>
-        <a class="footer-badge" href="<%= bieuTuongLink %>" rel="noopener"><img src="<%= bieuTuongAnh %>" alt="Đã thông báo hoạt động thương mại điện tử" width="150" height="57"></a>
-      <% } %>
+      <div class="footer-legal-side">
+        <%# Dai ly, khong phai nha dang ky: ND 147/2024 Dieu 12 khoan 4 diem c. Chu
+            yeu cau 19/10/2026 khong neu ten nha dang ky tren trang khach. %>
+        <p class="footer-agent"><%= site.name %> là đại lý của nhà đăng ký tên miền .vn và quốc tế được cấp phép.</p>
+        <% if (bieuTuongAnh && bieuTuongLink) { %>
+          <a class="footer-badge" href="<%= bieuTuongLink %>" rel="noopener"><img src="<%= bieuTuongAnh %>" alt="Đã thông báo hoạt động thương mại điện tử" width="150" height="57"></a>
+        <% } %>
+      </div>
     </div>
-    <div class="footer-copy">&copy; <%= new Date().getFullYear() %> <%= site.name %></div>
+    <div class="container footer-copy">&copy; <%= new Date().getFullYear() %> <%= site.name %></div>
   </div>
 </footer>
 <script src="<%= base %>/js/app.js" defer></script>

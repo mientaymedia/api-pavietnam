@@ -116,40 +116,76 @@ test('footer in khoi phap ly chu da chot, doc tu Cau hinh; ten hien thi van la M
   }
 });
 
-test('footer ghi ro vai tro dai ly cua P.A Viet Nam (ND 147/2024 Dieu 12 khoan 4 diem c)', async () => {
+test('footer ghi vai tro dai ly, khong neu ten nha dang ky (ND 147/2024 Dieu 12 khoan 4 diem c; chu yeu cau 19/10/2026)', async () => {
   const footer = (await trang('/')).html.split('<footer')[1]!;
-  assert.match(
-    footer,
-    /<p class="footer-agent">MienTay Media là đại lý của Công ty TNHH P\.A Việt Nam, nhà đăng ký tên miền quốc gia \.vn và quốc tế\. Tên miền do P\.A Việt Nam đăng ký, quản lý\.<\/p>/,
-  );
+  assert.match(footer, /<p class="footer-agent">MienTay Media là đại lý của nhà đăng ký tên miền \.vn và quốc tế được cấp phép\.<\/p>/);
+  assert.doesNotMatch(footer, /P\.A|pavietnam/i);
+});
+
+test('trang khach khong con chu P.A hay pavietnam (chu yeu cau 19/10/2026)', async () => {
+  for (const duong of ['/', '/bang-gia', '/chuyen-ten-mien', '/whois', '/bieu-mau-ho-so', '/gio-hang', '/dang-nhap', '/dang-ky']) {
+    const { status, html } = await trang(duong);
+    assert.equal(status, 200, duong);
+    assert.doesNotMatch(html, /P\.A|pavietnam/i, duong);
+  }
+});
+
+test('footer 5 cot: thuong hieu, Ten mien, Dich vu MienTay Media, Chinh sach, Ho tro', async () => {
+  const footer = (await trang('/')).html.split('<footer')[1]!;
+  const tieuDe = [...footer.matchAll(/<h4 class="footer-title">([^<]+)<\/h4>/g)].map((m) => m[1]);
+  assert.deepEqual(tieuDe, ['Tên miền', 'Dịch vụ MienTay Media', 'Chính sách', 'Hỗ trợ']);
+  assert.equal((footer.match(/class="footer-col/g) ?? []).length, 5);
+  // Cot Dich vu: trang dang co tren mientaymedia.com (curl 200 ngay 19/10/2026)
+  const dichVu: [string, string][] = [
+    ['Mineflow CDP', 'mineflow-cdp'],
+    ['Giải pháp Zalo Business', 'giai-phap-zalo'],
+    ['MienTay OS', 'javis-os'],
+    ['Google Workspace', 'google-workspace'],
+    ['Microsoft 365', 'microsoft-365'],
+    ['Thiết kế website và app', 'thiet-ke-website'],
+    ['Marketing thuê ngoài', 'marketing-thue-ngoai'],
+    ['Nhận diện thương hiệu', 'nhan-dien-thuong-hieu'],
+  ];
+  for (const [nhan, duong] of dichVu) {
+    assert.ok(footer.includes(`<a href="https://mientaymedia.com/${duong}" rel="noopener">${nhan}</a>`), nhan);
+  }
+  // Ten cu Javis OS khong hien cho khach (duong dan /javis-os thi giu)
+  assert.doesNotMatch(footer, />[^<]*Javis/i);
+  // Moi cot lien ket 6 den 9 muc de cac cot gan bang nhau
+  for (const cot of footer.split('<nav class="footer-col"').slice(1)) {
+    const so = (cot.slice(0, cot.indexOf('</nav>')).match(/<li>/g) ?? []).length;
+    assert.ok(so >= 6 && so <= 9, `cot co ${so} muc`);
+  }
 });
 
 test('cot Chinh sach du muc ND 248/2026, tro toi trang dang co tren mientaymedia.com', async () => {
   const footer = (await trang('/')).html.split('<footer')[1]!;
-  const muc: [string, string][] = [
-    ['Điều kiện giao dịch chung', 'dieu-khoan-su-dung'],
-    ['Thỏa thuận sử dụng dịch vụ', 'dieu-khoan-dich-vu'],
-    ['Chính sách giá', 'chinh-sach-gia'],
-    ['Điều kiện, hạn chế cung cấp dịch vụ', 'dieu-kien-cung-cap-dich-vu'],
-    ['Chính sách thanh toán', 'chinh-sach-thanh-toan'],
-    ['Cung cấp, chấm dứt dịch vụ và hoàn tiền', 'chinh-sach-hoan-tien'],
-    ['Chính sách bảo mật thông tin', 'chinh-sach-quyen-rieng-tu'],
-    ['Bảo vệ dữ liệu cá nhân', 'chinh-sach-bao-mat'],
-    ['Giải quyết khiếu nại', 'phuong-thuc-khieu-nai'],
+  // Footer v2 rut gon nhan cho vua mot dong; ten day du theo ND 248 o title
+  const muc: [string, string, string][] = [
+    ['Điều kiện giao dịch chung', 'dieu-khoan-su-dung', ''],
+    ['Thỏa thuận dịch vụ', 'dieu-khoan-dich-vu', 'Thỏa thuận sử dụng dịch vụ'],
+    ['Chính sách giá', 'chinh-sach-gia', ''],
+    ['Điều kiện cung cấp', 'dieu-kien-cung-cap-dich-vu', 'Điều kiện, hạn chế cung cấp dịch vụ'],
+    ['Chính sách thanh toán', 'chinh-sach-thanh-toan', ''],
+    ['Chấm dứt, hoàn tiền', 'chinh-sach-hoan-tien', 'Cung cấp, chấm dứt dịch vụ và hoàn tiền'],
+    ['Bảo mật thông tin', 'chinh-sach-quyen-rieng-tu', 'Chính sách bảo mật thông tin'],
+    ['Bảo vệ dữ liệu cá nhân', 'chinh-sach-bao-mat', ''],
+    ['Giải quyết khiếu nại', 'phuong-thuc-khieu-nai', ''],
   ];
-  for (const [nhan, duong] of muc) {
-    assert.ok(footer.includes(`<a href="https://mientaymedia.com/${duong}" rel="noopener">${nhan}</a>`), nhan);
+  for (const [nhan, duong, day] of muc) {
+    const title = day ? ` title="${day}"` : '';
+    assert.ok(footer.includes(`<a href="https://mientaymedia.com/${duong}" rel="noopener"${title}>${nhan}</a>`), nhan);
   }
   // Kenh lien he truc tuyen (Dieu 7 khoan 1 ND 248/2026)
   assert.match(footer, /href="https:\/\/mientaymedia\.com\/ho-tro-truc-tuyen" rel="noopener">Hỗ trợ trực tuyến</);
 });
 
-test('cot Ten mien co bieu mau, quy trinh, WHOIS VNNIC, quy dinh su dung, bao cao lam dung', async () => {
+test('cot Ten mien va Ho tro co bieu mau, quy trinh, WHOIS VNNIC, quy dinh su dung, bao cao lam dung', async () => {
   const footer = (await trang('/')).html.split('<footer')[1]!;
   assert.match(footer, /<a href="\/bieu-mau-ho-so">Biểu mẫu hồ sơ<\/a>/);
   assert.match(footer, /<a href="\/bieu-mau-ho-so#quy-trinh-dang-ky">Quy trình đăng ký<\/a>/);
   assert.match(footer, /<a href="https:\/\/vnnic\.vn\/vi\/whois-information\?lang=vi" rel="noopener">WHOIS \.vn tại VNNIC<\/a>/);
-  assert.match(footer, /<a href="https:\/\/vnnic\.vn\/vi\/ten-mien-vn\/chinh-sach-quy-dinh" rel="noopener">Quy định sử dụng tên miền \.vn<\/a>/);
+  assert.match(footer, /<a href="https:\/\/vnnic\.vn\/vi\/ten-mien-vn\/chinh-sach-quy-dinh" rel="noopener">Quy định tên miền \.vn<\/a>/);
   assert.match(footer, /<a href="https:\/\/mientaymedia\.com\/quy-trinh-bao-cao-lam-dung" rel="noopener">Báo cáo lạm dụng<\/a>/);
   assert.doesNotMatch(footer, /matbao/i);
 });
