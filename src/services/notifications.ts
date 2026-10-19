@@ -258,6 +258,28 @@ export async function sendProvisionFailed(input: {
   `);
 }
 
+/**
+ * Don giu qua 24 gio (cho nap quy dai ly hoac cho nguoi xu ly): xin loi khach
+ * MOT lan. Khong hoan tien tu dong, khong noi ly do noi bo (quy dai ly, ma P.A):
+ * khach chi can biet don van dang duoc xu ly va khong phai lam gi.
+ */
+export async function sendXinLoiCham(input: { userId: number; email: string; domain: string; orderCode: string }): Promise<void> {
+  if (!input.email) return;
+  const site = settings.site();
+  await sendMail({
+    to: input.email,
+    userId: input.userId,
+    template: 'provision_delayed',
+    subject: `Xin lỗi: đăng ký ${input.domain} đang chậm hơn dự kiến`,
+    html: layout('Đơn hàng đang được xử lý', `
+      <p>Chúng tôi xin lỗi vì tên miền <b>${esc(input.domain)}</b> thuộc đơn hàng <b>${esc(input.orderCode)}</b> chưa được kích hoạt như dự kiến.</p>
+      <p>Đơn hàng của bạn vẫn đang được xử lý và khoản thanh toán được giữ nguyên. Bạn không cần làm gì thêm; hệ thống sẽ gửi email ngay khi tên miền được kích hoạt.</p>
+      <p>Cần hỗ trợ gấp, vui lòng liên hệ ${esc(site.hotline || site.supportEmail)}.</p>
+      ${button('Xem đơn hàng', url(`/don-hang/${input.orderCode}`))}
+    `),
+  });
+}
+
 /** Da hoan tien vao vi sau khi dang ky ten mien that bai. */
 export async function sendRefunded(input: {
   userId: number; email: string; domain: string; orderCode: string;

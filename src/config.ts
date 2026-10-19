@@ -137,6 +137,31 @@ export const config = {
     refreshToken: str('ZNS_REFRESH_TOKEN'),
   },
 
+  /**
+   * Bot Telegram bao quan tri (don moi, dang ky xong, thieu quy, loi) va nhan
+   * lenh /kichhoat, /sodu, /doncho. Ba bien nay da co trong .env tren VPS; o
+   * Cau hinh chi ghi de khi nhap. TELEGRAM_API_BASE chi de test tro ve may gia.
+   */
+  telegram: {
+    botToken: str('TELEGRAM_BOT_TOKEN'),
+    /** Danh sach chat id duoc phep, cach nhau bang dau phay. */
+    adminChatIds: str('TELEGRAM_ADMIN_CHAT_IDS'),
+    webhookSecret: str('TELEGRAM_WEBHOOK_SECRET'),
+    apiBase: str('TELEGRAM_API_BASE', 'https://api.telegram.org').replace(/\/+$/, ''),
+  },
+
+  /**
+   * Cong may noi bo cho CRM (/api/noi-bo/*): khoa Bearer CRM gui len (cung
+   * gia tri WEB_TEN_MIEN_KEY ben CRM). Nhieu khoa cach nhau dau phay de xoay vong.
+   */
+  webTenMienKey: str('WEB_TEN_MIEN_KEY'),
+
+  /** Day su kien don hang sang CRM (cong /api/tich-hop/web-ten-mien/su-kien ben CRM). */
+  crm: {
+    url: str('CRM_URL').replace(/\/+$/, ''),
+    key: str('CRM_INTEGRATION_KEY'),
+  },
+
   seedAdmin: {
     email: str('ADMIN_EMAIL', 'admin@example.vn'),
     password: str('ADMIN_PASSWORD', ''),

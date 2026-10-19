@@ -16,6 +16,7 @@ import { fetchRecentTransactions, ORDER_CODE_RE } from '../payments/sepay.js';
 import { settlePayment, startPayment } from '../payments/index.js';
 import { enqueue, type JobType } from './queue.js';
 import { kichHoatDonCho } from '../services/choQuy.js';
+import { nhacChoQuy } from '../services/nhacChoQuy.js';
 
 export type Handler = (payload: Record<string, unknown>) => Promise<void>;
 
@@ -223,6 +224,8 @@ export const handlers: Record<JobType, Handler> = {
   async retry_awaiting_funds() {
     const kq = await kichHoatDonCho();
     if (kq.loiSoDu) log.warn('cho_quy_khong_doc_duoc_so_du', { error: kq.loiSoDu });
+    // Van con giu sau khi thu: nhac quan tri moi 4 gio, xin loi khach sau 24 gio
+    await nhacChoQuy();
   },
 
   /** Huy cac don qua han thanh toan de giai phong ma don va ma giam gia. */

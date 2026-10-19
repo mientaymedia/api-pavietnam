@@ -8,6 +8,8 @@ import { formatVnd } from '../lib/money.js';
 import { alertAdmin } from './notifications.js';
 import { dangKyKenh, type SuKienDon } from './suKienDon.js';
 import { tomTatChoQuy } from './choQuy.js';
+// Cac kenh khac tu dang ky khi nap tep cua chung
+import './tinTelegram.js';
 
 function esc(s: unknown): string {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

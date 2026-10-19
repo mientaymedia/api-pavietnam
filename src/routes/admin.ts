@@ -189,6 +189,17 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'smtp.from', label: 'Địa chỉ gửi đi' },
   { key: 'smtp.admin_alert', label: 'Email nhận cảnh báo nội bộ' },
 
+  // Telegram quan tri (@mientaymediabot). Mac dinh doc TELEGRAM_* trong .env, o day chi ghi de
+  { key: 'tg.bot_token', label: 'Telegram bot token', type: 'password', hint: 'Để trống thì dùng TELEGRAM_BOT_TOKEN trong .env' },
+  { key: 'tg.admin_chat_ids', label: 'Chat id Telegram được phép', hint: 'Cách nhau bằng dấu phẩy. Để trống thì dùng TELEGRAM_ADMIN_CHAT_IDS' },
+  { key: 'tg.webhook_secret', label: 'Secret webhook Telegram', type: 'password', hint: 'Trùng secret_token khi gọi setWebhook. Để trống thì dùng TELEGRAM_WEBHOOK_SECRET' },
+
+  // Day su kien sang CRM (crm.mientaymedia.com)
+  { key: 'crm.bat', label: 'Đẩy sự kiện đơn hàng sang CRM', type: 'checkbox' },
+  { key: 'crm.url', label: 'Địa chỉ CRM', hint: 'Ví dụ https://crm.mientaymedia.com. Để trống thì dùng CRM_URL' },
+  { key: 'crm.khoa', label: 'Khóa gửi sang CRM', type: 'password', hint: 'Một khóa trong INTEGRATION_WEB_KEYS của CRM. Để trống thì dùng CRM_INTEGRATION_KEY' },
+  { key: 'crm.su_kien_mo_rong', label: 'Gửi thêm sự kiện đơn chờ quỹ, đơn lỗi sang CRM', type: 'checkbox', hint: 'Chỉ bật khi CRM đã nhận hai loại sự kiện mới (xem docs/mtm/pa-dang-ky/api-crm.md)' },
+
   // Tim cung AI (OpenAI). Chu chot 18/10/2026: mac dinh tat, 50.000 d/ngay,
   // 8 ten x 2 duoi, 5 luot/phut va 30 luot/ngay moi IP.
   { key: 'ai.enabled', label: 'Bật Tìm cùng AI ở trang chủ', type: 'checkbox', hint: 'Chỉ chạy khi đã có khóa OpenAI và tên model' },
@@ -221,6 +232,13 @@ function currentSettingValues(): Record<string, string> {
     ...flatten('smtp', settings.smtp()),
     ...flatten('security', settings.security()),
     ...flatten('ai', settings.ai()),
+    'tg.bot_token': settings.telegram().botToken,
+    'tg.admin_chat_ids': settings.telegram().adminChatIds.join(','),
+    'tg.webhook_secret': settings.telegram().webhookSecret,
+    'crm.bat': settings.crm().enabled ? '1' : '0',
+    'crm.url': settings.crm().url,
+    'crm.khoa': settings.crm().key,
+    'crm.su_kien_mo_rong': settings.crm().suKienMoRong ? '1' : '0',
   };
   for (const key of SECRET_KEYS) {
     if (resolved[key]) resolved[key] = maskSecret(resolved[key]!);
