@@ -4,6 +4,17 @@ import { timPhuong, timTinh } from './diaGioi.js';
 
 export const emailSchema = z.string().trim().toLowerCase().email('Email không hợp lệ').max(190);
 
+/**
+ * Bang users bat buoc email duy nhat, nen tai khoan tao bang mang xa hoi chua
+ * co email (Zalo) mang mot email tam. Duoi .invalid (RFC 2606) khong bao gio la
+ * hop thu that: khong gui thu toi do, khong cho dang ky bang tay.
+ */
+export const DUOI_EMAIL_TAM = '@chua-co-email.invalid';
+
+export function laEmailTam(email: string | null | undefined): boolean {
+  return String(email ?? '').toLowerCase().endsWith(DUOI_EMAIL_TAM);
+}
+
 export const passwordSchema = z
   .string()
   .min(8, 'Mật khẩu tối thiểu 8 ký tự')

@@ -8,7 +8,7 @@ import { createOrderFromCart } from '../services/orders.js';
 import { computeDiscount, findCoupon } from '../services/pricing.js';
 import { contactSchema, fieldErrors } from '../lib/validate.js';
 import { getProvider, settlePayment } from '../payments/index.js';
-import { isVerified, requireVerifiedToOrder } from '../services/verification.js';
+import { lyDoChanDatHang } from '../services/lienKetMxh.js';
 import { kickWorker } from '../jobs/worker.js';
 import { loiHoSoPA, type ContactRow } from '../services/domainContact.js';
 
@@ -70,7 +70,14 @@ router.post(
 
     // Ten mien duoc quan ly qua email; dat hang bang email chua xac thuc de
     // dan den mat lien lac voi tai san cua chinh khach.
-    if (requireVerifiedToOrder() && !isVerified(userId)) {
+    // Tai khoan tao bang mang xa hoi (khong mat khau) luon phai co email that
+    // da xac thuc, ke ca khi tat auth.require_email_verified (services/lienKetMxh.ts)
+    const chanEmail = lyDoChanDatHang(userId);
+    if (chanEmail === 'thieu_email') {
+      flash(req, 'error', 'Vui lòng bổ sung email trước khi đặt hàng: tên miền được quản lý qua email.');
+      return res.redirect('/tai-khoan/email');
+    }
+    if (chanEmail === 'chua_xac_thuc') {
       flash(req, 'error', 'Vui lòng xác thực địa chỉ email trước khi đặt hàng. Kiểm tra hộp thư của bạn.');
       return res.redirect('/thanh-toan');
     }

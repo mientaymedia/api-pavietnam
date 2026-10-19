@@ -13,13 +13,16 @@ import { requireAuth } from '../middleware/auth.js';
 import { audit } from '../services/audit.js';
 import { isEnabled as twoFactorEnabled, verifyLogin as verify2FA } from '../services/twoFactor.js';
 import { duongDanNoiBo } from '../lib/redirect.js';
+import { TEN_HIEN_THI } from '../lib/oauth.js';
+import { ganLienKetDangCho, laEmailTam } from '../services/lienKetMxh.js';
 
 const router = Router();
 
 const registerSchema = z
   .object({
     full_name: z.string().trim().min(2, 'Vui lòng nhập họ tên').max(120),
-    email: emailSchema,
+    // Duoi email tam danh rieng cho tai khoan tao bang mang xa hoi chua co email
+    email: emailSchema.refine((v) => !laEmailTam(v), 'Email không hợp lệ'),
     phone: phoneSchema,
     password: passwordSchema,
     password_confirm: z.string(),
@@ -149,6 +152,7 @@ router.post(
     loginSession(req, res, user.id);
     mergeCart(guestCart, `user:${user.id}`, user.id);
     audit({ userId: user.id, action: 'user.login', entity: 'user', entityId: user.id, ip: req.ip });
+    baoDaLienKet(req, user.id);
 
     res.redirect(safeNext(req.body?.next));
   }),
@@ -215,6 +219,7 @@ router.post(
     mergeCart(guestCart, `user:${cho.userId}`, cho.userId);
     audit({ userId: cho.userId, action: 'user.login', entity: 'user', entityId: cho.userId, ip: req.ip, meta: { twoFactor: kq.duPhong ? 'ma_du_phong' : 'ung_dung' } });
 
+    baoDaLienKet(req, cho.userId);
     if (kq.duPhong) {
       flash(req, 'info', `Bạn vừa dùng một mã dự phòng, còn lại ${kq.conLai ?? 0} mã. Nên tạo bộ mã mới trong mục Bảo mật.`);
     }
@@ -222,6 +227,15 @@ router.post(
     res.redirect(safeNext(cho.next));
   }),
 );
+
+/**
+ * Khach bam Google/GitHub ma email trung tai khoan co mat khau (khong tu gop,
+ * xem services/lienKetMxh.ts): dang nhap mat khau xong thi gan danh tinh dang cho.
+ */
+function baoDaLienKet(req: import('express').Request, userId: number): void {
+  const ben = ganLienKetDangCho(req.session, userId, req.ip);
+  if (ben) flash(req, 'success', `Đã liên kết ${TEN_HIEN_THI[ben]}. Lần sau bạn có thể đăng nhập bằng ${TEN_HIEN_THI[ben]}.`);
+}
 
 router.post('/dang-xuat', (req, res) => {
   const userId = req.currentUser?.id;
@@ -325,6 +339,7 @@ router.post(
   wrap(async (req, res) => {
     const user = req.currentUser!;
 
+    if (laEmailTam(user.email)) return res.redirect('/tai-khoan/email');
     if (isVerified(user.id)) {
       flash(req, 'info', 'Email của bạn đã được xác thực rồi.');
       return res.redirect('/tai-khoan');

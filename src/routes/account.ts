@@ -13,6 +13,7 @@ import { hashPassword, randomToken, sha256, verifyPassword } from '../lib/crypto
 import { daysUntilExpiry, listUserDomains } from '../services/domainRepo.js';
 import { listOrders } from '../services/orders.js';
 import { audit } from '../services/audit.js';
+import { duLieuMxh } from '../services/lienKetMxh.js';
 import { loiHoSoPA, type ContactRow } from '../services/domainContact.js';
 import { qrSvg } from '../lib/qrcode.js';
 import { formatSecret } from '../lib/totp.js';
@@ -153,6 +154,7 @@ router.get('/tai-khoan', requireAuth, (req, res) => {
     user: db.prepare('SELECT id, email, full_name, phone, balance, created_at FROM users WHERE id = ?').get(userId),
     tokens: db.prepare('SELECT id, name, token_prefix, scopes, last_used_at, created_at FROM api_tokens WHERE user_id = ? AND revoked_at IS NULL ORDER BY id DESC').all(userId),
     wallet: db.prepare('SELECT * FROM wallet_transactions WHERE user_id = ? ORDER BY id DESC LIMIT 20').all(userId),
+    mxh: duLieuMxh(userId),
     newToken: null,
     errors: {},
   });
@@ -311,6 +313,7 @@ router.post('/tai-khoan/api-token', requireAuth, (req, res) => {
     user: db.prepare('SELECT id, email, full_name, phone, balance, created_at FROM users WHERE id = ?').get(userId),
     tokens: db.prepare('SELECT id, name, token_prefix, scopes, last_used_at, created_at FROM api_tokens WHERE user_id = ? AND revoked_at IS NULL ORDER BY id DESC').all(userId),
     wallet: db.prepare('SELECT * FROM wallet_transactions WHERE user_id = ? ORDER BY id DESC LIMIT 20').all(userId),
+    mxh: duLieuMxh(userId),
     // Chi hien thi DUY NHAT mot lan - he thong khong luu token dang goc
     newToken: token,
     errors: {},

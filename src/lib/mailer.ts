@@ -2,6 +2,7 @@ import nodemailer, { type Transporter } from 'nodemailer';
 import { db, nowIso } from '../db/index.js';
 import { settings } from './settings.js';
 import { log } from './logger.js';
+import { laEmailTam } from './validate.js';
 
 let transporter: Transporter | null = null;
 let transporterKey = '';
@@ -41,6 +42,12 @@ export interface MailInput {
  * hong luong dang ky ten mien - loi duoc ghi vao email_logs de xu ly sau.
  */
 export async function sendMail(input: MailInput): Promise<boolean> {
+  // Email tam cua tai khoan chua bo sung email: khong co hop thu nao de gui
+  if (laEmailTam(input.to)) {
+    logEmail(input, 'skipped', 'Tài khoản chưa có email');
+    return false;
+  }
+
   const s = settings.smtp();
   const tx = getTransporter();
 

@@ -14,10 +14,13 @@ import { isVerified } from './services/verification.js';
 import { BASE, outsideBase, redirectWithBase, withBase } from './lib/basePath.js';
 import { clientIpMiddleware } from './lib/clientIp.js';
 import { danhSachTinh, phuongCuaTinh } from './lib/diaGioi.js';
+import { danhSachDangBat } from './lib/oauth.js';
+import { laEmailTam } from './services/lienKetMxh.js';
 
 import homeRoutes from './routes/home.js';
 import timCungAiRoutes from './routes/timCungAi.js';
 import authRoutes from './routes/auth.js';
+import dangNhapMxhRoutes from './routes/dangNhapMxh.js';
 import cartRoutes from './routes/cart.js';
 import checkoutRoutes from './routes/checkout.js';
 import orderRoutes from './routes/orders.js';
@@ -103,6 +106,10 @@ export function createApp() {
     // OA cho nut chat Zalo o footer; rong o trang quan tri hoac khi tat
     res.locals['zaloChatOa'] = laTrangQuanTri(req.path) ? '' : zaloChatOaId();
     res.locals['needsEmailVerify'] = Boolean(req.currentUser) && !isVerified(req.currentUser!.id);
+    // Tai khoan tao bang Zalo chua co email: dai nhac doi sang "Bo sung email"
+    res.locals['thieuEmail'] = Boolean(req.currentUser) && laEmailTam(req.currentUser!.email);
+    // Nut dang nhap mang xa hoi: chi ben da nhap du khoa va dang bat
+    res.locals['nutMxh'] = req.currentUser ? [] : danhSachDangBat();
     next();
   });
 
@@ -111,6 +118,7 @@ export function createApp() {
   site.use('/', homeRoutes);
   site.use('/', timCungAiRoutes);
   site.use('/', authRoutes);
+  site.use('/', dangNhapMxhRoutes);
   site.use('/gio-hang', cartRoutes);
   site.use('/thanh-toan', checkoutRoutes);
   site.use('/don-hang', orderRoutes);
