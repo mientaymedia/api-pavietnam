@@ -144,7 +144,10 @@
           <div class="field">
             <label><span class="field-name">Danh sách nameserver (mỗi dòng một tên)</span>
             <textarea name="nameservers" rows="4" class="mono"><%= (ns.length ? ns : defaultNs).join('\n') %></textarea></label></label>
-            <div class="hint">Tối thiểu 2 nameserver. Để trống về mặc định của hệ thống: <%= defaultNs.join(', ') %></div>
+            <div class="hint">Tối thiểu 2, tối đa <%= dnsCanIp ? 3 : 4 %> nameserver. Mặc định của hệ thống: <%= defaultNs.join(', ') %></div>
+            <% if (dnsCanIp) { %>
+              <div class="hint">Tên miền .vn bắt buộc kèm địa chỉ IP: mỗi dòng ghi tên rồi IP, ví dụ <span class="mono">ns1.tenmien.vn 112.213.89.3</span>. Bỏ trống IP thì hệ thống tự tìm.</div>
+            <% } %>
           </div>
           <button class="btn btn-block" type="submit" data-confirm="Đổi nameserver sẽ làm website/email gián đoạn nếu cấu hình sai. Tiếp tục?">Cập nhật nameserver</button>
         </form>
@@ -180,6 +183,19 @@
           <p class="tiny muted" style="margin:8px 0 0">Khi bật, hệ thống sẽ nhắc gia hạn trước hạn và ưu tiên xử lý cho tên miền này.</p>
         </form>
       </div>
+
+      <% if (typeof matKhauTenMien !== 'undefined' && matKhauTenMien) { %>
+      <!-- ------------------------------------ mat khau quan ly ten mien -->
+      <div class="card" id="mat-khau-ten-mien">
+        <div class="card-title"><h2>Mật khẩu quản lý tên miền</h2></div>
+        <div class="copy-row">
+          <span class="label">Mật khẩu</span>
+          <span class="value mono"><%= matKhauTenMien %></span>
+          <button class="btn btn-sm btn-outline" type="button" data-copy="<%= matKhauTenMien %>">Sao chép</button>
+        </div>
+        <p class="tiny muted" style="margin:8px 0 0">Hệ thống tạo ngẫu nhiên khi đăng ký với nhà đăng ký. Không chia sẻ mật khẩu này cho người khác.</p>
+      </div>
+      <% } %>
 
       <!-- ------------------------------------------ thong tin chu the -->
       <div class="card" id="chu-the">

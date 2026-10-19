@@ -24,7 +24,9 @@ import { listTlds, upsertTld } from '../services/pricing.js';
 import { getOrder, getOrderItems, refreshOrderStatus } from '../services/orders.js';
 import { confirmManually } from '../payments/index.js';
 import { provisionOrder } from '../services/provisioning.js';
-import { getBalance, checkDomain, ketNoiHopLe } from '../pavietnam/client.js';
+import { getBalance, checkDomain } from '../pavietnam/client.js';
+import { NHAN_NHOM } from '../pavietnam/maLoi.js';
+import { dongDangGiu, kichHoatDonCho, nhaDong, tomTatChoQuy } from '../services/choQuy.js';
 import { enqueue, jobStats } from '../jobs/queue.js';
 import { kickWorker } from '../jobs/worker.js';
 import { credit } from '../payments/balance.js';
@@ -48,11 +50,29 @@ import { chiPhiHomNay, thongKeGanDay, trangThaiAi } from '../services/goiYTenMie
 const router = Router();
 router.use(requireAuth, requireAdmin);
 
+/**
+ * Che do goi P.A hien tren MOI trang quan tri (admin-nav): de quen bat che do
+ * thu thi don "dang ky xong" ma khong co ten mien that.
+ */
+function cheDoPA(): { ma: 'gia_lap' | 'thu' | 'that'; nhan: string } {
+  const pa = settings.pa();
+  if (pa.sandbox) return { ma: 'gia_lap', nhan: 'Giả lập (không gọi P.A)' };
+  if (pa.useTestEndpoint) return { ma: 'thu', nhan: `Thử: lệnh đăng ký, gia hạn, đổi DNS đi ${pa.endpointTest} (P.A trả 900, không trừ tiền, không đăng ký thật)` };
+  return { ma: 'that', nhan: 'Thật (interface.php)' };
+}
+
+router.use((_req, res, next) => {
+  res.locals['paCheDo'] = cheDoPA();
+  next();
+});
+
 /* -------------------------------------------------------------- tong quan */
 
-router.get('/', (_req, res) => {
+router.get('/', wrap(async (_req, res) => {
   const count = (sql: string, ...params: unknown[]) =>
     (db.prepare(sql).get(...params) as { n: number }).n;
+  // So du doc truc tiep tu P.A moi lan mo trang (check_account_still), loi thi bao loi
+  const choQuy = await tomTatChoQuy();
 
   res.render('admin/dashboard', {
     title: 'Quản trị - Tổng quan',
@@ -75,8 +95,14 @@ router.get('/', (_req, res) => {
       tran: settings.ai().dailyCapVnd,
       thongKe: thongKeGanDay(14),
     },
+    paSoDu: choQuy,
+    dongGiu: {
+      choQuy: choQuy.cho.length,
+      canNguoi: dongDangGiu('can_nguoi_xu_ly').length,
+      saiHoSo: dongDangGiu('sai_ho_so').length,
+    },
   });
-});
+}));
 
 /* --------------------------------------------- CAU HINH CONTROL PANEL */
 
@@ -106,6 +132,9 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'pa.username', label: 'Username đại lý' },
   { key: 'pa.apikey', label: 'API Key', type: 'password', hint: 'API Key đổi khi bạn đổi mật khẩu tài khoản đại lý' },
   { key: 'pa.sandbox', label: 'Chế độ giả lập (không gọi API thật)', type: 'checkbox' },
+  { key: 'pa.endpoint_test', label: 'API endpoint chạy thử', hint: 'https://daily.pavietnam.vn/interface_test.php' },
+  { key: 'pa.use_test_endpoint', label: 'Chế độ thử: đăng ký, gia hạn, đổi DNS đi endpoint chạy thử', type: 'checkbox', hint: 'P.A trả 900, không trừ tiền và KHÔNG đăng ký thật. Chỉ bật khi kiểm thử, nhớ tắt trước khi bán' },
+  { key: 'pa.sendmail', label: 'Để P.A gửi email thông báo cho khách', type: 'checkbox', hint: 'Mặc định tắt: hệ thống đã tự gửi email kích hoạt, gia hạn' },
 
   // DNS & gia
   { key: 'dns.default_ns', label: 'Nameserver mặc định', hint: 'Cách nhau bằng dấu phẩy' },
@@ -163,6 +192,17 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'smtp.from', label: 'Địa chỉ gửi đi' },
   { key: 'smtp.admin_alert', label: 'Email nhận cảnh báo nội bộ' },
 
+  // Telegram quan tri (@mientaymediabot). Mac dinh doc TELEGRAM_* trong .env, o day chi ghi de
+  { key: 'tg.bot_token', label: 'Telegram bot token', type: 'password', hint: 'Để trống thì dùng TELEGRAM_BOT_TOKEN trong .env' },
+  { key: 'tg.admin_chat_ids', label: 'Chat id Telegram được phép', hint: 'Cách nhau bằng dấu phẩy. Để trống thì dùng TELEGRAM_ADMIN_CHAT_IDS' },
+  { key: 'tg.webhook_secret', label: 'Secret webhook Telegram', type: 'password', hint: 'Trùng secret_token khi gọi setWebhook. Để trống thì dùng TELEGRAM_WEBHOOK_SECRET' },
+
+  // Day su kien sang CRM (crm.mientaymedia.com)
+  { key: 'crm.bat', label: 'Đẩy sự kiện đơn hàng sang CRM', type: 'checkbox' },
+  { key: 'crm.url', label: 'Địa chỉ CRM', hint: 'Ví dụ https://crm.mientaymedia.com. Để trống thì dùng CRM_URL' },
+  { key: 'crm.khoa', label: 'Khóa gửi sang CRM', type: 'password', hint: 'Một khóa trong INTEGRATION_WEB_KEYS của CRM. Để trống thì dùng CRM_INTEGRATION_KEY' },
+  { key: 'crm.su_kien_mo_rong', label: 'Gửi thêm sự kiện đơn chờ quỹ, đơn lỗi sang CRM', type: 'checkbox', hint: 'Chỉ bật khi CRM đã nhận hai loại sự kiện mới (xem docs/mtm/pa-dang-ky/api-crm.md)' },
+
   // Tim cung AI (OpenAI). Chu chot 18/10/2026: mac dinh tat, 50.000 d/ngay,
   // 8 ten x 2 duoi, 5 luot/phut va 30 luot/ngay moi IP.
   { key: 'ai.enabled', label: 'Bật Tìm cùng AI ở trang chủ', type: 'checkbox', hint: 'Chỉ chạy khi đã có khóa OpenAI và tên model' },
@@ -195,6 +235,13 @@ function currentSettingValues(): Record<string, string> {
     ...flatten('smtp', settings.smtp()),
     ...flatten('security', settings.security()),
     ...flatten('ai', settings.ai()),
+    'tg.bot_token': settings.telegram().botToken,
+    'tg.admin_chat_ids': settings.telegram().adminChatIds.join(','),
+    'tg.webhook_secret': settings.telegram().webhookSecret,
+    'crm.bat': settings.crm().enabled ? '1' : '0',
+    'crm.url': settings.crm().url,
+    'crm.khoa': settings.crm().key,
+    'crm.su_kien_mo_rong': settings.crm().suKienMoRong ? '1' : '0',
   };
   for (const key of SECRET_KEYS) {
     if (resolved[key]) resolved[key] = maskSecret(resolved[key]!);
@@ -268,30 +315,34 @@ router.post('/cau-hinh', (req, res) => {
   res.redirect('/admin/cau-hinh');
 });
 
-/** Kiem tra ket noi API P.A ngay tren trang cau hinh. */
+/**
+ * Kiem tra ket noi API P.A: goi check_account_still (chi doc, da xac minh that).
+ * Tra loi co Money nghia la username, API Key va IP whitelist deu dung. Neu nhap
+ * ten mien thu thi kiem them check_whois.
+ */
 router.post(
   '/cau-hinh/kiem-tra-api',
   wrap(async (req, res) => {
-    const domain = String(req.body?.test_domain ?? '').trim() || 'pavietnam.vn';
+    const domain = String(req.body?.test_domain ?? '').trim();
     try {
-      const check = await checkDomain(domain);
-      let balanceText = '';
-      try {
-        const b = await getBalance();
-        balanceText = b.ok ? ` Số dư đại lý: ${b.balance.toLocaleString('vi-VN')}.` : '';
-      } catch {
-        // khong bat buoc
+      const b = await getBalance();
+      if (!b.ok) {
+        const ma = b.returnCode !== null && b.returnCode !== undefined ? ` Mã ${b.returnCode}.` : '';
+        flash(req, 'error',
+          `Kết nối API: THẤT BẠI.${ma} ${b.message}`.trim() +
+          ' Kiểm tra username, API Key và IP máy chủ đã được P.A cho phép chưa.');
+        return res.redirect('/admin/cau-hinh');
       }
-      // Kiem ket noi theo viec P.A tra loi hop le, khong theo ket qua con trong:
-      // ten mien thu da co chu ("not available") khong phai loi ket noi.
-      const ketNoi = ketNoiHopLe(check);
-      flash(
-        req,
-        ketNoi ? 'success' : 'error',
-        `Kết nối API: ${ketNoi ? 'THÀNH CÔNG' : 'THẤT BẠI'}.` +
-          (ketNoi ? ` ${domain} -> ${check.available ? 'còn trống' : 'đã đăng ký'}.` : '') +
-          `${balanceText} Phản hồi thô: ${check.raw.slice(0, 200)}`,
-      );
+      let them = '';
+      if (domain) {
+        try {
+          const check = await checkDomain(domain);
+          them = ` ${check.domain}: ${check.available ? 'còn trống' : 'đã có chủ'}.`;
+        } catch (err) {
+          them = ` Kiểm tra ${domain} lỗi: ${err instanceof Error ? err.message : String(err)}.`;
+        }
+      }
+      flash(req, 'success', `Kết nối API: THÀNH CÔNG. Số dư đại lý: ${formatVnd(b.balance)}. Chế độ: ${cheDoPA().nhan}.${them}`);
     } catch (err) {
       flash(
         req,
@@ -612,6 +663,66 @@ router.post(
     res.redirect(`/admin/don-hang/${orderId}`);
   }),
 );
+
+/* ------------------------------------------- don dang giu (cho xu ly) */
+
+router.get('/cho-xu-ly', wrap(async (_req, res) => {
+  res.render('admin/cho-xu-ly', {
+    title: 'Đơn chờ xử lý',
+    tomTat: await tomTatChoQuy(),
+    canNguoi: dongDangGiu('can_nguoi_xu_ly'),
+    saiHoSo: dongDangGiu('sai_ho_so'),
+    nhanNhom: NHAN_NHOM,
+  });
+}));
+
+/** Kiem so du va dang ky ngay cac don cho quy (cung ham voi job 5 phut, Telegram, CRM). */
+router.post('/cho-xu-ly/kich-hoat', wrap(async (req, res) => {
+  const kq = await kichHoatDonCho();
+  audit({ userId: req.currentUser!.id, action: 'cho_quy.kich_hoat', entity: 'order', ip: req.ip, meta: { soDong: kq.ketQua.length } });
+  if (kq.loiSoDu) flash(req, 'error', `Không đọc được số dư đại lý: ${kq.loiSoDu}`);
+  else if (kq.dangChay) flash(req, 'info', 'Một lượt kích hoạt khác đang chạy, vui lòng chờ.');
+  else {
+    const ok = kq.ketQua.filter((k) => k.ok).length;
+    const dau = kq.ketQua.length ? `Đã chạy ${kq.ketQua.length} dòng, ${ok} đăng ký xong.` : 'Không có dòng nào chạy được.';
+    const nap = kq.canNap ? `, cần nạp thêm ${formatVnd(kq.canNap)}` : '';
+    flash(req, kq.ketQua.length ? 'success' : 'info', `${dau} Còn chờ: ${kq.conCho}${nap}.`);
+  }
+  res.redirect('/admin/cho-xu-ly');
+}));
+
+/** Nha mot dong dang giu (sau khi da sua ho so / kiem tren trang P.A) va chay lai. */
+router.post('/cho-xu-ly/:itemId/thu-lai', (req, res) => {
+  const itemId = Number(req.params.itemId);
+  if (nhaDong(itemId)) {
+    enqueue('provision_item', { itemId }, { dedupeKey: `provision_item:${itemId}` });
+    kickWorker();
+    audit({ userId: req.currentUser!.id, action: 'order_item.retry', entity: 'order_item', entityId: itemId, ip: req.ip });
+    flash(req, 'success', 'Đã đưa dòng đơn vào hàng đợi đăng ký lại.');
+  } else {
+    flash(req, 'info', 'Dòng đơn này không còn bị giữ.');
+  }
+  res.redirect('/admin/cho-xu-ly');
+});
+
+/**
+ * Chot that bai mot dong dang giu (vd 606 da doi soat voi P.A, khong dang ky
+ * duoc). Sau do hoan tien o trang chi tiet don nhu dong that bai thuong.
+ */
+router.post('/cho-xu-ly/:itemId/that-bai', (req, res) => {
+  const itemId = Number(req.params.itemId);
+  const info = db.prepare(`UPDATE order_items SET status='failed', hold='', hold_since=NULL, updated_at=? WHERE id=? AND hold <> '' AND status='pending'`)
+    .run(nowIso(), itemId);
+  const row = db.prepare('SELECT order_id FROM order_items WHERE id = ?').get(itemId) as { order_id: number } | undefined;
+  if (info.changes && row) {
+    refreshOrderStatus(row.order_id);
+    audit({ userId: req.currentUser!.id, action: 'order_item.mark_failed', entity: 'order_item', entityId: itemId, ip: req.ip });
+    flash(req, 'success', 'Đã đánh dấu thất bại. Hoàn tiền ở trang chi tiết đơn nếu cần.');
+    return res.redirect(`/admin/don-hang/${row.order_id}`);
+  }
+  flash(req, 'info', 'Dòng đơn này không còn bị giữ.');
+  res.redirect('/admin/cho-xu-ly');
+});
 
 /* ------------------------------------------------- ho so doi chu the */
 

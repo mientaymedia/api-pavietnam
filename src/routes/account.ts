@@ -13,6 +13,7 @@ import { hashPassword, randomToken, sha256, verifyPassword } from '../lib/crypto
 import { daysUntilExpiry, listUserDomains } from '../services/domainRepo.js';
 import { listOrders } from '../services/orders.js';
 import { audit } from '../services/audit.js';
+import { loiHoSoPA, type ContactRow } from '../services/domainContact.js';
 import { qrSvg } from '../lib/qrcode.js';
 import { formatSecret } from '../lib/totp.js';
 import {
@@ -49,23 +50,41 @@ router.get('/dashboard', requireAuth, (req, res) => {
 
 /* ---------------------------------------------------------- ho so chu the */
 
+function hoSoCua(userId: number): (ContactRow & { canBoSung: string[] })[] {
+  return (db.prepare('SELECT * FROM contacts WHERE user_id = ? ORDER BY is_default DESC, id').all(userId) as ContactRow[])
+    // Ho so tao truoc khi form doi co the thieu phuong xa, ngay sinh...: bao som
+    // de khach sua truoc khi dat hang, khong de don treo o buoc dang ky
+    .map((c) => ({ ...c, canBoSung: loiHoSoPA(c, 'vn') }));
+}
+
 router.get('/tai-khoan/ho-so', requireAuth, (req, res) => {
+  const userId = req.currentUser!.id;
+  const sua = Number(req.query['sua']) || 0;
+  const dangSua = sua
+    ? (db.prepare('SELECT * FROM contacts WHERE id = ? AND user_id = ?').get(sua, userId) as ContactRow | undefined)
+    : undefined;
   res.render('account/contacts', {
     title: 'Hồ sơ chủ thể tên miền',
-    contacts: db.prepare('SELECT * FROM contacts WHERE user_id = ? ORDER BY is_default DESC, id')
-      .all(req.currentUser!.id),
-    values: {},
+    contacts: hoSoCua(userId),
+    values: dangSua ?? {},
     errors: {},
   });
 });
 
 router.post('/tai-khoan/ho-so', requireAuth, (req, res) => {
   const userId = req.currentUser!.id;
+  // Buoc 1 cua form khong JS: chon tinh xong thi ve lai form kem danh sach
+  // phuong xa cua tinh do, chua kiem va chua luu gi
+  if (req.body?.buoc === 'chon-tinh') {
+    return res.render('account/contacts', {
+      title: 'Hồ sơ chủ thể tên miền', contacts: hoSoCua(userId), values: req.body ?? {}, errors: {},
+    });
+  }
   const parsed = contactSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(422).render('account/contacts', {
       title: 'Hồ sơ chủ thể tên miền',
-      contacts: db.prepare('SELECT * FROM contacts WHERE user_id = ? ORDER BY is_default DESC, id').all(userId),
+      contacts: hoSoCua(userId),
       values: req.body ?? {},
       errors: fieldErrors(parsed.error),
     });
@@ -77,22 +96,22 @@ router.post('/tai-khoan/ho-so', requireAuth, (req, res) => {
 
   if (id && owned) {
     db.prepare(
-      `UPDATE contacts SET kind=?, full_name=?, org_name=?, id_number=?, tax_code=?, email=?, phone=?, address=?,
+      `UPDATE contacts SET kind=?, full_name=?, org_name=?, id_number=?, tax_code=?, email=?, phone=?, address=?, ward=?,
                            city=?, province=?, postal_code=?, country=?, birth_date=?, gender=?, updated_at=?
        WHERE id=? AND user_id=?`,
     ).run(
-      c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address,
+      c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address, c.ward,
       c.city, c.province, c.postal_code, c.country, c.birth_date, c.gender, nowIso(), id, userId,
     );
     flash(req, 'success', 'Đã cập nhật hồ sơ chủ thể.');
   } else {
     const isFirst = (db.prepare('SELECT COUNT(*) AS n FROM contacts WHERE user_id = ?').get(userId) as { n: number }).n === 0;
     db.prepare(
-      `INSERT INTO contacts (user_id, kind, full_name, org_name, id_number, tax_code, email, phone, address,
+      `INSERT INTO contacts (user_id, kind, full_name, org_name, id_number, tax_code, email, phone, address, ward,
                              city, province, postal_code, country, birth_date, gender, is_default, created_at, updated_at)
-       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     ).run(
-      userId, c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address,
+      userId, c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address, c.ward,
       c.city, c.province, c.postal_code, c.country, c.birth_date, c.gender, isFirst ? 1 : 0, nowIso(), nowIso(),
     );
     flash(req, 'success', 'Đã thêm hồ sơ chủ thể.');

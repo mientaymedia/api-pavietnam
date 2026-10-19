@@ -165,3 +165,87 @@ export function parseNameservers(value: unknown): string[] {
     .map((v) => String(v).trim().toLowerCase().replace(/\.$/, ''))
     .filter((v) => /^[a-z0-9.-]+\.[a-z]{2,}$/.test(v));
 }
+
+/* ------------------------------------------------- dinh dang chuan cua P.A */
+
+export interface PhanHoiPA {
+  command: string;
+  /** ReturnCode dang so; null khi phan hoi khong co (check_account_still, get_date_domain, so tran). */
+  returnCode: number | null;
+  returnText: string;
+  /** Doi tuong JSON goc (giu nguyen hoa thuong cua khoa), null neu khong phai JSON. */
+  json: Record<string, unknown> | null;
+}
+
+/**
+ * Doc phan hoi theo tai lieu P.A: JSON `{"Command","ReturnCode","ReturnText",...}`
+ * (co the kem BOM UTF-8). Loi truoc buoc xac thuc lai la `print_r` cua PHP:
+ * `<pre>Array ( [Command] => ... [ReturnCode] => 600 [ReturnText] => ... )</pre>`,
+ * hoac dang tran `501 => Loi: ...`; ca hai cung doc ra ReturnCode.
+ */
+export function docPhanHoiPA(raw: string): PhanHoiPA {
+  const s = String(raw ?? '').replace(/^﻿/, '').trim();
+  const out: PhanHoiPA = { command: '', returnCode: null, returnText: '', json: null };
+
+  if (/^[[{]/.test(s)) {
+    try {
+      const v = JSON.parse(s) as unknown;
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        const o = v as Record<string, unknown>;
+        out.json = o;
+        const lay = (k: string) => Object.entries(o).find(([kk]) => kk.toLowerCase() === k)?.[1];
+        out.command = String(lay('command') ?? '');
+        const ma = lay('returncode');
+        out.returnCode = ma === undefined || ma === null || ma === '' ? null : Number.isFinite(Number(ma)) ? Number(ma) : null;
+        const text = lay('returntext');
+        // get_info_domain tra ReturnText la object thong tin lien he
+        out.returnText = text && typeof text === 'object' ? JSON.stringify(text) : String(text ?? '');
+      } else if (Array.isArray(v)) {
+        out.json = { items: v };
+      }
+      return out;
+    } catch {
+      // khong phai JSON hop le: thu cac dang duoi
+    }
+  }
+
+  // Gia tri ket thuc o khoa ke tiep, dau ")" dong mang, xuong dong hoac het chuoi:
+  // print_r co the nam tren mot dong hoac nhieu dong
+  const printR = (k: string) =>
+    new RegExp('\\[' + k + '\\]\\s*=>\\s*(.*?)(?=\\s*\\[[A-Za-z_]+\\]\\s*=>|\\s*\\)\\s*(?:</pre>)?\\s*$|[\\r\\n]|$)', 'is')
+      .exec(s)?.[1]?.trim();
+  const maPrintR = printR('ReturnCode');
+  if (maPrintR !== undefined) {
+    out.command = printR('Command') ?? '';
+    out.returnCode = /^\d+$/.test(maPrintR) ? Number(maPrintR) : null;
+    out.returnText = printR('ReturnText') ?? '';
+    return out;
+  }
+
+  const tran = /^(\d{3,4})\s*=>\s*(.*)$/s.exec(s);
+  if (tran) {
+    out.returnCode = Number(tran[1]);
+    out.returnText = tran[2]!.replace(/<[^>]+>/g, '').trim();
+  }
+  return out;
+}
+
+/** "3,896" -> 3896; "-830,000" -> -830000; "5.000.000" -> 5000000. Khong doc duoc -> null. */
+export function docSoTien(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? Math.round(value) : null;
+  const s = String(value).trim();
+  if (!/\d/.test(s)) return null;
+  // P.A dung dau phay ngan cach hang nghin, tien la dong nen khong co phan le
+  const so = Number(s.replace(/[^\d-]/g, ''));
+  return Number.isFinite(so) ? so : null;
+}
+
+/** get_date_domain: "24/01/2014 - 24/01/2016" -> hai moc ISO. */
+export function docKhoangNgay(value: string | undefined): { registeredAt?: string; expiresAt?: string } {
+  const m = /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/\d{4})/.exec(String(value ?? ''));
+  if (!m) return {};
+  const registeredAt = normalizeDate(m[1]);
+  const expiresAt = normalizeDate(m[2]);
+  return { ...(registeredAt ? { registeredAt } : {}), ...(expiresAt ? { expiresAt } : {}) };
+}

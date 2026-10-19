@@ -10,10 +10,9 @@ import { contactSchema, fieldErrors } from '../lib/validate.js';
 import { getProvider, settlePayment } from '../payments/index.js';
 import { isVerified, requireVerifiedToOrder } from '../services/verification.js';
 import { kickWorker } from '../jobs/worker.js';
+import { loiHoSoPA, type ContactRow } from '../services/domainContact.js';
 
 const router = Router();
-
-interface ContactRow { id: number; full_name: string; kind: string; email: string; phone: string; is_default: number }
 
 function contactsOf(userId: number): ContactRow[] {
   return db.prepare('SELECT * FROM contacts WHERE user_id = ? ORDER BY is_default DESC, id').all(userId) as ContactRow[];
@@ -77,43 +76,57 @@ router.post(
     }
 
     let contactId = Number(req.body?.contact_id) || null;
+    const veLai = (status: number, them: { contactErrors?: Record<string, string>; hoSoLoi?: string[]; suaHoSo?: number }) =>
+      res.status(status).render('checkout/index', {
+        title: 'Thanh toán',
+        cart,
+        contacts: contactsOf(userId),
+        coupon: String(req.body?.coupon ?? ''),
+        discount: 0,
+        couponError: '',
+        contactErrors: {},
+        values: req.body ?? {},
+        ...them,
+      });
+
+    // Buoc 1 cua form khong JS: chon tinh roi ve lai form kem phuong xa, chua tao don
+    if (req.body?.buoc === 'chon-tinh') return veLai(200, { contactErrors: {}, hoSoLoi: [] });
+
+    // P.A tu choi ho so thieu truong (ma 2xxx, 6020-6025): kiem theo tung duoi
+    // can dang ky TRUOC khi tao don, khach sua ngay thay vi don treo sau khi tra tien
+    const duoiDangKy = [...new Set(cart.lines.filter((l) => l.action === 'register').map((l) => l.tld))];
+    const kiemTheoDuoi = (row: ContactRow) => [...new Set(duoiDangKy.flatMap((t) => loiHoSoPA(row, t)))];
 
     // Nguoi dung chon "tao ho so moi" -> validate va luu
     if (!contactId || req.body?.contact_mode === 'new') {
       const parsed = contactSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return res.status(422).render('checkout/index', {
-          title: 'Thanh toán',
-          cart,
-          contacts: contactsOf(userId),
-          coupon: String(req.body?.coupon ?? ''),
-          discount: 0,
-          couponError: '',
-          contactErrors: fieldErrors(parsed.error),
-          values: req.body ?? {},
-        });
-      }
+      if (!parsed.success) return veLai(422, { contactErrors: fieldErrors(parsed.error) });
 
       const c = parsed.data;
+      const loi = kiemTheoDuoi({ ...c, id: 0, user_id: userId } as ContactRow);
+      if (loi.length) return veLai(422, { contactErrors: {}, hoSoLoi: loi });
+
       const isFirst = contactsOf(userId).length === 0;
       const info = db
         .prepare(
-          `INSERT INTO contacts (user_id, kind, full_name, org_name, id_number, tax_code, email, phone, address,
+          `INSERT INTO contacts (user_id, kind, full_name, org_name, id_number, tax_code, email, phone, address, ward,
                                  city, province, postal_code, country, birth_date, gender, is_default, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         )
         .run(
-          userId, c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address,
+          userId, c.kind, c.full_name, c.org_name, c.id_number, c.tax_code, c.email, c.phone, c.address, c.ward,
           c.city, c.province, c.postal_code, c.country, c.birth_date, c.gender, isFirst ? 1 : 0, nowIso(), nowIso(),
         );
       contactId = Number(info.lastInsertRowid);
     } else {
       // Xac minh ho so thuoc ve chinh nguoi dung nay
-      const owned = db.prepare('SELECT 1 FROM contacts WHERE id = ? AND user_id = ?').get(contactId, userId);
-      if (!owned) {
+      const row = db.prepare('SELECT * FROM contacts WHERE id = ? AND user_id = ?').get(contactId, userId) as ContactRow | undefined;
+      if (!row) {
         flash(req, 'error', 'Hồ sơ chủ thể không hợp lệ.');
         return res.redirect('/thanh-toan');
       }
+      const loi = kiemTheoDuoi(row);
+      if (loi.length) return veLai(422, { hoSoLoi: loi, suaHoSo: row.id });
     }
 
     const created = createOrderFromCart({

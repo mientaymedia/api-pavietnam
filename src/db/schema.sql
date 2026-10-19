@@ -123,9 +123,10 @@ CREATE TABLE IF NOT EXISTS contacts (
   tax_code     TEXT NOT NULL DEFAULT '',   -- Ma so thue (to chuc)
   email        TEXT NOT NULL,
   phone        TEXT NOT NULL,
-  address      TEXT NOT NULL DEFAULT '',
+  address      TEXT NOT NULL DEFAULT '',   -- so nha, ten duong (P.A bat buoc co so nha / to / ap)
+  ward         TEXT NOT NULL DEFAULT '',   -- phuong xa theo dung ten P.A
   city         TEXT NOT NULL DEFAULT '',
-  province     TEXT NOT NULL DEFAULT '',
+  province     TEXT NOT NULL DEFAULT '',   -- tinh thanh theo dung ten P.A
   postal_code  TEXT NOT NULL DEFAULT '',
   country      TEXT NOT NULL DEFAULT 'VN',
   birth_date   TEXT NOT NULL DEFAULT '',
@@ -230,6 +231,13 @@ CREATE TABLE IF NOT EXISTS order_items (
   error        TEXT NOT NULL DEFAULT '',
   attempts     INTEGER NOT NULL DEFAULT 0,
   meta         TEXT NOT NULL DEFAULT '{}',
+  -- Dong dang bi GIU (status van 'pending', khach thay "dang xu ly"):
+  -- '' | 'cho_nap_quy' (dai ly het tien) | 'can_nguoi_xu_ly' (606, 302...) | 'sai_ho_so' (2xxx, 6020-6025...)
+  hold         TEXT NOT NULL DEFAULT '',
+  hold_since   TEXT,
+  pa_code      TEXT NOT NULL DEFAULT '',   -- ReturnCode P.A gan nhat
+  pa_trans_id  TEXT NOT NULL DEFAULT '',   -- trans_id P.A (return_full=1)
+  pa_trans_money INTEGER NOT NULL DEFAULT 0, -- so tien P.A da tru (dong)
   created_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
   updated_at   TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
@@ -307,6 +315,7 @@ CREATE TABLE IF NOT EXISTS domains (
   -- Khoa chuyen doi (clientTransferProhibited). 1 = khoa, an toan mac dinh.
   transfer_lock  INTEGER NOT NULL DEFAULT 1,
   auth_code_last_at TEXT,          -- lan gan nhat khach lay ma EPP
+  pa_password_enc TEXT NOT NULL DEFAULT '', -- mat khau quan ly ten mien tai P.A, ma hoa AES-GCM
   registered_at  TEXT,
   expires_at     TEXT,
   last_sync_at   TEXT,
@@ -440,4 +449,10 @@ CREATE TABLE IF NOT EXISTS ai_usage_daily (
   tokens_out    INTEGER NOT NULL DEFAULT 0,
   cost_vnd      REAL    NOT NULL DEFAULT 0,  -- chi phi uoc tinh tu usage va don gia cau hinh
   updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);
+
+-- Update Telegram da xu ly (webhook): Telegram gui lai cung update_id khi phan hoi cham
+CREATE TABLE IF NOT EXISTS telegram_updates (
+  update_id  INTEGER PRIMARY KEY,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );

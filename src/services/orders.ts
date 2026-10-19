@@ -6,6 +6,7 @@ import { clearCart, getCart } from './cart.js';
 import { computeDiscount, findCoupon, getTld, priceFor } from './pricing.js';
 import { enqueue } from '../jobs/queue.js';
 import { audit } from './audit.js';
+import { phatSuKien } from './suKienDon.js';
 
 export interface Order {
   id: number;
@@ -40,6 +41,12 @@ export interface OrderItem {
   error: string;
   attempts: number;
   meta: string;
+  /** '' | 'cho_nap_quy' | 'can_nguoi_xu_ly' | 'sai_ho_so' (xem provisioning.ts). */
+  hold: '' | 'cho_nap_quy' | 'can_nguoi_xu_ly' | 'sai_ho_so';
+  hold_since: string | null;
+  pa_code: string;
+  pa_trans_id: string;
+  pa_trans_money: number;
 }
 
 /** Ma don hang - dong thoi la noi dung chuyen khoan. Ngan, de doc, khong trung. */
@@ -213,6 +220,8 @@ export function markOrderPaid(orderId: number, meta: { provider: string; txnId?:
     audit({ userId: result.order.user_id, action: 'order.paid', entity: 'order', entityId: orderId, meta });
     log.info('order_paid', { code: result.order.code, provider: meta.provider });
     enqueue('provision_order', { orderId }, { dedupeKey: `provision_order:${orderId}` });
+    const o = result.order;
+    void phatSuKien({ loai: 'don_da_thanh_toan', orderId: o.id, orderCode: o.code, userId: o.user_id, soTien: o.total });
   }
   return result.order;
 }

@@ -5,6 +5,25 @@
   <h1>Quản trị hệ thống</h1>
   <%- include('../partials/admin-nav') %>
 
+  <div class="card">
+    <div class="card-title"><h2>Tài khoản đại lý P.A</h2><a class="small" href="<%= base %>/admin/cho-xu-ly">Đơn chờ xử lý</a></div>
+    <p class="small" style="margin:0">
+      Chế độ: <span class="badge <%= paCheDo.ma === 'that' ? 'badge-ok' : 'badge-warn' %>"><%= paCheDo.ma === 'that' ? 'Thật' : paCheDo.ma === 'thu' ? 'Thử' : 'Giả lập' %></span>
+      &middot; Số dư:
+      <% if (paSoDu.soDu === null) { %>
+        <strong style="color:var(--danger)">không đọc được</strong> <span class="muted"><%= paSoDu.loiSoDu %></span>
+      <% } else { %>
+        <strong><%= formatVnd(paSoDu.soDu) %></strong>
+      <% } %>
+    </p>
+    <p class="small" style="margin:8px 0 0">
+      Chờ nạp quỹ: <strong style="color:<%= dongGiu.choQuy ? 'var(--warn)' : 'inherit' %>"><%= dongGiu.choQuy %></strong>
+      <% if (paSoDu.canNap) { %>(cần nạp thêm <strong><%= formatVnd(paSoDu.canNap) %></strong>)<% } %>
+      &middot; Cần người xử lý: <strong style="color:<%= dongGiu.canNguoi ? 'var(--danger)' : 'inherit' %>"><%= dongGiu.canNguoi %></strong>
+      &middot; Hồ sơ cần sửa: <strong style="color:<%= dongGiu.saiHoSo ? 'var(--warn)' : 'inherit' %>"><%= dongGiu.saiHoSo %></strong>
+    </p>
+  </div>
+
   <div class="grid grid-3">
     <div class="stat"><div class="stat-value"><%= stats.users %></div><div class="stat-label">Khách hàng</div></div>
     <div class="stat"><div class="stat-value"><%= stats.activeDomains %>/<%= stats.domains %></div><div class="stat-label">Tên miền đang hoạt động</div></div>

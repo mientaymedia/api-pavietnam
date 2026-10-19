@@ -20,6 +20,9 @@
                   <strong><%= c.full_name %></strong>
                   <% if (c.is_default) { %><span class="badge badge-ok" style="margin-left:6px">Mặc định</span><% } %>
                   <% if (c.org_name) { %><div class="tiny muted"><%= c.org_name %></div><% } %>
+                  <% if (c.canBoSung.length) { %>
+                    <div class="tiny" style="color:var(--warn)">Cần bổ sung: <%= c.canBoSung.join('; ') %></div>
+                  <% } %>
                 </td>
                 <td>
                   <span class="badge badge-muted"><%= c.kind === 'organization' ? 'Tổ chức' : 'Cá nhân' %></span>
@@ -27,6 +30,7 @@
                 </td>
                 <td class="small"><%= c.email %><div class="tiny muted"><%= c.phone %></div></td>
                 <td class="right nowrap">
+                  <a class="tiny" href="<%= base %>/tai-khoan/ho-so?sua=<%= c.id %>#sua-ho-so">Sửa</a>
                   <% if (!c.is_default) { %>
                     <form method="post" action="<%= base %>/tai-khoan/ho-so/<%= c.id %>/mac-dinh" style="display:inline">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -46,12 +50,14 @@
     <% } %>
   </div>
 
-  <div class="card">
-    <div class="card-title"><h2>Thêm hồ sơ mới</h2></div>
+  <div class="card" id="sua-ho-so">
+    <div class="card-title"><h2><%= values.id ? 'Sửa hồ sơ' : 'Thêm hồ sơ mới' %></h2></div>
     <form method="post" action="<%= base %>/tai-khoan/ho-so">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% if (values.id) { %><input type="hidden" name="id" value="<%= values.id %>"><% } %>
       <%- include('../partials/contact-form', { values: values, errors: errors }) %>
       <button class="btn" type="submit">Lưu hồ sơ</button>
+      <% if (values.id) { %><a class="btn btn-outline" href="<%= base %>/tai-khoan/ho-so">Hủy sửa</a><% } %>
     </form>
   </div>
 </div>

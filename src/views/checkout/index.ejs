@@ -21,12 +21,30 @@
             </div>
           <% } %>
 
+          <%
+            var loiHoSo = typeof hoSoLoi !== 'undefined' && hoSoLoi ? hoSoLoi : [];
+            var maSua = typeof suaHoSo !== 'undefined' ? suaHoSo : 0;
+            // Dang tao ho so moi: radio "Tao ho so moi" duoc chon va khung nhap mo san
+            var dangTaoMoi = values.contact_id !== undefined && String(values.contact_id) === '';
+          %>
+          <% if (loiHoSo.length) { %>
+            <div class="alert alert-error" role="alert">
+              <strong>Hồ sơ chủ thể chưa đủ thông tin nhà đăng ký yêu cầu:</strong>
+              <ul style="margin:6px 0 0; padding-left:18px">
+                <% loiHoSo.forEach(function (l) { %><li><%= l %></li><% }); %>
+              </ul>
+              <% if (maSua) { %>
+                <p style="margin:8px 0 0"><a href="<%= base %>/tai-khoan/ho-so?sua=<%= maSua %>#sua-ho-so">Sửa hồ sơ này</a> rồi quay lại thanh toán, hoặc tạo hồ sơ mới bên dưới.</p>
+              <% } %>
+            </div>
+          <% } %>
+
           <% if (contacts.length) { %>
             <div class="field">
               <label>Chọn hồ sơ có sẵn</label>
               <% contacts.forEach(function (c) { %>
                 <label class="check" style="padding:9px 0; border-bottom:1px solid var(--line)">
-                  <input type="radio" name="contact_id" value="<%= c.id %>" <%= c.is_default ? 'checked' : '' %>>
+                  <input type="radio" name="contact_id" value="<%= c.id %>" <%= (values.contact_id !== undefined ? String(values.contact_id) === String(c.id) : c.is_default) ? 'checked' : '' %>>
                   <span>
                     <strong><%= c.full_name %></strong>
                     <span class="badge badge-muted"><%= c.kind === 'organization' ? 'Tổ chức' : 'Cá nhân' %></span>
@@ -35,11 +53,11 @@
                 </label>
               <% }); %>
               <label class="check" style="padding:9px 0">
-                <input type="radio" name="contact_id" value="">
+                <input type="radio" name="contact_id" value="" <%= dangTaoMoi ? 'checked' : '' %>>
                 <span><strong>Tạo hồ sơ mới</strong></span>
               </label>
             </div>
-            <details <%= Object.keys(contactErrors).length ? 'open' : '' %>>
+            <details <%= Object.keys(contactErrors).length || dangTaoMoi ? 'open' : '' %>>
               <summary class="small muted" style="cursor:pointer; margin-bottom:12px">Nhập thông tin hồ sơ mới</summary>
               <input type="hidden" name="contact_mode" value="">
               <%- include('../partials/contact-form', { values: values, errors: contactErrors }) %>

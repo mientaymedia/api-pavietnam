@@ -74,6 +74,10 @@ export const config = {
 
   pa: {
     endpoint: str('PAVIETNAM_ENDPOINT', 'https://daily.pavietnam.vn/interface.php'),
+    /** Endpoint chay thu cua P.A: dang ky / gia han / doi DNS tra 900, khong tru tien. */
+    endpointTest: str('PAVIETNAM_ENDPOINT_TEST', 'https://daily.pavietnam.vn/interface_test.php'),
+    /** Bat che do thu: lenh ghi di endpointTest (lenh doc van di endpoint that). */
+    useTestEndpoint: bool('PA_USE_TEST_ENDPOINT', false),
     username: str('PAVIETNAM_USERNAME'),
     apikey: str('PAVIETNAM_APIKEY'),
     timeoutMs: num('PAVIETNAM_TIMEOUT_MS', 30_000),
@@ -131,6 +135,31 @@ export const config = {
     appId: str('ZNS_APP_ID'),
     secretKey: str('ZNS_SECRET_KEY'),
     refreshToken: str('ZNS_REFRESH_TOKEN'),
+  },
+
+  /**
+   * Bot Telegram bao quan tri (don moi, dang ky xong, thieu quy, loi) va nhan
+   * lenh /kichhoat, /sodu, /doncho. Ba bien nay da co trong .env tren VPS; o
+   * Cau hinh chi ghi de khi nhap. TELEGRAM_API_BASE chi de test tro ve may gia.
+   */
+  telegram: {
+    botToken: str('TELEGRAM_BOT_TOKEN'),
+    /** Danh sach chat id duoc phep, cach nhau bang dau phay. */
+    adminChatIds: str('TELEGRAM_ADMIN_CHAT_IDS'),
+    webhookSecret: str('TELEGRAM_WEBHOOK_SECRET'),
+    apiBase: str('TELEGRAM_API_BASE', 'https://api.telegram.org').replace(/\/+$/, ''),
+  },
+
+  /**
+   * Cong may noi bo cho CRM (/api/noi-bo/*): khoa Bearer CRM gui len (cung
+   * gia tri WEB_TEN_MIEN_KEY ben CRM). Nhieu khoa cach nhau dau phay de xoay vong.
+   */
+  webTenMienKey: str('WEB_TEN_MIEN_KEY'),
+
+  /** Day su kien don hang sang CRM (cong /api/tich-hop/web-ten-mien/su-kien ben CRM). */
+  crm: {
+    url: str('CRM_URL').replace(/\/+$/, ''),
+    key: str('CRM_INTEGRATION_KEY'),
   },
 
   seedAdmin: {

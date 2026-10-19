@@ -22,11 +22,16 @@ import { getTld } from './pricing.js';
 import { audit } from './audit.js';
 import { sendContactUpdated, sendOwnershipRequestStatus, userEmail } from './notifications.js';
 import type { DomainRow } from './domainRepo.js';
+import { timPhuong, timTinh } from '../lib/diaGioi.js';
+import {
+  MAU_GIAY_TO, MAU_MA_SO_THUE, chuanHoaGioiTinh, diaChiHopLe, ngaySinhHopLe,
+} from '../lib/validate.js';
+import { chuanHoaDienThoai, laTenMienVn } from '../pavietnam/thamSo.js';
 
 export interface ContactRow {
   id: number; user_id: number; kind: string; full_name: string; org_name: string;
   id_number: string; tax_code: string; email: string; phone: string; address: string;
-  city: string; province: string; postal_code: string; country: string;
+  ward: string; city: string; province: string; postal_code: string; country: string;
   birth_date: string; gender: string;
 }
 
@@ -40,6 +45,7 @@ export function toRegisterContact(row: ContactRow): RegisterContact {
     email: row.email,
     phone: row.phone,
     address: row.address,
+    ward: row.ward ?? '',
     city: row.city,
     province: row.province,
     postalCode: row.postal_code,
@@ -75,6 +81,43 @@ export function validateForTld(contact: ContactRow, tld: string): string | null 
   }
   if (!contact.address.trim()) return 'Bắt buộc có địa chỉ';
   return null;
+}
+
+/**
+ * Ho so co du dieu kien GUI P.A dang ky duoi nay khong (theo tai lieu P.A, khac
+ * `validateForTld` la quy dinh VNNIC cho doi chu the / sua lien he).
+ *
+ * Kiem lai tu du lieu da luu vi ho so cu tao truoc khi form doi chua co phuong
+ * xa, ngay sinh... Tra ve danh sach loi de hien het mot lan cho khach.
+ *  - Moi duoi: ca nhan can CCCD/ho chieu, to chuc can ten + MST; dien thoai Viet
+ *    Nam; dia chi so nha ten duong; tinh va phuong xa dung danh sach P.A.
+ *  - .vn: them ngay sinh, gioi tinh; to chuc them CCCD nguoi dai dien (nguoi
+ *    quan ly ten mien phai la ca nhan).
+ */
+export function loiHoSoPA(c: ContactRow, tld: string): string[] {
+  const loi: string[] = [];
+  const congTy = c.kind === 'organization';
+  if (congTy) {
+    if ((c.org_name ?? '').trim().length <= 3) loi.push('Thiếu tên tổ chức');
+    if (!MAU_MA_SO_THUE.test((c.tax_code ?? '').trim())) loi.push('Thiếu hoặc sai mã số thuế');
+  } else if (!MAU_GIAY_TO.test((c.id_number ?? '').trim().toUpperCase())) {
+    loi.push('Thiếu hoặc sai số CCCD / hộ chiếu');
+  }
+  if ((c.full_name ?? '').trim().length <= 3) loi.push(congTy ? 'Thiếu họ tên người đại diện' : 'Thiếu họ tên');
+  if ((c.country || 'VN').toUpperCase() !== 'VN') loi.push('Hiện chỉ nhận chủ thể tại Việt Nam');
+  if (!chuanHoaDienThoai(c.phone ?? '')) loi.push('Số điện thoại không hợp lệ');
+  if (!diaChiHopLe(c.address ?? '')) loi.push('Địa chỉ cần có số nhà và tên đường');
+  const tinh = timTinh(c.province ?? '');
+  if (!tinh) loi.push('Tỉnh, thành phố không đúng danh sách của nhà đăng ký');
+  else if (!timPhuong(tinh.id, c.ward ?? '')) loi.push('Chưa chọn phường, xã thuộc tỉnh, thành phố');
+
+  if (laTenMienVn(tld)) {
+    const ai = congTy ? ' người đại diện' : '';
+    if (congTy && !MAU_GIAY_TO.test((c.id_number ?? '').trim().toUpperCase())) loi.push('Tên miền .vn: thiếu số CCCD người đại diện');
+    if (!ngaySinhHopLe(c.birth_date ?? '')) loi.push(`Tên miền .vn: thiếu ngày sinh${ai}`);
+    if (!chuanHoaGioiTinh(c.gender ?? '')) loi.push(`Tên miền .vn: thiếu giới tính${ai}`);
+  }
+  return loi;
 }
 
 export type UpdateContactOutcome =

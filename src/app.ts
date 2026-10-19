@@ -13,6 +13,7 @@ import { formatVnd } from './lib/money.js';
 import { isVerified } from './services/verification.js';
 import { BASE, outsideBase, redirectWithBase, withBase } from './lib/basePath.js';
 import { clientIpMiddleware } from './lib/clientIp.js';
+import { danhSachTinh, phuongCuaTinh } from './lib/diaGioi.js';
 
 import homeRoutes from './routes/home.js';
 import timCungAiRoutes from './routes/timCungAi.js';
@@ -21,10 +22,12 @@ import cartRoutes from './routes/cart.js';
 import checkoutRoutes from './routes/checkout.js';
 import orderRoutes from './routes/orders.js';
 import webhookRoutes from './routes/webhooks.js';
+import telegramWebhookRoutes from './routes/telegramWebhook.js';
 import controlPanelRoutes from './routes/controlPanel.js';
 import accountRoutes from './routes/account.js';
 import adminRoutes from './routes/admin.js';
 import apiRoutes from './routes/api.js';
+import noiBoRoutes from './routes/noiBo.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '..');
@@ -94,6 +97,8 @@ export function createApp() {
     res.locals['base'] = BASE;
     res.locals['url'] = withBase;
     res.locals['csrfToken'] = '';
+    // Danh sach tinh, phuong xa theo ten P.A cho form ho so chu the
+    res.locals['diaGioi'] = { danhSachTinh, phuongCuaTinh };
     // Hien dai nhac xac thuc email tren moi trang khi khach chua xac thuc
     // OA cho nut chat Zalo o footer; rong o trang quan tri hoac khi tat
     res.locals['zaloChatOa'] = laTrangQuanTri(req.path) ? '' : zaloChatOaId();
@@ -109,10 +114,12 @@ export function createApp() {
   site.use('/gio-hang', cartRoutes);
   site.use('/thanh-toan', checkoutRoutes);
   site.use('/don-hang', orderRoutes);
+  site.use('/webhooks/telegram', telegramWebhookRoutes);
   site.use('/webhooks', webhookRoutes);
   site.use('/control-panel', controlPanelRoutes);
   site.use('/', accountRoutes);
   site.use('/admin', adminRoutes);
+  site.use('/api/noi-bo', noiBoRoutes);
   site.use('/api/v1', apiRoutes);
 
   site.use(notFound);

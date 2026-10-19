@@ -121,6 +121,11 @@ export const settings = {
     username: getSetting('pa.username', config.pa.username),
     apikey: getSetting('pa.apikey', config.pa.apikey),
     sandbox: getSettingBool('pa.sandbox', config.pa.sandbox),
+    endpointTest: getSetting('pa.endpoint_test', config.pa.endpointTest),
+    useTestEndpoint: getSettingBool('pa.use_test_endpoint', config.pa.useTestEndpoint),
+    // Mac dinh TAT: email cua P.A gui thang cho khach mang ten P.A, trong khi he
+    // thong da tu gui email kich hoat, gia han mang ten MienTay Media
+    sendmail: getSettingBool('pa.sendmail', false),
   }),
 
   dns: () => ({
@@ -200,6 +205,22 @@ export const settings = {
     adminAlert: getSetting('smtp.admin_alert', config.smtp.adminAlert),
   }),
 
+  telegram: () => ({
+    botToken: getSetting('tg.bot_token', config.telegram.botToken),
+    adminChatIds: getSetting('tg.admin_chat_ids', config.telegram.adminChatIds)
+      .split(',').map((s) => s.trim()).filter((s) => /^-?\d+$/.test(s)),
+    webhookSecret: getSetting('tg.webhook_secret', config.telegram.webhookSecret),
+  }),
+
+  crm: () => ({
+    // Mac dinh TAT: chu bat sau khi CRM da dat khoa (runbook ben CRM, buoc 3)
+    enabled: getSettingBool('crm.bat', false),
+    url: getSetting('crm.url', config.crm.url).replace(/\/+$/, ''),
+    key: getSetting('crm.khoa', config.crm.key),
+    /** Gui them don_cho_quy / don_loi: CRM chua nhan hai loai nay (docs/mtm/pa-dang-ky/api-crm.md). */
+    suKienMoRong: getSettingBool('crm.su_kien_mo_rong', false),
+  }),
+
   ai: () => ({
     /** Chu chot 18/10/2026: mac dinh TAT cho toi khi nhap khoa va bat tay. */
     enabled: getSettingBool('ai.enabled', false),
@@ -264,6 +285,9 @@ export const SECRET_KEYS = [
   'zns.refresh_token',
   'zns.access_token',
   'ai.openai_key',
+  'tg.bot_token',
+  'tg.webhook_secret',
+  'crm.khoa',
 ];
 
 /**

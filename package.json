@@ -14,6 +14,7 @@
     "migrate": "tsx src/db/migrate.ts",
     "seed": "tsx src/db/seed.ts",
     "pa:probe": "tsx src/pavietnam/probe.ts",
+    "pa:dia-gioi": "tsx src/pavietnam/napDiaGioi.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node scripts/chay-test.mjs",
     "kiem-dau": "node scripts/kiem-dau.mjs",

@@ -178,13 +178,13 @@
 
   <div class="card">
     <div class="card-title"><h2>Kiểm tra kết nối API P.A</h2></div>
-    <p class="muted small">Gọi thử một lệnh chỉ đọc (check tên miền) để xác nhận username, API Key và IP whitelist đã đúng.</p>
+    <p class="muted small">Gọi lệnh chỉ đọc <code>check_account_still</code> (số dư đại lý) để xác nhận username, API Key và IP whitelist đã đúng. Nhập tên miền nếu muốn kiểm thêm <code>check_whois</code>.</p>
     <form method="post" action="<%= base %>/admin/cau-hinh/kiem-tra-api">
       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="row" style="align-items:flex-end">
         <div class="field" style="flex:1; margin:0">
-          <label><span class="field-name">Tên miền để thử</span>
-          <input type="text" name="test_domain" value="pavietnam.vn"></label>
+          <label><span class="field-name">Tên miền để thử (không bắt buộc)</span>
+          <input type="text" name="test_domain" value=""></label>
         </div>
         <button class="btn btn-outline" type="submit">Kiểm tra ngay</button>
       </div>

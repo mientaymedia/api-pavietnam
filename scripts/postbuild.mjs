@@ -11,6 +11,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const copies = [
   ['src/views', 'dist/views'],
   ['src/db/schema.sql', 'dist/db/schema.sql'],
+  // Danh sach tinh, phuong xa theo ten P.A (src/lib/diaGioi.ts)
+  ['src/data', 'dist/data'],
 ];
 
 for (const [from, to] of copies) {

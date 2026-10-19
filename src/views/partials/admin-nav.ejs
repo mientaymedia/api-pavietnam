@@ -4,6 +4,7 @@
   <a href="<%= base %>/admin/cau-hinh" class="<%= currentPath.startsWith('/admin/cau-hinh') ? 'active' : '' %>">Cấu hình Control Panel</a>
   <a href="<%= base %>/admin/bang-gia" class="<%= currentPath.startsWith('/admin/bang-gia') ? 'active' : '' %>">Bảng giá</a>
   <a href="<%= base %>/admin/ma-giam-gia" class="<%= currentPath.startsWith('/admin/ma-giam-gia') ? 'active' : '' %>">Mã giảm giá</a>
+  <a href="<%= base %>/admin/cho-xu-ly" class="<%= currentPath.startsWith('/admin/cho-xu-ly') ? 'active' : '' %>">Đơn chờ xử lý</a>
   <a href="<%= base %>/admin/don-hang" class="<%= currentPath.startsWith('/admin/don-hang') ? 'active' : '' %>">Đơn hàng</a>
   <a href="<%= base %>/admin/doi-chu-the" class="<%= currentPath.startsWith('/admin/doi-chu-the') ? 'active' : '' %>">Đổi chủ thể</a>
   <a href="<%= base %>/admin/ten-mien" class="<%= currentPath.startsWith('/admin/ten-mien') ? 'active' : '' %>">Tên miền</a>
@@ -13,3 +14,9 @@
   <a href="<%= base %>/admin/zns" class="<%= currentPath.startsWith('/admin/zns') ? 'active' : '' %>">ZNS</a>
   <a href="<%= base %>/admin/nhat-ky-api" class="<%= currentPath.startsWith('/admin/nhat-ky-api') ? 'active' : '' %>">Nhật ký API</a>
 </div>
+<% if (typeof paCheDo !== 'undefined' && paCheDo && paCheDo.ma !== 'that') { %>
+  <div class="alert <%= paCheDo.ma === 'thu' ? 'alert-warn' : 'alert-info' %>" role="status">
+    <strong>P.A đang ở chế độ <%= paCheDo.ma === 'thu' ? 'THỬ' : 'GIẢ LẬP' %>:</strong> <%= paCheDo.nhan %>.
+    Đơn "đăng ký xong" ở chế độ này không có tên miền thật. Đổi ở mục Cấu hình.
+  </div>
+<% } %>

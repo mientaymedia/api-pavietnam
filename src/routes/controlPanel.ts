@@ -25,9 +25,26 @@ import {
 import { db } from '../db/index.js';
 import { enqueue } from '../jobs/queue.js';
 import { settings } from '../lib/settings.js';
+import { decryptSecret } from '../lib/crypto.js';
+import { docNameserver } from '../pavietnam/client.js';
+import { laTenMienVn, type NameserverPA } from '../pavietnam/thamSo.js';
 
 const router = Router();
 router.use(requireAuth);
+
+/**
+ * Mat khau quan ly ten mien do he thong sinh khi dang ky qua P.A: chu ten mien
+ * can de dang nhap trang quan ly cua nha dang ky. Chi hien trong Control Panel
+ * cua chinh chu (route da kiem quyen so huu), khong gui qua email.
+ */
+function docMatKhauTenMien(enc: string): string {
+  if (!enc) return '';
+  try {
+    return decryptSecret(enc);
+  } catch {
+    return '';
+  }
+}
 
 /** Nap ten mien theo duong dan va kiem tra quyen so huu. */
 function load(req: Parameters<typeof requireAuth>[0]) {
@@ -71,6 +88,8 @@ router.get(
         .all(req.currentUser!.id),
       hoSoDoiChuThe: ownershipRequestFor(domain.id),
       canHoSoDayDu: tld?.requires_vn_contact === 1,
+      matKhauTenMien: docMatKhauTenMien(domain.pa_password_enc),
+      dnsCanIp: laTenMienVn(domain.tld),
     });
   }),
 );
@@ -82,10 +101,13 @@ router.post(
     const domain = load(req);
     if (!domain) return res.redirect('/control-panel');
 
-    const raw = String(req.body?.nameservers ?? '')
+    // Moi dong: "ten-nameserver" hoac "ten-nameserver IP". Ten mien .vn bat buoc
+    // co IP voi P.A; bo trong thi he thong tu phan giai (setNameservers).
+    const dongNhap = String(req.body?.nameservers ?? '')
       .split(/[\n,]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
+    const raw = dongNhap.map((d) => docNameserver(d));
 
-    const invalid = raw.filter((ns) => !nameserverSchema.safeParse(ns).success);
+    const invalid = dongNhap.filter((_d, i) => !raw[i] || !nameserverSchema.safeParse(raw[i]!.host).success);
     if (invalid.length) {
       flash(req, 'error', `Nameserver không hợp lệ: ${invalid.join(', ')}`);
       return res.redirect(`/control-panel/${domain.domain}`);
@@ -96,7 +118,7 @@ router.post(
     }
 
     try {
-      await changeNameservers(domain, raw, req.currentUser!.id);
+      await changeNameservers(domain, raw as NameserverPA[], req.currentUser!.id);
       flash(req, 'success', 'Đã cập nhật nameserver. Thay đổi có thể mất 5 phút đến 24 giờ để có hiệu lực toàn cầu.');
     } catch (err) {
       flash(req, 'error', err instanceof Error ? err.message : 'Không đổi được nameserver.');

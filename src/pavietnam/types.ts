@@ -1,3 +1,5 @@
+import type { NhomMa } from './maLoi.js';
+
 /** Kieu du lieu dung chung cho tang tich hop nha dang ky (registrar). */
 
 export interface RawResult {
@@ -12,6 +14,10 @@ export interface RawResult {
   /** Thong bao loi/thanh cong da chuan hoa. */
   message: string;
   durationMs: number;
+  /** ReturnCode cua P.A (null khi phan hoi khong co, vd check_whois tra so tran). */
+  returnCode?: number | null;
+  /** Lenh vua roi di endpoint thu (interface_test.php). */
+  endpointThu?: boolean;
 }
 
 export interface CheckResult extends RawResult {
@@ -31,8 +37,13 @@ export interface WhoisResult extends RawResult {
 
 export interface RegisterResult extends RawResult {
   domain: string;
+  /** trans_id cua P.A (return_full=1). */
   providerRef: string;
   expiresAt?: string;
+  /** So tien P.A tru cho giao dich, dong (duong). 0 khi P.A khong tra. */
+  transMoney: number;
+  /** So du dai ly sau giao dich, null khi P.A khong tra. */
+  accountStill: number | null;
 }
 
 export interface DnsRecord {
@@ -61,7 +72,10 @@ export interface RegisterContact {
   taxCode?: string;
   email: string;
   phone: string;
+  /** So nha, ten duong (P.A bat buoc co so nha / to / ap). */
   address?: string;
+  /** Phuong xa theo dung ten P.A. */
+  ward?: string;
   city?: string;
   province?: string;
   postalCode?: string;
@@ -75,6 +89,8 @@ export class RegistrarError extends Error {
     message: string,
     readonly code = '',
     readonly raw = '',
+    /** Nhom ma theo src/pavietnam/maLoi.ts; rong khi loi khong den tu ReturnCode. */
+    readonly nhom: NhomMa | '' = '',
   ) {
     super(message);
     this.name = 'RegistrarError';

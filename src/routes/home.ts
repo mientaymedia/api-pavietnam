@@ -8,6 +8,7 @@ import { config } from '../config.js';
 import { BASE } from '../lib/basePath.js';
 import { HUONG_DAN_VNNIC, NHOM_BIEU_MAU, VAN_BAN_GOC, WHOIS_VNNIC } from '../lib/bieuMau.js';
 import { aiSanSang, duoiChoChon } from '../services/goiYTenMien.js';
+import { phuongCuaTinh } from '../lib/diaGioi.js';
 
 const router = Router();
 
@@ -32,6 +33,16 @@ router.get('/', (_req, res) => {
     duoiCho: duoiChoChon(),
     priceFor,
   });
+});
+
+/**
+ * Danh sach phuong xa cua mot tinh (ma so hoac ten P.A), cho form ho so chu the
+ * tu nap khi doi tinh. Form van chay khong JS (nut "Lay danh sach phuong, xa").
+ */
+router.get('/dia-gioi/phuong', (req, res) => {
+  const tinh = String(req.query['tinh'] ?? '').slice(0, 100);
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.json(tinh ? phuongCuaTinh(tinh).map((p) => p.ten) : []);
 });
 
 router.get(

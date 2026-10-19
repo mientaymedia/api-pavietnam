@@ -15,6 +15,9 @@ import { balanceOf, debit } from '../payments/balance.js';
 import { fetchRecentTransactions, ORDER_CODE_RE } from '../payments/sepay.js';
 import { settlePayment, startPayment } from '../payments/index.js';
 import { enqueue, type JobType } from './queue.js';
+import { kichHoatDonCho } from '../services/choQuy.js';
+import { nhacChoQuy } from '../services/nhacChoQuy.js';
+import { giaoSuKienCrm, type LoaiSuKienCrm } from '../services/dayCrm.js';
 
 export type Handler = (payload: Record<string, unknown>) => Promise<void>;
 
@@ -212,6 +215,26 @@ export const handlers: Record<JobType, Handler> = {
     if (renewed || awaitingPayment) {
       log.info('auto_renew_run', { renewed, awaitingPayment });
     }
+  },
+
+  /**
+   * Don cho nap quy dai ly: kiem so du P.A va tu dang ky khi du (xem
+   * services/choQuy.ts). Chay 5 phut mot lan (worker.ts), khong co don cho thi
+   * khong goi P.A.
+   */
+  async retry_awaiting_funds() {
+    const kq = await kichHoatDonCho();
+    if (kq.loiSoDu) log.warn('cho_quy_khong_doc_duoc_so_du', { error: kq.loiSoDu });
+    // Van con giu sau khi thu: nhac quan tri moi 4 gio, xin loi khach sau 24 gio
+    await nhacChoQuy();
+  },
+
+  /** Giao su kien sang CRM; loi tam thoi nem de hang doi thu lai, 4xx thi dung. */
+  async day_su_kien_crm(payload) {
+    const loai = String(payload['loai'] ?? '') as LoaiSuKienCrm;
+    const orderId = Number(payload['orderId']);
+    if (!orderId) throw new Error('Thiếu orderId');
+    await giaoSuKienCrm(loai, orderId, payload['itemId'] ? Number(payload['itemId']) : undefined);
   },
 
   /** Huy cac don qua han thanh toan de giai phong ma don va ma giam gia. */

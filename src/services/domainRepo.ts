@@ -13,6 +13,8 @@ export interface DomainRow {
   auto_renew: number;
   transfer_lock: number;
   auth_code_last_at: string | null;
+  /** Mat khau quan ly ten mien tai P.A, ma hoa AES-GCM ('' voi ten mien cu). */
+  pa_password_enc: string;
   registered_at: string | null;
   expires_at: string | null;
   last_sync_at: string | null;
