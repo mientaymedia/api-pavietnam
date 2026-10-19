@@ -24,7 +24,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - [x] B6. Đổi DNS .vn có IP (tự phân giải), quốc tế 4 DNS; form Control Panel nhận "tên IP". Kiểm: test với máy chủ giả.
 - [x] B7. Quản trị: số dư thật, cờ chế độ, Kiểm tra API bằng `check_account_still`, trang `/admin/cho-xu-ly`. Kiểm: test HTTP; kiem-base.
 - [x] B8. `scripts/pa-thu-endpoint-test.mjs` (từ chối endpoint khác `interface_test.php`). Kiểm: test chạy script với endpoint thật thì thoát lỗi, với máy chủ giả có đường dẫn `interface_test.php` thì in đủ mã.
-- [ ] B9. Chụp form chủ thể 1366 và 360 vào `docs/mtm/pa-dang-ky/`; cập nhật plan. Kiểm: ảnh không tràn ngang.
+- [x] B9. Chụp form chủ thể 1366 và 360 vào `docs/mtm/pa-dang-ky/`; cập nhật plan. Kiểm: ảnh không tràn ngang.
 
 Phạm vi chủ chốt thêm 19/10 (làm sau B0 đến B9):
 

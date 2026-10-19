@@ -200,7 +200,7 @@ label { display: block; font-size: .85rem; font-weight: 600; color: var(--ink-so
 label > .field-name + input,
 label > .field-name + select,
 label > .field-name + textarea { font-weight: 400; }
-input[type=text], input[type=email], input[type=password], input[type=number], input[type=search],
+input[type=text], input[type=email], input[type=tel], input[type=password], input[type=number], input[type=search],
 input[type=url], input[type=date], select, textarea {
   width: 100%; padding: 10px 12px; font-size: .92rem; font-family: inherit; color: var(--ink);
   background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); outline: none;

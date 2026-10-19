@@ -56,7 +56,7 @@
     var chonPhuong = document.querySelector(chonTinh.getAttribute('data-chon-tinh'));
     if (!chonPhuong) return;
     var nut = chonTinh.form && chonTinh.form.querySelector('[data-nut-lay-phuong]');
-    if (nut) nut.hidden = true;
+    if (nut) nut.style.display = 'none'; // .btn dat display rieng nen [hidden] khong an duoc
     var goc = document.body.getAttribute('data-base') || '';
     chonTinh.addEventListener('change', function () {
       var dat = function (ds) {
@@ -76,7 +76,7 @@
       fetch(goc + '/dia-gioi/phuong?tinh=' + encodeURIComponent(chonTinh.value), { headers: { accept: 'application/json' } })
         .then(function (r) { return r.ok ? r.json() : []; })
         .then(dat)
-        .catch(function () { if (nut) nut.hidden = false; });
+        .catch(function () { if (nut) nut.style.display = ''; });
     });
   });
 
