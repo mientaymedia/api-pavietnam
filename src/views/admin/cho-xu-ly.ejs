@@ -1,0 +1,85 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<%# Dong don dang bi giu: khach van thay "dang xu ly", he thong khong tu hoan tien. %>
+<div class="container">
+  <%- include('../partials/flash') %>
+  <h1>Đơn chờ xử lý</h1>
+  <%- include('../partials/admin-nav') %>
+
+  <div class="card">
+    <div class="card-title"><h2>Chờ nạp quỹ đại lý</h2></div>
+    <p class="small">
+      Số dư đại lý:
+      <% if (tomTat.soDu === null) { %>
+        <strong style="color:var(--danger)">không đọc được</strong> <span class="muted"><%= tomTat.loiSoDu %></span>
+      <% } else { %><strong><%= formatVnd(tomTat.soDu) %></strong><% } %>
+      &middot; Tổng cần: <strong><%= formatVnd(tomTat.tongCan) %></strong>
+      &middot; Cần nạp thêm: <strong style="color:<%= tomTat.canNap ? 'var(--danger)' : 'inherit' %>"><%= formatVnd(tomTat.canNap) %></strong>
+    </p>
+    <p class="tiny muted">Hệ thống tự kiểm số dư và đăng ký mỗi 5 phút. Nạp quỹ xong có thể bấm kích hoạt ngay.</p>
+    <form method="post" action="<%= base %>/admin/cho-xu-ly/kich-hoat" style="margin:0 0 12px">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="btn" type="submit" <%= tomTat.cho.length ? '' : 'disabled' %>>Đã nạp, kích hoạt ngay</button>
+    </form>
+    <% if (!tomTat.cho.length) { %>
+      <p class="muted small">Không có đơn nào chờ nạp quỹ.</p>
+    <% } else { %>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Đơn</th><th>Tên miền</th><th>Khách</th><th class="right">Cần</th><th>Từ lúc</th></tr></thead>
+          <tbody>
+            <% tomTat.cho.forEach(function (d) { %>
+              <tr>
+                <td><a class="mono" href="<%= base %>/admin/don-hang/<%= d.order_id %>"><%= d.order_code %></a></td>
+                <td class="mono"><%= d.domain %> <span class="tiny muted"><%= d.action === 'renew' ? 'gia hạn' : 'đăng ký' %> <%= d.years %> năm</span></td>
+                <td class="small"><%= d.email %></td>
+                <td class="right"><%= formatVnd(d.can) %></td>
+                <td class="tiny muted"><%= d.hold_since || '' %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <% [
+       { tieuDe: 'Cần người xử lý', moTa: '606: P.A đã trừ tiền nhưng chưa vào hàng đợi, kiểm trên trang đại lý trước khi thử lại. 302: tên miền tạm khóa. Lỗi cấu hình (IP, API Key) hoặc lỗi lặp lại nhiều lần.', ds: canNguoi },
+       { tieuDe: 'Hồ sơ chủ thể cần sửa', moTa: 'P.A từ chối thông tin chủ thể (thiếu hoặc sai trường). Sửa hồ sơ của khách rồi bấm thử lại.', ds: saiHoSo }
+     ].forEach(function (nhom) { %>
+    <div class="card">
+      <div class="card-title"><h2><%= nhom.tieuDe %></h2></div>
+      <p class="tiny muted"><%= nhom.moTa %></p>
+      <% if (!nhom.ds.length) { %>
+        <p class="muted small">Không có.</p>
+      <% } else { %>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Đơn</th><th>Tên miền</th><th>Mã P.A</th><th>Chi tiết</th><th></th></tr></thead>
+            <tbody>
+              <% nhom.ds.forEach(function (d) { %>
+                <tr>
+                  <td><a class="mono" href="<%= base %>/admin/don-hang/<%= d.order_id %>"><%= d.order_code %></a><div class="tiny muted"><%= d.email %></div></td>
+                  <td class="mono"><%= d.domain %></td>
+                  <td class="mono"><%= d.pa_code || '' %></td>
+                  <td class="tiny" style="max-width:340px; word-break:break-word"><%= d.error %></td>
+                  <td class="right nowrap">
+                    <form method="post" action="<%= base %>/admin/cho-xu-ly/<%= d.id %>/thu-lai" style="display:inline">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button class="btn btn-sm btn-outline" type="submit">Thử lại</button>
+                    </form>
+                    <form method="post" action="<%= base %>/admin/cho-xu-ly/<%= d.id %>/that-bai" data-confirm="Chốt thất bại dòng này? Sau đó có thể hoàn tiền cho khách." style="display:inline">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button class="btn-link tiny" type="submit" style="color:var(--danger)">Đánh dấu thất bại</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  <% }); %>
+</div>
+<%- include('../partials/footer') %>

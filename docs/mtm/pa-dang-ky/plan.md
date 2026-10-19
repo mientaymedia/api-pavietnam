@@ -22,7 +22,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 - [x] B4. Hồ sơ chủ thể: cột `ward`, `src/lib/validate.ts`, `src/services/domainContact.ts`, `partials/contact-form.ejs`, `routes/account.ts` (sửa hồ sơ, 2 bước), `routes/checkout.ts` (2 bước, kiểm theo đuôi), route JSON phường xã, `public/js/app.js`. Kiểm: test hợp lệ và HTTP; kiem-base.
 - [x] B5. Cấp phát: cột mới, `src/services/provisioning.ts` (số dư, phân loại, giữ đơn, get_date_domain, check_domain), job `retry_awaiting_funds`, mật khẩu tên miền trong Control Panel. Kiểm: test luồng với máy chủ P.A giả.
 - [x] B6. Đổi DNS .vn có IP (tự phân giải), quốc tế 4 DNS; form Control Panel nhận "tên IP". Kiểm: test với máy chủ giả.
-- [ ] B7. Quản trị: số dư thật, cờ chế độ, Kiểm tra API bằng `check_account_still`, trang `/admin/cho-xu-ly`. Kiểm: test HTTP; kiem-base.
+- [x] B7. Quản trị: số dư thật, cờ chế độ, Kiểm tra API bằng `check_account_still`, trang `/admin/cho-xu-ly`. Kiểm: test HTTP; kiem-base.
 - [ ] B8. `scripts/pa-thu-endpoint-test.mjs` (từ chối endpoint khác `interface_test.php`). Kiểm: test chạy script với endpoint thật thì thoát lỗi, với máy chủ giả có đường dẫn `interface_test.php` thì in đủ mã.
 - [ ] B9. Chụp form chủ thể 1366 và 360 vào `docs/mtm/pa-dang-ky/`; cập nhật plan. Kiểm: ảnh không tràn ngang.
 
