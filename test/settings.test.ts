@@ -71,3 +71,11 @@ test('bo nho dem duoc lam moi sau khi ghi', () => {
   invalidateSettingsCache();
   assert.equal(getSetting(k), 'sau');
 });
+
+test('form Cau hinh co nhom tg. va crm. de luu khong lam tat CRM', async () => {
+  const fs = await import('node:fs');
+  const view = fs.readFileSync(new URL('../src/views/admin/settings.ejs', import.meta.url), 'utf8');
+  for (const nhom of ["key: 'tg.'", "key: 'crm.'", "key: 'oauth.'"]) {
+    if (!view.includes(nhom)) throw new Error(`thieu nhom ${nhom}`);
+  }
+});
