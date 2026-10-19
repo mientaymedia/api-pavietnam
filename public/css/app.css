@@ -668,4 +668,5 @@ main.main-flush { padding: 0; }
 .bm-list li:first-child { border-top: 0; padding-top: 0; }
 .bm-ghichu { margin-top: 4px; color: var(--ink-soft); }
 .bm-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; font-size: .9rem; }
+.bm-lienhe { margin-top: 6px; padding: 6px 10px; background: var(--brand-light); border-radius: var(--r-sm); color: var(--ink); }
 .bm-refs { margin: 0 0 8px; padding-left: 20px; line-height: 1.7; overflow-wrap: anywhere; }

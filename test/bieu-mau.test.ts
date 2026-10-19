@@ -1,7 +1,8 @@
 /**
- * Trang /bieu-mau-ho-so: du nhom bieu mau, moi muc co can cu va link tai toi
- * nguon chinh thuc (P.A Viet Nam, Cong Chinh phu, VNNIC), khong luu file trong
- * repo va khong dung tai lieu cua nha dang ky khac.
+ * Trang /bieu-mau-ho-so: du nhom bieu mau, mau nha nuoc dan van ban goc tren
+ * cong chinh thuc (Cong Chinh phu, Bo KH&CN, VNNIC); mau rieng cua nha dang ky
+ * chi co loi moi lien he (chu yeu cau 19/10/2026: khong neu ten, khong link
+ * sang nha dang ky). Khong luu file trong repo.
  */
 import './helpers/db.js';
 import { test, before, after } from 'node:test';
@@ -24,11 +25,11 @@ after(() => {
   server?.close();
 });
 
-// Nguon duoc phep: nha dang ky P.A, cong van ban nha nuoc, VNNIC va hai trang
-// cong khai cua VNNIC. Google Docs la noi P.A dang cac ban khai .vn moi nhat.
-const NGUON = /^https:\/\/(www\.pavietnam\.vn|pavietnam\.vn|docs\.google\.com|datafiles\.chinhphu\.vn|mst\.gov\.vn|vnnic\.vn|thongbaotenmien\.vn|nhadangky\.vn)\//;
+// Nguon duoc phep: cong van ban nha nuoc, VNNIC va hai trang cong khai cua
+// VNNIC. Khong con link sang trang hay Google Docs cua nha dang ky.
+const NGUON = /^https:\/\/(datafiles\.chinhphu\.vn|mst\.gov\.vn|vnnic\.vn|thongbaotenmien\.vn|nhadangky\.vn)\//;
 
-test('du 5 nhom bieu mau theo yeu cau, moi muc co can cu va it nhat mot link tai', () => {
+test('du 5 nhom bieu mau theo yeu cau, moi muc co can cu va co link tai hoac loi moi lien he', () => {
   assert.deepEqual(
     NHOM_BIEU_MAU.map((n) => n.id),
     ['dang-ky', 'thay-doi', 'chuyen-nha-dang-ky', 'hoan-tra', 'chuyen-nhuong'],
@@ -37,7 +38,9 @@ test('du 5 nhom bieu mau theo yeu cau, moi muc co can cu va it nhat mot link tai
     assert.ok(n.muc.length > 0, n.id);
     for (const m of n.muc) {
       assert.ok(m.canCu.trim(), `${m.ten}: thieu can cu`);
-      assert.ok(m.tai.length > 0, `${m.ten}: thieu link`);
+      // Dung mot trong hai: mau nha nuoc co link, mau rieng chi co loi moi lien he
+      assert.ok(m.tai.length > 0 !== Boolean(m.lienHe), `${m.ten}: phai co link hoac lienHe`);
+      assert.doesNotMatch(`${m.ten} ${m.canCu} ${m.ghiChu ?? ''} ${m.tai.map((l) => l.nhan).join(' ')}`, /P\.A|pavietnam/i, m.ten);
     }
   }
 });
@@ -46,7 +49,8 @@ test('moi link la https toi nguon chinh thuc, khong co file cua nha dang ky khac
   const tatCa = [...NHOM_BIEU_MAU.flatMap((n) => n.muc.flatMap((m) => m.tai)), ...VAN_BAN_GOC];
   for (const l of tatCa) {
     assert.match(`${l.url}/`, NGUON, l.url);
-    assert.doesNotMatch(l.url, /matbao/i);
+    assert.doesNotMatch(l.url, /matbao|pavietnam/i);
+    assert.doesNotMatch(l.nhan, /P\.A|pavietnam/i);
   }
 });
 
@@ -64,11 +68,19 @@ test('trang 200, co ghi chu hotline, quy trinh dang ky va du nhom; link ngoai co
   assert.equal(r.status, 200);
   const html = await r.text();
   const than = html.slice(0, html.indexOf('<footer'));
-  assert.match(than, /Biểu mẫu do nhà đăng ký P\.A Việt Nam cung cấp; nếu cần hỗ trợ điền hồ sơ, liên hệ hotline <a href="tel:0976788840">0976\.788\.840<\/a>\./);
+  assert.match(than, /Cần nhận mẫu hoặc hỗ trợ điền hồ sơ, liên hệ hotline <a href="tel:0976788840">0976\.788\.840<\/a>\./);
+  assert.match(than, /MienTay Media là đại lý của nhà đăng ký tên miền \.vn và quốc tế được cấp phép\./);
   assert.match(than, /<section class="card bm-group" id="quy-trinh-dang-ky">/);
   for (const n of NHOM_BIEU_MAU) assert.match(than, new RegExp(`id="${n.id}"`), n.id);
-  // Mau ho kinh doanh: P.A chua co, phai noi ro thay vi de link trong
-  assert.equal((than.match(/P\.A Việt Nam chưa đăng mẫu riêng cho hộ kinh doanh/g) ?? []).length, 2);
+  // Moi mau rieng cua nha dang ky co mot loi moi lien he kem hotline
+  const soLienHe = NHOM_BIEU_MAU.flatMap((n) => n.muc).filter((m) => m.lienHe).length;
+  assert.ok(soLienHe > 0);
+  assert.equal(
+    (than.match(/Liên hệ MienTay Media để nhận mẫu: hotline <a href="tel:0976788840">0976\.788\.840<\/a>\./g) ?? []).length,
+    soLienHe,
+  );
+  // Than trang khong con chu P.A hay link pavietnam
+  assert.doesNotMatch(than, /P\.A|pavietnam/i);
   for (const m of than.matchAll(/<a href="(https:[^"]+)"([^>]*)>/g)) {
     assert.match(m[2]!, /rel="noopener"/, m[1]!);
   }
