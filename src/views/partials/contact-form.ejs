@@ -1,8 +1,16 @@
 <%
   // Bieu mau ho so chu the ten mien. Dung chung o trang thanh toan va trang ho so.
+  // Truong theo dung yeu cau cua P.A (register_domain_vietnam / quocte). Tinh va
+  // phuong xa chon tu danh sach P.A; khong co JS thi chon tinh roi bam "Lay danh
+  // sach phuong, xa" (gui lai form, khong luu), co JS thi danh sach tu nap.
   var v = typeof values !== 'undefined' && values ? values : {};
   var e = typeof errors !== 'undefined' && errors ? errors : {};
+  var dsTinh = diaGioi.danhSachTinh();
+  var dsPhuong = v.province ? diaGioi.phuongCuaTinh(v.province) : [];
+  var gioiTinh = String(v.gender || '').normalize('NFC');
 %>
+<div class="ho-so-chu-the">
+<input type="hidden" name="country" value="VN">
 <div class="field">
   <span class="field-name" id="nhan-doi-tuong">Đối tượng đăng ký</span>
   <div class="row" role="radiogroup" aria-labelledby="nhan-doi-tuong">
@@ -17,63 +25,103 @@
   </div>
 </div>
 
-<div class="grid grid-2" style="gap:0 14px">
-  <div class="field <%= e.full_name ? 'field-error' : '' %>">
-    <label><span class="field-name">Họ và tên người đại diện</span>
-    <input type="text" name="full_name" value="<%= v.full_name || '' %>" required></label>
-    <% if (e.full_name) { %><div class="error-text"><%= e.full_name %></div><% } %>
-  </div>
-
+<div class="grid grid-2 chi-to-chuc" style="gap:0 14px">
   <div class="field <%= e.org_name ? 'field-error' : '' %>">
     <label><span class="field-name">Tên tổ chức <span class="muted">(nếu là doanh nghiệp)</span></span>
-    <input type="text" name="org_name" value="<%= v.org_name || '' %>"></label>
+    <input type="text" name="org_name" value="<%= v.org_name || '' %>" maxlength="200"></label>
+    <div class="hint">Đúng như trên giấy đăng ký kinh doanh</div>
     <% if (e.org_name) { %><div class="error-text"><%= e.org_name %></div><% } %>
-  </div>
-
-  <div class="field <%= e.id_number ? 'field-error' : '' %>">
-    <label><span class="field-name">Số CMND / CCCD / Hộ chiếu</span>
-    <input type="text" name="id_number" value="<%= v.id_number || '' %>"></label>
-    <div class="hint">Bắt buộc với cá nhân đăng ký tên miền .vn</div>
-    <% if (e.id_number) { %><div class="error-text"><%= e.id_number %></div><% } %>
   </div>
 
   <div class="field <%= e.tax_code ? 'field-error' : '' %>">
     <label><span class="field-name">Mã số thuế</span>
-    <input type="text" name="tax_code" value="<%= v.tax_code || '' %>"></label>
-    <div class="hint">Bắt buộc với tổ chức đăng ký tên miền .vn</div>
+    <input type="text" name="tax_code" value="<%= v.tax_code || '' %>" inputmode="numeric" maxlength="14"></label>
+    <div class="hint">Bắt buộc với tổ chức, 10 số</div>
     <% if (e.tax_code) { %><div class="error-text"><%= e.tax_code %></div><% } %>
+  </div>
+</div>
+
+<p class="small muted chi-to-chuc" style="margin:0 0 10px">
+  Người đại diện của tổ chức là người quản lý tên miền với nhà đăng ký, phải là cá nhân: nhập thông tin người này bên dưới.
+</p>
+
+<div class="grid grid-2" style="gap:0 14px">
+  <div class="field <%= e.full_name ? 'field-error' : '' %>">
+    <label><span class="field-name">Họ và tên <span class="muted chi-to-chuc">(người đại diện)</span></span>
+    <input type="text" name="full_name" value="<%= v.full_name || '' %>" maxlength="120" autocomplete="name" required></label>
+    <% if (e.full_name) { %><div class="error-text"><%= e.full_name %></div><% } %>
+  </div>
+
+  <div class="field <%= e.id_number ? 'field-error' : '' %>">
+    <label><span class="field-name">Số CCCD / hộ chiếu</span>
+    <input type="text" name="id_number" value="<%= v.id_number || '' %>" maxlength="20"></label>
+    <div class="hint">CCCD 12 số. Bắt buộc với cá nhân; với tổ chức là CCCD người đại diện (bắt buộc khi đăng ký .vn)</div>
+    <% if (e.id_number) { %><div class="error-text"><%= e.id_number %></div><% } %>
+  </div>
+
+  <div class="field <%= e.birth_date ? 'field-error' : '' %>">
+    <label><span class="field-name">Ngày sinh</span>
+    <input type="date" name="birth_date" value="<%= v.birth_date || '' %>" min="1900-01-01" autocomplete="bday"></label>
+    <div class="hint">Bắt buộc khi đăng ký tên miền .vn</div>
+    <% if (e.birth_date) { %><div class="error-text"><%= e.birth_date %></div><% } %>
+  </div>
+
+  <div class="field <%= e.gender ? 'field-error' : '' %>">
+    <label><span class="field-name">Giới tính</span>
+    <select name="gender">
+      <option value="" <%= gioiTinh ? '' : 'selected' %>>Chọn giới tính</option>
+      <option value="Nam" <%= gioiTinh === 'Nam' ? 'selected' : '' %>>Nam</option>
+      <option value="Nữ" <%= gioiTinh === 'Nữ' ? 'selected' : '' %>>Nữ</option>
+    </select></label>
+    <div class="hint">Bắt buộc khi đăng ký tên miền .vn</div>
+    <% if (e.gender) { %><div class="error-text"><%= e.gender %></div><% } %>
   </div>
 
   <div class="field <%= e.email ? 'field-error' : '' %>">
     <label><span class="field-name">Email chủ thể</span>
-    <input type="email" name="email" value="<%= v.email || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '') %>" required></label>
+    <input type="email" name="email" value="<%= v.email || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '') %>" autocomplete="email" required></label>
     <% if (e.email) { %><div class="error-text"><%= e.email %></div><% } %>
   </div>
 
   <div class="field <%= e.phone ? 'field-error' : '' %>">
     <label><span class="field-name">Số điện thoại</span>
-    <input type="text" name="phone" value="<%= v.phone || '' %>" required></label>
+    <input type="tel" name="phone" value="<%= v.phone || '' %>" autocomplete="tel" required></label>
+    <div class="hint">Ví dụ 0901234567, hệ thống lưu dạng +84-901234567</div>
     <% if (e.phone) { %><div class="error-text"><%= e.phone %></div><% } %>
   </div>
 </div>
 
 <div class="field <%= e.address ? 'field-error' : '' %>">
-  <label><span class="field-name">Địa chỉ</span>
-  <input type="text" name="address" value="<%= v.address || '' %>"></label>
+  <label><span class="field-name">Số nhà, tên đường</span>
+  <input type="text" name="address" value="<%= v.address || '' %>" maxlength="255" autocomplete="street-address" required></label>
+  <div class="hint">Ví dụ: 344 Huỳnh Tấn Phát. Không có số nhà thì ghi tổ, ấp, khóm. Không ghi phường, tỉnh ở ô này.</div>
   <% if (e.address) { %><div class="error-text"><%= e.address %></div><% } %>
 </div>
 
-<div class="grid grid-3" style="gap:0 14px">
-  <div class="field">
-    <label><span class="field-name">Quận / Huyện</span>
-    <input type="text" name="city" value="<%= v.city || '' %>"></label>
-  </div>
-  <div class="field">
+<div class="grid grid-2" style="gap:0 14px">
+  <div class="field <%= e.province ? 'field-error' : '' %>">
     <label><span class="field-name">Tỉnh / Thành phố</span>
-    <input type="text" name="province" value="<%= v.province || '' %>"></label>
+    <select name="province" data-chon-tinh="#chon-phuong-xa" required>
+      <option value="">Chọn tỉnh, thành phố</option>
+      <% dsTinh.forEach(function (t) { %>
+        <option value="<%= t.ten %>" <%= v.province === t.ten ? 'selected' : '' %>><%= t.ten %></option>
+      <% }); %>
+    </select></label>
+    <% if (e.province) { %><div class="error-text"><%= e.province %></div><% } %>
   </div>
-  <div class="field">
-    <label><span class="field-name">Quốc gia</span>
-    <input type="text" name="country" value="<%= v.country || 'VN' %>" maxlength="2"></label>
+
+  <div class="field <%= e.ward ? 'field-error' : '' %>">
+    <label><span class="field-name">Phường / Xã</span>
+    <select name="ward" id="chon-phuong-xa" <%= dsPhuong.length ? 'required' : '' %>>
+      <option value=""><%= dsPhuong.length ? 'Chọn phường, xã' : 'Chọn tỉnh, thành phố trước' %></option>
+      <% dsPhuong.forEach(function (p) { %>
+        <option value="<%= p.ten %>" <%= v.ward === p.ten ? 'selected' : '' %>><%= p.ten %></option>
+      <% }); %>
+    </select></label>
+    <button class="btn btn-outline btn-sm" type="submit" name="buoc" value="chon-tinh" formnovalidate data-nut-lay-phuong style="margin-top:6px">Lấy danh sách phường, xã</button>
+    <div class="hint">Theo danh sách đơn vị hành chính của nhà đăng ký</div>
+    <% if (e.ward) { %><div class="error-text"><%= e.ward %></div><% } %>
   </div>
+</div>
+<% if (e.country) { %><div class="error-text"><%= e.country %></div><% } %>
 </div>

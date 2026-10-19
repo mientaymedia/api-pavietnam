@@ -211,6 +211,9 @@ textarea { min-height: 90px; resize: vertical; }
 .field-error input, .field-error select { border-color: var(--danger); }
 .error-text { color: var(--danger); font-size: .82rem; margin-top: 4px; }
 .hint { color: var(--ink-muted); font-size: .8rem; margin-top: 4px; }
+/* Ho so chu the: an phan chi danh cho to chuc khi dang chon Ca nhan. Trinh duyet
+   chua co :has() thi hien het, form van dung duoc. */
+.ho-so-chu-the:has(input[name="kind"][value="individual"]:checked) .chi-to-chuc { display: none; }
 .check { display: flex; align-items: flex-start; gap: 9px; }
 .check input { width: 16px; height: 16px; margin-top: 3px; flex: none; }
 .check label { margin: 0; font-weight: 500; color: var(--ink); }

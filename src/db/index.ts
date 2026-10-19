@@ -36,6 +36,8 @@ function addMissingColumns(): void {
   const themCot: { bang: string; cot: string; dinhNghia: string }[] = [
     { bang: 'domains', cot: 'transfer_lock', dinhNghia: 'INTEGER NOT NULL DEFAULT 1' },
     { bang: 'domains', cot: 'auth_code_last_at', dinhNghia: 'TEXT' },
+    // Phuong xa theo ten P.A (ownerWard / uiWard / adminWard bat buoc)
+    { bang: 'contacts', cot: 'ward', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
   ];
 
   for (const { bang, cot, dinhNghia } of themCot) {

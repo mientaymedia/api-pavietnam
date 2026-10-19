@@ -50,6 +50,36 @@
     sync();
   });
 
+  /* Ho so chu the: doi tinh thi tu nap danh sach phuong xa cua tinh do (khong
+     JS thi dung nut "Lay danh sach phuong, xa" gui lai form) */
+  document.querySelectorAll('[data-chon-tinh]').forEach(function (chonTinh) {
+    var chonPhuong = document.querySelector(chonTinh.getAttribute('data-chon-tinh'));
+    if (!chonPhuong) return;
+    var nut = chonTinh.form && chonTinh.form.querySelector('[data-nut-lay-phuong]');
+    if (nut) nut.hidden = true;
+    var goc = document.body.getAttribute('data-base') || '';
+    chonTinh.addEventListener('change', function () {
+      var dat = function (ds) {
+        chonPhuong.innerHTML = '';
+        var dau = document.createElement('option');
+        dau.value = '';
+        dau.textContent = ds.length ? 'Chọn phường, xã' : 'Chọn tỉnh, thành phố trước';
+        chonPhuong.appendChild(dau);
+        ds.forEach(function (ten) {
+          var o = document.createElement('option');
+          o.value = ten; o.textContent = ten;
+          chonPhuong.appendChild(o);
+        });
+        chonPhuong.required = ds.length > 0;
+      };
+      if (!chonTinh.value) return dat([]);
+      fetch(goc + '/dia-gioi/phuong?tinh=' + encodeURIComponent(chonTinh.value), { headers: { accept: 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(dat)
+        .catch(function () { if (nut) nut.hidden = false; });
+    });
+  });
+
   /* Trang don hang cho thanh toan: tu kiem tra trang thai de bao ngay khi tien ve */
   var poll = document.querySelector('[data-poll-order]');
   if (poll) {

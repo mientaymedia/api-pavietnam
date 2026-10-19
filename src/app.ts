@@ -13,6 +13,7 @@ import { formatVnd } from './lib/money.js';
 import { isVerified } from './services/verification.js';
 import { BASE, outsideBase, redirectWithBase, withBase } from './lib/basePath.js';
 import { clientIpMiddleware } from './lib/clientIp.js';
+import { danhSachTinh, phuongCuaTinh } from './lib/diaGioi.js';
 
 import homeRoutes from './routes/home.js';
 import timCungAiRoutes from './routes/timCungAi.js';
@@ -93,6 +94,8 @@ export function createApp() {
     res.locals['base'] = BASE;
     res.locals['url'] = withBase;
     res.locals['csrfToken'] = '';
+    // Danh sach tinh, phuong xa theo ten P.A cho form ho so chu the
+    res.locals['diaGioi'] = { danhSachTinh, phuongCuaTinh };
     // Hien dai nhac xac thuc email tren moi trang khi khach chua xac thuc
     res.locals['needsEmailVerify'] = Boolean(req.currentUser) && !isVerified(req.currentUser!.id);
     next();

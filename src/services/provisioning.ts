@@ -327,6 +327,7 @@ function loadContact(order: Order): RegisterContact | null {
     email: row['email'] ?? '',
     phone: row['phone'] ?? '',
     address: row['address'] ?? '',
+    ward: row['ward'] ?? '',
     city: row['city'] ?? '',
     province: row['province'] ?? '',
     postalCode: row['postal_code'] ?? '',

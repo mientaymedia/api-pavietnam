@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { chuanHoaDienThoai } from '../pavietnam/thamSo.js';
+import { timPhuong, timTinh } from './diaGioi.js';
 
 export const emailSchema = z.string().trim().toLowerCase().email('Email không hợp lệ').max(190);
 
@@ -52,30 +54,92 @@ export const nameserverSchema = z
   .toLowerCase()
   .regex(/^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/, 'Nameserver không hợp lệ');
 
+/* ------------------------------------------------ ho so chu the theo P.A */
+
+/** CCCD 12 so, CMND 9 so, ho chieu 1-2 chu cai + 6-8 so (P.A bao 2056/2058 khi sai dinh dang). */
+export const MAU_GIAY_TO = /^(\d{9}|\d{12}|[A-Z]{1,2}\d{6,8})$/;
+/** Ma so thue 10 so, hoac 10 so kem ma chi nhanh -xxx. */
+export const MAU_MA_SO_THUE = /^\d{10}(-\d{3})?$/;
+
+/**
+ * Dia chi P.A doi "So nha ten duong/to/ap" va dai hon 6 ky tu (ma 3055, 2068).
+ * Co mot chu so, hoac co tu chi to / ap / khom / thon / xom / ban / buon la du.
+ */
+export function diaChiHopLe(diaChi: string): boolean {
+  const s = String(diaChi ?? '').trim();
+  return s.length > 6 && (/\d/.test(s) || /(^|[\s,])(tổ|ấp|khóm|thôn|xóm|bản|buôn|khu phố)(?=[\s,]|$)/iu.test(s.normalize('NFC')));
+}
+
+/** YYYY-mm-dd co that, sau 1900 va truoc hom nay. */
+export function ngaySinhHopLe(s: string): boolean {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s ?? '').trim());
+  if (!m) return false;
+  const d = new Date(Date.UTC(+m[1]!, +m[2]! - 1, +m[3]!));
+  return d.getUTCFullYear() === +m[1]! && d.getUTCMonth() === +m[2]! - 1 && d.getUTCDate() === +m[3]!
+    && +m[1]! >= 1900 && d.getTime() < Date.now();
+}
+
+/** 'nam' / 'Nữ' / 'nu' -> 'Nam' | 'Nữ' (dung chu P.A doi o uiGender, adminGender); khac -> ''. */
+export function chuanHoaGioiTinh(s: string): '' | 'Nam' | 'Nữ' {
+  const k = String(s ?? '').normalize('NFC').trim().toLowerCase();
+  if (k === 'nam') return 'Nam';
+  if (k === 'nữ' || k === 'nu') return 'Nữ';
+  return '';
+}
+
+/**
+ * Ho so chu the. Ca nhan: ho ten, CCCD/ho chieu. To chuc: ten, MST, va nguoi dai
+ * dien dung chung cac o full_name / id_number / birth_date / gender. Chung:
+ * email, dien thoai (luu dang +84-xxxxxxxxx), dia chi so nha ten duong, tinh va
+ * phuong xa dung ten P.A (luu ten chuan). Ngay sinh, gioi tinh va nguoi dai dien
+ * chi bat buoc voi ten mien .vn: kiem theo duoi o trang thanh toan
+ * (`loiHoSoPA`), khong o day vi mot ho so dung cho nhieu duoi.
+ */
 export const contactSchema = z
   .object({
     kind: z.enum(['individual', 'organization']).default('individual'),
-    full_name: z.string().trim().min(2, 'Vui lòng nhập họ tên').max(120),
+    full_name: z.string().trim().min(4, 'Họ tên phải dài hơn 3 ký tự').max(120),
     org_name: z.string().trim().max(200).default(''),
-    id_number: z.string().trim().max(30).default(''),
-    tax_code: z.string().trim().max(30).default(''),
+    id_number: z.string().trim().toUpperCase().max(20).default(''),
+    tax_code: z.string().trim().max(14).default(''),
     email: emailSchema,
-    phone: phoneSchema,
+    phone: z.string().trim().transform((v, ctx) => {
+      const so = chuanHoaDienThoai(v);
+      if (!so) {
+        ctx.addIssue({ code: 'custom', message: 'Số điện thoại Việt Nam không hợp lệ (ví dụ 0901234567)' });
+        return z.NEVER;
+      }
+      return so;
+    }),
     address: z.string().trim().max(255).default(''),
+    ward: z.string().trim().max(100).default(''),
     city: z.string().trim().max(100).default(''),
     province: z.string().trim().max(100).default(''),
     postal_code: z.string().trim().max(20).default(''),
-    country: z.string().trim().length(2).toUpperCase().default('VN'),
-    birth_date: z.string().trim().max(20).default(''),
-    gender: z.string().trim().max(10).default(''),
+    country: z.string().trim().toUpperCase().default('VN'),
+    birth_date: z.string().trim().max(10).default(''),
+    gender: z.string().trim().max(5).default('').transform(chuanHoaGioiTinh),
   })
   .superRefine((val, ctx) => {
+    const loi = (path: string, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
+    if (val.country !== 'VN') loi('country', 'Hiện chỉ nhận chủ thể tại Việt Nam');
     if (val.kind === 'organization') {
-      if (!val.org_name) ctx.addIssue({ code: 'custom', path: ['org_name'], message: 'Tổ chức: bắt buộc nhập tên đơn vị' });
-      if (!val.tax_code) ctx.addIssue({ code: 'custom', path: ['tax_code'], message: 'Tổ chức: bắt buộc nhập mã số thuế' });
+      if (val.org_name.length <= 3) loi('org_name', 'Tổ chức: bắt buộc nhập tên đơn vị (dài hơn 3 ký tự)');
+      if (!MAU_MA_SO_THUE.test(val.tax_code)) loi('tax_code', 'Tổ chức: mã số thuế gồm 10 số (chi nhánh thêm -xxx)');
     } else if (!val.id_number) {
-      ctx.addIssue({ code: 'custom', path: ['id_number'], message: 'Cá nhân: bắt buộc nhập số CMND/CCCD' });
+      loi('id_number', 'Cá nhân: bắt buộc nhập số CCCD hoặc hộ chiếu');
     }
+    if (val.id_number && !MAU_GIAY_TO.test(val.id_number)) loi('id_number', 'Số CCCD (12 số), CMND (9 số) hoặc hộ chiếu không đúng định dạng');
+    if (!diaChiHopLe(val.address)) loi('address', 'Địa chỉ cần có số nhà và tên đường (hoặc tổ, ấp, khóm), dài hơn 6 ký tự');
+    const tinh = timTinh(val.province);
+    if (!tinh) loi('province', 'Vui lòng chọn tỉnh, thành phố trong danh sách');
+    else if (!timPhuong(tinh.id, val.ward)) loi('ward', `Vui lòng chọn phường, xã thuộc ${tinh.ten}`);
+    if (val.birth_date && !ngaySinhHopLe(val.birth_date)) loi('birth_date', 'Ngày sinh không hợp lệ');
+  })
+  // Luu dung ten chuan cua P.A (hoa thuong, khoang trang theo danh sach)
+  .transform((val) => {
+    const tinh = timTinh(val.province);
+    return { ...val, province: tinh?.ten ?? val.province, ward: (tinh && timPhuong(tinh.id, val.ward)?.ten) || val.ward };
   });
 
 export const dnsRecordSchema = z

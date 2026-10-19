@@ -123,9 +123,10 @@ CREATE TABLE IF NOT EXISTS contacts (
   tax_code     TEXT NOT NULL DEFAULT '',   -- Ma so thue (to chuc)
   email        TEXT NOT NULL,
   phone        TEXT NOT NULL,
-  address      TEXT NOT NULL DEFAULT '',
+  address      TEXT NOT NULL DEFAULT '',   -- so nha, ten duong (P.A bat buoc co so nha / to / ap)
+  ward         TEXT NOT NULL DEFAULT '',   -- phuong xa theo dung ten P.A
   city         TEXT NOT NULL DEFAULT '',
-  province     TEXT NOT NULL DEFAULT '',
+  province     TEXT NOT NULL DEFAULT '',   -- tinh thanh theo dung ten P.A
   postal_code  TEXT NOT NULL DEFAULT '',
   country      TEXT NOT NULL DEFAULT 'VN',
   birth_date   TEXT NOT NULL DEFAULT '',
