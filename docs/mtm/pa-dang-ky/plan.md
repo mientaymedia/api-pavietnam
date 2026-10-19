@@ -16,7 +16,7 @@ Cổng chặn mỗi commit: `npx tsc -p tsconfig.json --noEmit`, `npm test` (m�
 ## Các bước
 
 - [x] B0. Tài liệu `intent.md`, `spec.md`, `plan.md`. Kiểm: tệp có trong `docs/mtm/pa-dang-ky`.
-- [ ] B1. Dữ liệu địa giới: `scripts/chuyen-dia-gioi-xlsx.mjs` (đọc xlsx bằng zlib, không thư viện), `src/data/dia-gioi-pa.json`, `src/lib/diaGioi.ts`, chép tệp trong `scripts/postbuild.mjs`. Kiểm: chạy script với 2 tệp xlsx; test tra cứu tỉnh, phường.
+- [x] B1. Dữ liệu địa giới: `scripts/chuyen-dia-gioi-xlsx.mjs` (đọc xlsx bằng zlib, không thư viện), `src/data/dia-gioi-pa.json`, `src/lib/diaGioi.ts`, chép tệp trong `scripts/postbuild.mjs`. Kiểm: chạy script với 2 tệp xlsx; test tra cứu tỉnh, phường.
 - [ ] B2. Tầng P.A: `src/pavietnam/actions.ts`, `maLoi.ts`, `thamSo.ts`, `parse.ts`, `client.ts`, `probe.ts`; cấu hình endpoint thử (`src/config.ts`, `src/lib/settings.ts`, `.env.example`), `src/preflight.ts`. Kiểm: test đơn vị đọc phản hồi, phân loại mã, tham số đăng ký; test cũ đạt.
 - [ ] B3. Lệnh nạp lại địa giới qua `get_province`/`get_ward` (`src/pavietnam/napDiaGioi.ts`, `npm run pa:dia-gioi`). Kiểm: test với máy chủ P.A giả.
 - [ ] B4. Hồ sơ chủ thể: cột `ward`, `src/lib/validate.ts`, `src/services/domainContact.ts`, `partials/contact-form.ejs`, `routes/account.ts` (sửa hồ sơ, 2 bước), `routes/checkout.ts` (2 bước, kiểm theo đuôi), route JSON phường xã, `public/js/app.js`. Kiểm: test hợp lệ và HTTP; kiem-base.
