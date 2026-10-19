@@ -7,6 +7,7 @@
  */
 import { db, nowIso } from '../db/index.js';
 import { getDnsRecords, setDnsRecords, setNameservers } from '../pavietnam/client.js';
+import type { NameserverPA } from '../pavietnam/thamSo.js';
 import type { DnsRecord } from '../pavietnam/types.js';
 import { getDomainById, nameserversOf, setDomainNameservers, type DomainRow } from './domainRepo.js';
 import { audit } from './audit.js';
@@ -75,16 +76,18 @@ export async function replaceRecords(domain: DomainRow, records: DnsRecord[], us
   return next;
 }
 
-export async function changeNameservers(domain: DomainRow, nameservers: string[], userId: number): Promise<void> {
+export async function changeNameservers(domain: DomainRow, nameservers: (string | NameserverPA)[], userId: number): Promise<void> {
   const before = nameserversOf(domain);
   await setNameservers(domain.domain, nameservers);
-  setDomainNameservers(domain.id, nameservers);
+  // Luu ten nameserver (IP chi gui P.A cho ten mien .vn, khong can giu)
+  const hosts = nameservers.map((n) => (typeof n === 'string' ? n : n.host));
+  setDomainNameservers(domain.id, hosts);
   audit({
     userId,
     action: 'domain.nameservers',
     entity: 'domain',
     entityId: domain.id,
-    meta: { domain: domain.domain, before, after: nameservers },
+    meta: { domain: domain.domain, before, after: hosts },
   });
 }
 

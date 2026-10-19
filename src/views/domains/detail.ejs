@@ -144,7 +144,10 @@
           <div class="field">
             <label><span class="field-name">Danh sách nameserver (mỗi dòng một tên)</span>
             <textarea name="nameservers" rows="4" class="mono"><%= (ns.length ? ns : defaultNs).join('\n') %></textarea></label></label>
-            <div class="hint">Tối thiểu 2 nameserver. Để trống về mặc định của hệ thống: <%= defaultNs.join(', ') %></div>
+            <div class="hint">Tối thiểu 2, tối đa <%= dnsCanIp ? 3 : 4 %> nameserver. Mặc định của hệ thống: <%= defaultNs.join(', ') %></div>
+            <% if (dnsCanIp) { %>
+              <div class="hint">Tên miền .vn bắt buộc kèm địa chỉ IP: mỗi dòng ghi tên rồi IP, ví dụ <span class="mono">ns1.tenmien.vn 112.213.89.3</span>. Bỏ trống IP thì hệ thống tự tìm.</div>
+            <% } %>
           </div>
           <button class="btn btn-block" type="submit" data-confirm="Đổi nameserver sẽ làm website/email gián đoạn nếu cấu hình sai. Tiếp tục?">Cập nhật nameserver</button>
         </form>
