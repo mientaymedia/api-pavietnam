@@ -93,8 +93,10 @@ export function sessionMiddleware(req: Request, res: Response, next: NextFunctio
   res.on('finish', () => {
     const current = JSON.stringify(req.session);
     if (current === snapshot) return;
+    // req.sessionId chu khong phai sid: loginSession doi sang phien moi giua
+    // chung, ghi vao sid cu (da xoa) la mat flash dat sau khi dang nhap.
     db.prepare('UPDATE sessions SET data = ?, user_id = ?, expires_at = ? WHERE sid = ?')
-      .run(current, req.session.userId ?? null, isoIn(TTL_MS), sid);
+      .run(current, req.session.userId ?? null, isoIn(TTL_MS), req.sessionId);
   });
 
   // Nap thong tin nguoi dung dang dang nhap
