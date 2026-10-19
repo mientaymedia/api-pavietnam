@@ -97,6 +97,9 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'site.bct_badge_url', label: 'Link biểu tượng "Đã thông báo"', hint: 'Link do hệ thống online.gov.vn cấp, bắt đầu bằng https://online.gov.vn/' },
   { key: 'site.primary_color', label: 'Màu chủ đạo', hint: 'Ví dụ: #0a6cff' },
   { key: 'site.logo_url', label: 'Đường dẫn logo' },
+  { key: 'site.zalo_chat_enabled', label: 'Bật nút chat Zalo trên trang khách', type: 'checkbox', hint: 'Tắt thì không nạp script Zalo. Trang quản trị không có nút này' },
+  { key: 'site.zalo_oa_id', label: 'Zalo OA ID', hint: 'Chỉ gồm chữ số, ví dụ 3962957485228412416 (OA MienTay Media). Sai định dạng thì nút chat tự ẩn' },
+  { key: 'site.zalo_welcome', label: 'Lời chào của nút chat Zalo' },
 
   // API P.A Viet Nam
   { key: 'pa.endpoint', label: 'API endpoint', hint: 'https://daily.pavietnam.vn/interface.php' },

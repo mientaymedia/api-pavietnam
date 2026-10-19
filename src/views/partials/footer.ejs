@@ -32,7 +32,7 @@
   else if (!/^https:\/\//i.test(bieuTuongAnh)) bieuTuongAnh = '';
   if (!/^https:\/\/(www\.)?online\.gov\.vn\//i.test(bieuTuongLink)) bieuTuongLink = '';
 %>
-<footer class="site-footer">
+<footer class="site-footer<%= typeof zaloChatOa !== 'undefined' && zaloChatOa ? ' co-zalo' : '' %>">
   <%
     // Footer v2 (chu yeu cau 19/10/2026): 5 cot deu nhau, moi cot 6 den 9 muc,
     // tieu de cung mot hang (logo cot dau cao bang tieu de). Cot Dich vu lay
@@ -143,6 +143,7 @@
     <div class="container footer-copy">&copy; <%= new Date().getFullYear() %> <%= site.name %></div>
   </div>
 </footer>
+<%- include('zalo-chat') %>
 <script src="<%= base %>/js/app.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,19 @@
+<%
+  // Nut chat Zalo (chu yeu cau 19/10/2026). zaloChatOa do app.ts dat: rong o
+  // trang quan tri, khi tat cau hinh hoac OA sai dinh dang, nen khi do khong nap
+  // script Zalo. Widget va link du phong cung tro toi mot OA.
+  //
+  // Link du phong khong can JS: hien ngay khi trang tai, het tac dung khi script
+  // bi chan hay mang cham. Khi widget da ve nut cua no (co iframe), CSS an link
+  // du phong de khong co hai nut chong nhau (xem .zalo-fab trong app.css).
+  // typeof: trang loi ngoai BASE_PATH render khong qua middleware dat bien.
+  var oa = typeof zaloChatOa !== 'undefined' ? zaloChatOa : '';
+%>
+<% if (oa) { %>
+<div class="zalo-chat-widget" data-oaid="<%= oa %>" data-welcome-message="<%= site.zaloWelcome %>" data-autopopup="0" data-width="" data-height=""></div>
+<a class="zalo-fab" href="https://zalo.me/<%= oa %>" target="_blank" rel="noopener" aria-label="Chat Zalo với <%= site.name %>">
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.2 7.5L3 21l2-5.4A8.4 8.4 0 1 1 21 11.5z"/></svg>
+  <span>Chat Zalo</span>
+</a>
+<script src="https://sp.zalo.me/plugins/sdk.js" async defer></script>
+<% } %>

@@ -85,8 +85,8 @@ test('trang 200, co ghi chu hotline, quy trinh dang ky va du nhom; link ngoai co
     assert.match(m[2]!, /rel="noopener"/, m[1]!);
   }
   assert.doesNotMatch(html, /matbao/i);
-  // Khong keo tai nguyen ngoai (CSP)
-  assert.doesNotMatch(html, /\ssrc="https?:\/\//);
+  // Khong keo tai nguyen ngoai (CSP), tru SDK nut chat Zalo da mo trong CSP
+  assert.doesNotMatch(html, /\ssrc="https?:\/\/(?!sp\.zalo\.me\/plugins\/sdk\.js")/);
 });
 
 test('sitemap co trang bieu mau', async () => {

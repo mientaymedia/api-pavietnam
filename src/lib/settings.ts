@@ -109,6 +109,11 @@ export const settings = {
     workingHours: getSetting('site.working_hours', 'Thứ 2 đến thứ 7, 8:00 đến 17:30'),
     logoUrl: getSetting('site.logo_url', ''),
     primaryColor: getSetting('site.primary_color', '#0a6cff'),
+    // Nut chat Zalo tren trang khach (chu yeu cau 19/10/2026). OA mac dinh la OA
+    // MienTay Media dang dung tren mientaymedia.com. Chi doc qua zaloChatOaId().
+    zaloChatEnabled: getSettingBool('site.zalo_chat_enabled', true),
+    zaloOaId: getSetting('site.zalo_oa_id', '3962957485228412416'),
+    zaloWelcome: getSetting('site.zalo_welcome', 'Xin chào! MienTay Media có thể hỗ trợ gì cho bạn về tên miền?'),
   }),
 
   pa: () => ({
@@ -260,3 +265,16 @@ export const SECRET_KEYS = [
   'zns.access_token',
   'ai.openai_key',
 ];
+
+/**
+ * OA ID cho nut chat Zalo, rong khi tat hoac OA khong hop le.
+ *
+ * Vi sao kiem chu so: OA ID duoc in vao thuoc tinh HTML, link zalo.me va quyet
+ * dinh co mo CSP cho Zalo hay khong. Quan tri go nham (dan ca link, de khoang
+ * trang) thi coi nhu tat, khong nap script la, khong in link hong.
+ */
+export function zaloChatOaId(): string {
+  const s = settings.site();
+  const oa = s.zaloOaId.trim();
+  return s.zaloChatEnabled && /^\d{6,25}$/.test(oa) ? oa : '';
+}

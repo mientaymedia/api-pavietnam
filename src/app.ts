@@ -6,7 +6,7 @@ import { config } from './config.js';
 import { sessionMiddleware, takeFlash } from './middleware/session.js';
 import { csrfMiddleware } from './middleware/csrf.js';
 import { errorHandler, notFound } from './middleware/error.js';
-import { settings } from './lib/settings.js';
+import { settings, zaloChatOaId } from './lib/settings.js';
 import { buildCsp } from './lib/csp.js';
 import { getCart } from './services/cart.js';
 import { formatVnd } from './lib/money.js';
@@ -45,11 +45,12 @@ export function createApp() {
 
   // Header bao mat co ban (khong can thu vien ngoai). O cap app de ca phan
   // hoi ngoai tien to BASE_PATH cung co.
-  app.use((_req, res, next) => {
+  app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Content-Security-Policy', buildCsp());
+    // Chi trang khach co nut chat Zalo moi mo CSP cho Zalo (xem lib/csp.ts)
+    res.setHeader('Content-Security-Policy', buildCsp({ zaloChat: Boolean(zaloChatOaId()) && !laTrangQuanTri(req.path) }));
     if (config.isProd) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     next();
   });
@@ -94,6 +95,8 @@ export function createApp() {
     res.locals['url'] = withBase;
     res.locals['csrfToken'] = '';
     // Hien dai nhac xac thuc email tren moi trang khi khach chua xac thuc
+    // OA cho nut chat Zalo o footer; rong o trang quan tri hoac khi tat
+    res.locals['zaloChatOa'] = laTrangQuanTri(req.path) ? '' : zaloChatOaId();
     res.locals['needsEmailVerify'] = Boolean(req.currentUser) && !isVerified(req.currentUser!.id);
     next();
   });
@@ -122,4 +125,13 @@ export function createApp() {
     app.use(site);
   }
   return app;
+}
+
+/**
+ * Duong dan thuoc trang quan tri (co hoac khong co tien to BASE_PATH): o day
+ * khong gan nut chat Zalo, khong mo CSP cho Zalo.
+ */
+function laTrangQuanTri(duong: string): boolean {
+  const bo = BASE && (duong === BASE || duong.startsWith(BASE + '/')) ? duong.slice(BASE.length) || '/' : duong;
+  return /^\/admin(\/|$)/.test(bo);
 }

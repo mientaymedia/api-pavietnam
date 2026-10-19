@@ -109,3 +109,15 @@ test('khong co script noi tuyen nao trong view', () => {
 
   assert.deepEqual(viPham, [], `CSP se chan cac cho nay:\n${viPham.join('\n')}`);
 });
+
+test('nut chat Zalo: chi mo script sp.zalo.me, za.zdn.vn va khung *.zalo.me, khong unsafe cho script', () => {
+  const csp = buildCsp({ zaloChat: true });
+  assert.equal(chiThi('script-src', csp), "script-src 'self' https://sp.zalo.me za.zdn.vn");
+  assert.equal(chiThi('frame-src', csp), 'frame-src https://*.zalo.me');
+  assert.equal(chiThi('connect-src', csp), "connect-src 'self'");
+  assert.equal(chiThi('style-src', csp), "style-src 'self' 'unsafe-inline'");
+  assert.doesNotMatch(chiThi('img-src', csp), /zalo|zdn/);
+  assert.equal(csp.includes('unsafe-eval'), false);
+  // Mac dinh (trang quan tri, tat cau hinh): khong co gi cua Zalo
+  assert.doesNotMatch(buildCsp(), /zalo|zdn|frame-src/);
+});

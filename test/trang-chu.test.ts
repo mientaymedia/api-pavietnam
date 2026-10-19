@@ -58,8 +58,9 @@ test('du cac khoi: uu dai, tab chuyen, dich vu, khach hang, cau hoi', async () =
   assert.match(html, /<details>\s*<summary>/);
   // Trang chu khong duoc keo tai nguyen ngoai may chu (CSP chan, trang se vo).
   // Chi xet src= va <link href=: the <a> tro ra ngoai (VNNIC o footer) khong
-  // phai tai nguyen, CSP khong chan.
-  assert.doesNotMatch(html, /\ssrc="https?:\/\/(?!mientaymedia\.com)/);
+  // phai tai nguyen, CSP khong chan. SDK nut chat Zalo la ngoai le co chu y,
+  // CSP mo rieng cho no (lib/csp.ts, test/zalo-chat.test.ts).
+  assert.doesNotMatch(html, /\ssrc="https?:\/\/(?!mientaymedia\.com|sp\.zalo\.me\/plugins\/sdk\.js")/);
   assert.doesNotMatch(html, /<link[^>]*\shref="https?:\/\/(?!mientaymedia\.com)/);
 });
 
