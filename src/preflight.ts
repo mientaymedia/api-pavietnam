@@ -137,8 +137,8 @@ async function kiemTraPa(): Promise<void> {
     } else {
       ghi(nhom, `Goi thu action "${ACTIONS.balance}"`, 'CHAN',
         `Khong thanh cong: ${String(kq.message ?? '').slice(0, 160) || '(phan hoi rong)'}`,
-        'Hai nguyen nhan thuong gap: (a) IP may chu chua duoc P.A cho phep; (b) ten action chua dung. ' +
-        'Chay `npm run pa:probe -- --domain tenmien-cua-ban.com` de xac dinh ten action that, roi dat lai PA_ACTION_* trong .env.');
+        'Hai nguyen nhan thuong gap: (a) IP may chu chua duoc P.A cho phep (ma 501); (b) sai username / API Key (ma 202). ' +
+        'Chay `npm run pa:probe -- --domain tenmien-cua-ban.com` de xem phan hoi tho cua cac lenh doc.');
     }
   } catch (err) {
     ghi(nhom, 'Goi thu API', 'CHAN', String(err).slice(0, 200),

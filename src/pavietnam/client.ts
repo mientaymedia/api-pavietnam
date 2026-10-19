@@ -1,3 +1,4 @@
+import dnsPromises from 'node:dns/promises';
 import { config } from '../config.js';
 import { db, nowIso } from '../db/index.js';
 import { httpRequest } from '../lib/http.js';
@@ -5,8 +6,18 @@ import { log } from '../lib/logger.js';
 import { maskSecret, sha256 } from '../lib/crypto.js';
 import { settings } from '../lib/settings.js';
 import { boDau } from '../lib/text.js';
-import { ACTIONS, FIELDS, RESPONSE_KEYS, SUCCESS_TOKENS, type ActionKey } from './actions.js';
-import { asBool, normalizeDate, parseNameservers, parseResponse, pick, type Flat } from './parse.js';
+import { danhSachTinh, phuongCuaTinh } from '../lib/diaGioi.js';
+import {
+  ACTIONS, FIELDS, RESPONSE_KEYS, SUCCESS_TOKENS, guiResponseTypeJson, laLenhGhi, lenhNgoaiTaiLieu, type ActionKey,
+} from './actions.js';
+import { phanLoaiMa } from './maLoi.js';
+import {
+  asBool, docKhoangNgay, docPhanHoiPA, docSoTien, normalizeDate, parseNameservers, parseResponse, pick, type Flat,
+} from './parse.js';
+import {
+  THAM_SO_BI_MAT, laTenMienVn, matKhauTenMienHopLe, thamSoDangKy, thamSoDoiDnsQuocTe, thamSoDoiDnsVn, thamSoGiaHan,
+  type NameserverPA,
+} from './thamSo.js';
 import {
   RegistrarError,
   type CheckResult,
@@ -20,6 +31,7 @@ import {
 
 export interface PaCredentials {
   endpoint: string;
+  endpointTest: string;
   username: string;
   apikey: string;
 }
@@ -29,6 +41,7 @@ function credentials(override?: Partial<PaCredentials>): PaCredentials {
   const cp = settings.pa();
   return {
     endpoint: override?.endpoint || cp.endpoint || config.pa.endpoint,
+    endpointTest: override?.endpointTest || cp.endpointTest || config.pa.endpointTest,
     username: override?.username || cp.username || config.pa.username,
     apikey: override?.apikey || cp.apikey || config.pa.apikey,
   };
@@ -39,10 +52,24 @@ function sandboxEnabled(): boolean {
   return settings.pa().sandbox;
 }
 
+/** Che do thu: lenh ghi di interface_test.php (P.A tra 900, khong tru tien). */
+export function cheDoThuDangBat(): boolean {
+  return settings.pa().useTestEndpoint;
+}
+
+/** Duong dan co dung la endpoint thu cua P.A khong (interface_test.php). */
+export function laEndpointThu(url: string): boolean {
+  try {
+    return /\/interface_test\.php$/i.test(new URL(url).pathname);
+  } catch {
+    return false;
+  }
+}
+
 /* ============================================================== goi API tho */
 
 export interface CallOptions {
-  /** Gui bang POST thay vi GET (nen dung khi tham so dai, vd danh sach ban ghi DNS). */
+  /** Gui bang POST thay vi GET. Tai lieu P.A dung GET cho moi lenh, nen mac dinh GET. */
   method?: 'GET' | 'POST';
   credentials?: Partial<PaCredentials>;
   /** Ghi vao api_logs kem ten mien lien quan. */
@@ -50,8 +77,8 @@ export interface CallOptions {
 }
 
 /**
- * Goi mot action bat ky cua API dai ly P.A.
- * Dung truc tiep khi ban can mot action chua duoc boc thanh ham rieng.
+ * Goi mot lenh bat ky cua API dai ly P.A.
+ * Dung truc tiep khi ban can mot lenh chua duoc boc thanh ham rieng.
  */
 export async function call(
   action: string,
@@ -69,18 +96,31 @@ export async function call(
     );
   }
 
+  // Che do thu chi doi endpoint cua lenh ghi (tai lieu chi co link thu cho nhom
+  // nay); 900 chi la thanh cong khi lenh thuc su di interface_test.php
+  const diThu = !sandbox && cheDoThuDangBat() && laLenhGhi(action);
+  const endpoint = diThu ? cred.endpointTest : cred.endpoint;
+  const endpointThu = diThu && laEndpointThu(endpoint);
+
   const query = new URLSearchParams();
+  query.set(FIELDS.command, action);
   query.set('username', cred.username || 'sandbox');
   query.set('apikey', cred.apikey || 'sandbox');
-  query.set(FIELDS.command, action);
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null && v !== '') query.set(k, String(v));
   }
+  if (guiResponseTypeJson(action)) query.set('responsetype', 'json');
 
-  // Chuoi an toan de ghi log: khong bao gio luu API Key that
+  // Chuoi an toan de ghi log: khong bao gio luu API Key that hay mat khau ten mien
   const safeQuery = new URLSearchParams(query);
-  safeQuery.set('apikey', maskSecret(query.get('apikey') ?? ''));
-  const logged = `${cred.endpoint}?${safeQuery.toString()}`;
+  for (const k of THAM_SO_BI_MAT) {
+    if (safeQuery.has(k)) safeQuery.set(k, maskSecret(query.get(k) ?? ''));
+  }
+  const logged = `${endpoint}?${safeQuery.toString()}`;
+
+  // Lenh ghi KHONG tu thu lai o tang HTTP: het thoi gian cho chua chac P.A chua
+  // lam, goi lai co the dang ky / gia han hai lan. Khau cap phat tu kiem roi moi thu.
+  const retries = laLenhGhi(action) ? 0 : config.pa.retries;
 
   const started = Date.now();
   let raw = '';
@@ -89,24 +129,37 @@ export async function call(
     if (sandbox) {
       raw = sandboxResponse(action, params);
     } else if ((opts.method ?? 'GET') === 'POST') {
-      raw = await httpRequest(cred.endpoint, {
+      raw = await httpRequest(endpoint, {
         method: 'POST',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body: query.toString(),
         timeoutMs: config.pa.timeoutMs,
-        retries: config.pa.retries,
+        retries,
       });
     } else {
-      raw = await httpRequest(`${cred.endpoint}?${query.toString()}`, {
-        timeoutMs: config.pa.timeoutMs,
-        retries: config.pa.retries,
-      });
+      raw = await httpRequest(`${endpoint}?${query.toString()}`, { timeoutMs: config.pa.timeoutMs, retries });
     }
 
     const data = parseResponse(raw);
-    const interpreted = interpret(data, raw);
+    const pa = docPhanHoiPA(raw);
+    let interpreted: Pick<RawResult, 'ok' | 'code' | 'message'>;
+    if (pa.returnCode !== null) {
+      // Dinh dang chuan cua tai lieu: quyet dinh theo ReturnCode. check_domain
+      // dung ReturnCode 0/1/2 lam cau tra loi nghiep vu, khong phai loi.
+      const nghiepVu = action === ACTIONS.owned && [0, 1, 2].includes(pa.returnCode);
+      const thanhCong = nghiepVu || phanLoaiMa(pa.returnCode, endpointThu) === 'thanh_cong';
+      interpreted = {
+        ok: thanhCong,
+        code: String(pa.returnCode),
+        message: pa.returnText || (thanhCong ? '' : lamSachPhanHoi(raw).slice(0, 500)),
+      };
+    } else {
+      interpreted = interpret(data, raw);
+    }
     ok = interpreted.ok;
-    const result: RawResult = { raw, data, durationMs: Date.now() - started, ...interpreted };
+    const result: RawResult = {
+      raw, data, durationMs: Date.now() - started, ...interpreted, returnCode: pa.returnCode, endpointThu,
+    };
     writeApiLog(action, opts.domainForLog ?? String(params[FIELDS.domain] ?? ''), logged, raw, ok, result.durationMs);
     return result;
   } catch (err) {
@@ -115,7 +168,7 @@ export async function call(
     writeApiLog(action, opts.domainForLog ?? String(params[FIELDS.domain] ?? ''), logged, `LỖI: ${message}`, false, durationMs);
     log.error('pavietnam_call_failed', { action, error: message });
     if (err instanceof RegistrarError) throw err;
-    throw new RegistrarError(`Không kết nối được API P.A Việt Nam: ${message}`, 'NETWORK', raw);
+    throw new RegistrarError(`Không kết nối được API P.A Việt Nam: ${message}`, 'NETWORK', raw, 'tam_thoi');
   }
 }
 
@@ -129,7 +182,11 @@ const BUSINESS_STATUS = new Set(['available', 'unavailable', 'registered', 'acti
  */
 const STATUS_PHU_DINH = /\b(not|no|non|khong|chua|error|loi|fail(ed|ure)?|invalid|denied|that\s*bai|sai|false|0)\b/;
 
-/** Doc trang thai thanh cong / ma loi / thong bao tu phan hoi da parse. */
+/**
+ * Doc trang thai thanh cong / ma loi / thong bao tu phan hoi KHONG co ReturnCode
+ * (so tran cua check_whois, van ban WHOIS, du lieu gia lap, lenh ngoai tai lieu).
+ * Phan hoi co ReturnCode duoc `call` doc theo bang phan loai, khong qua day.
+ */
 export function interpret(data: Flat, raw: string): Pick<RawResult, 'ok' | 'code' | 'message'> {
   const status = pick(data, [...RESPONSE_KEYS.status]) ?? '';
   const message = pick(data, [...RESPONSE_KEYS.message]) ?? '';
@@ -189,9 +246,25 @@ function writeApiLog(action: string, domain: string, request: string, response: 
   }
 }
 
+/** Loi kem nhom ma (src/pavietnam/maLoi.ts) de khau cap phat biet lam gi tiep. */
 function ensureOk(res: RawResult, what: string): RawResult {
-  if (!res.ok) throw new RegistrarError(res.message || `${what} thất bại`, res.code, res.raw);
-  return res;
+  if (res.ok) return res;
+  const nhom = res.returnCode !== null && res.returnCode !== undefined ? phanLoaiMa(res.returnCode, res.endpointThu) : '';
+  throw new RegistrarError(res.message || `${what} thất bại`, res.code, res.raw, nhom);
+}
+
+/**
+ * Chan som lenh khong co trong tai lieu P.A o che do that (xem
+ * `lenhNgoaiTaiLieu`). Gia lap van chay de dev / test man hinh cu.
+ */
+function chanNgoaiTaiLieu(key: ActionKey, viec: string): void {
+  if (sandboxEnabled() || !lenhNgoaiTaiLieu(key)) return;
+  throw new RegistrarError(
+    `${viec} chưa hỗ trợ qua API của nhà đăng ký. Vui lòng liên hệ bộ phận hỗ trợ để được xử lý.`,
+    'UNSUPPORTED',
+    '',
+    'nguoi_xu_ly',
+  );
 }
 
 /* ========================================================== ham nghiep vu */
@@ -262,11 +335,11 @@ const TRA_LOI_NGHIEP_VU =
   /\b(available|unavailable|registered|active|expired|taken|da\s*(duoc\s*)?dang\s*ky|chua\s*(duoc\s*)?dang\s*ky|con\s*trong)\b/;
 
 /**
- * Nut "Kiem tra API" trong Cau hinh chi hoi: P.A co tra loi hop le khong. Ten
- * mien thu da co chu thi status co the la "Domain not available" (interpret
- * coi la ok=false vi co "not"), nhung do van la ket noi tot. Nen: ok thi dat;
- * khong ok thi chi dat khi la cau tra loi nghiep vu va khong co dau hieu tu
- * choi nao. Khong ro thi coi la THAT BAI (an toan, quan tri xem phan hoi tho).
+ * Ket qua kiem tra ten mien co phai cau tra loi hop le cua P.A khong. Ten mien
+ * thu da co chu thi status co the la "Domain not available" (interpret coi la
+ * ok=false vi co "not"), nhung do van la ket noi tot. Nen: ok thi dat; khong ok
+ * thi chi dat khi la cau tra loi nghiep vu va khong co dau hieu tu choi nao.
+ * Khong ro thi coi la THAT BAI (an toan, quan tri xem phan hoi tho).
  */
 export function ketNoiHopLe(res: Pick<RawResult, 'ok' | 'code' | 'message' | 'raw'>): boolean {
   if (res.ok) return true;
@@ -298,56 +371,84 @@ export async function checkDomains(domains: string[], concurrency = 4): Promise<
   return results.sort((a, b) => (order.get(a.domain) ?? 0) - (order.get(b.domain) ?? 0));
 }
 
-/** Dang ky ten mien. Tra ve ma tham chieu + ngay het han neu API cung cap. */
-export async function registerDomain(input: {
-  domain: string;
-  years: number;
-  contact: RegisterContact;
-  nameservers?: string[];
-}): Promise<RegisterResult> {
-  const d = normalizeDomain(input.domain);
-  const params: Record<string, string | number> = {
-    [FIELDS.domain]: d,
-    [FIELDS.years]: input.years,
-    ...contactParams(input.contact),
-  };
-  if (input.nameservers?.length) {
-    input.nameservers.forEach((ns, i) => {
-      params[`${FIELDS.ns}${i + 1}`] = ns;
-    });
-    params[FIELDS.ns] = input.nameservers.join(',');
-  }
-
-  const res = ensureOk(await call(ACTIONS.register, params, { method: 'POST', domainForLog: d }), `Đăng ký ${d}`);
+/** Doc trans_id, trans_money, trans_accountstill (return_full=1). */
+function ketQuaGiaoDich(res: RawResult, domain: string): RegisterResult {
   return {
     ...res,
-    domain: d,
-    providerRef: pick(res.data, [...RESPONSE_KEYS.transactionId]) ?? '',
-    expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires])),
-  };
-}
-
-/** Gia han ten mien. */
-export async function renewDomain(domain: string, years: number): Promise<RegisterResult> {
-  const d = normalizeDomain(domain);
-  const res = ensureOk(
-    await call(ACTIONS.renew, { [FIELDS.domain]: d, [FIELDS.years]: years }, { method: 'POST', domainForLog: d }),
-    `Gia hạn ${d}`,
-  );
-  return {
-    ...res,
-    domain: d,
-    providerRef: pick(res.data, [...RESPONSE_KEYS.transactionId]) ?? '',
-    expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires])),
+    domain,
+    providerRef: pick(res.data, ['trans_id']) ?? '',
+    // trans_money la so am ("-830,000"): luu so tien bi tru, so duong
+    transMoney: Math.abs(docSoTien(pick(res.data, ['trans_money'])) ?? 0),
+    accountStill: docSoTien(pick(res.data, ['trans_accountstill'])),
   };
 }
 
 /**
- * Chuyen ten mien ve (transfer-in).
- *
- * Khac voi dang ky moi: can `authCode` (ma EPP) do nha dang ky CU cap, va ket qua
- * thuong la "da tiep nhan yeu cau" chu chua phai "da hoan tat" - viec chuyen ten mien
- * mat 5-7 ngay voi ten mien quoc te. Trang thai duoc dong bo lai qua job `sync_domain`.
+ * Dang ky ten mien bang register_domain_vietnam (duoi .vn) hoac
+ * register_domain_quocte. Mat khau ten mien do khau cap phat sinh va giu (dung
+ * lai khi thu lai), nen nhan vao chu khong tu sinh o day.
+ */
+export async function registerDomain(input: {
+  domain: string;
+  tld: string;
+  years: number;
+  contact: RegisterContact;
+  nameservers: string[];
+  password: string;
+}): Promise<RegisterResult> {
+  const d = normalizeDomain(input.domain);
+  if (!matKhauTenMienHopLe(input.password)) {
+    throw new RegistrarError('Mật khẩu tên miền không đúng quy định của P.A (8 đến 15 ký tự a-z, 0-9, có cả chữ và số).', 'VALIDATION', '', 'du_lieu');
+  }
+  const params = thamSoDangKy({
+    domain: d,
+    tld: input.tld,
+    years: input.years,
+    password: input.password,
+    nameservers: input.nameservers,
+    contact: input.contact,
+    sendmail: settings.pa().sendmail,
+  });
+  const action = laTenMienVn(input.tld) ? ACTIONS.registerVn : ACTIONS.registerIntl;
+  const res = ensureOk(await call(action, params, { domainForLog: d }), `Đăng ký ${d}`);
+  return ketQuaGiaoDich(res, d);
+}
+
+/** Gia han ten mien (renew_domain, ca .vn lan quoc te). */
+export async function renewDomain(domain: string, years: number): Promise<RegisterResult> {
+  const d = normalizeDomain(domain);
+  const res = ensureOk(
+    await call(ACTIONS.renew, thamSoGiaHan(d, years, settings.pa().sendmail), { domainForLog: d }),
+    `Gia hạn ${d}`,
+  );
+  return ketQuaGiaoDich(res, d);
+}
+
+/** Ngay dang ky va ngay het han (get_date_domain: Date "dd/mm/yyyy - dd/mm/yyyy"). */
+export async function getDomainDates(domain: string): Promise<{ registeredAt?: string; expiresAt?: string } & RawResult> {
+  const d = normalizeDomain(domain);
+  const res = await call(ACTIONS.dates, { [FIELDS.domain]: d }, { domainForLog: d });
+  const ngay = docKhoangNgay(pick(res.data, ['date']));
+  if (!ngay.expiresAt) {
+    throw new RegistrarError(res.message || `P.A không trả ngày sử dụng của ${d}`, res.code || 'NO_DATE', res.raw);
+  }
+  return { ...res, ok: true, ...ngay };
+}
+
+/**
+ * Ten mien co thuoc tai khoan dai ly khong (check_domain).
+ * 1: thuoc quyen quan ly, 2: thuoc dai ly nhung da qua han, 0: khong co trong he thong.
+ */
+export async function checkOwned(domain: string): Promise<{ state: 0 | 1 | 2 | null } & RawResult> {
+  const d = normalizeDomain(domain);
+  const res = await call(ACTIONS.owned, { [FIELDS.domain]: d }, { domainForLog: d });
+  const state = res.returnCode === 0 || res.returnCode === 1 || res.returnCode === 2 ? res.returnCode : null;
+  return { ...res, state };
+}
+
+/**
+ * Chuyen ten mien ve (transfer-in). Tai lieu P.A KHONG co lenh nay: chi chay o
+ * che do gia lap hoac khi chu dat PA_ACTION_TRANSFER.
  */
 export async function transferDomain(input: {
   domain: string;
@@ -355,64 +456,80 @@ export async function transferDomain(input: {
   authCode: string;
   contact?: RegisterContact;
 }): Promise<RegisterResult> {
+  chanNgoaiTaiLieu('transfer', 'Chuyển tên miền về');
   const d = normalizeDomain(input.domain);
   const params: Record<string, string | number> = {
     [FIELDS.domain]: d,
     [FIELDS.years]: input.years,
     [FIELDS.authCode]: input.authCode,
-    // Gui kem vai bien the ten pho bien de tang kha nang tuong thich
-    eppcode: input.authCode,
-    auth_code: input.authCode,
-    ...(input.contact ? contactParams(input.contact) : {}),
   };
-
-  const res = ensureOk(
-    await call(ACTIONS.transfer, params, { method: 'POST', domainForLog: d }),
-    `Chuyển tên miền ${d}`,
-  );
+  const res = ensureOk(await call(ACTIONS.transfer, params, { domainForLog: d }), `Chuyển tên miền ${d}`);
   return {
-    ...res,
-    domain: d,
+    ...ketQuaGiaoDich(res, d),
     providerRef: pick(res.data, [...RESPONSE_KEYS.transactionId]) ?? '',
     expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires])),
   };
 }
 
-/** Doc thong tin chu the dang luu tai nha dang ky. */
+/**
+ * Doc thong tin chu the dang luu tai nha dang ky (get_info_domain, tai lieu
+ * ghi chi ho tro ten mien quoc te).
+ */
 export async function getDomainContact(domain: string): Promise<{ contact: Record<string, string> } & RawResult> {
   const d = normalizeDomain(domain);
-  const res = await call(ACTIONS.contactGet, { [FIELDS.domain]: d }, { domainForLog: d });
+  if (laTenMienVn(d.split('.').slice(1).join('.')) && !sandboxEnabled()) {
+    throw new RegistrarError('Tên miền Việt Nam không đọc được thông tin chủ thể qua API của nhà đăng ký.', 'UNSUPPORTED');
+  }
+  const res = ensureOk(await call(ACTIONS.infoGet, { [FIELDS.domain]: d }, { domainForLog: d }), `Đọc thông tin ${d}`);
 
   const doc = (keys: string[]) => pick(res.data, keys) ?? '';
   return {
     ...res,
     contact: {
-      fullName: doc(['name', 'fullname', 'ownername', 'owner', 'registrant']),
-      orgName: doc(['company', 'organization', 'org', 'congty']),
-      idNumber: doc(['idnumber', 'id_number', 'idcard', 'cmnd']),
-      taxCode: doc(['taxcode', 'tax_code', 'mst']),
-      email: doc(['email', 'owneremail']),
-      phone: doc(['phone', 'tel', 'ownerphone']),
-      address: doc(['address', 'addr', 'diachi']),
-      city: doc(['city']),
-      province: doc(['province', 'state']),
-      country: doc(['country']),
+      fullName: doc(['owner_name', 'name', 'fullname']),
+      orgName: doc(['owner_company', 'company']),
+      email: doc(['owner_email', 'email']),
+      phone: doc(['owner_phone', 'phone']),
+      address: doc(['owner_address', 'address']),
+      city: doc(['owner_city', 'city']),
+      province: doc(['owner_city', 'province']),
+      country: doc(['owner_country', 'country']),
     },
   };
 }
 
 /**
- * Cap nhat THONG TIN LIEN HE cua chu the (email, dien thoai, dia chi).
+ * Cap nhat THONG TIN LIEN HE cua chu the (email, dien thoai, dia chi) bang
+ * set_info_domain (chi ten mien quoc te). Ten chu the va ten to chuc gui "-"
+ * (tai lieu: "-" la khong cap nhat): day khong phai doi chu the.
  *
  * KHONG dung de doi CHU THE sang nguoi/to chuc khac - viec do la thu tuc phap ly
  * rieng, xem `src/services/domainContact.ts`.
  */
 export async function updateDomainContact(domain: string, contact: RegisterContact): Promise<RawResult> {
   const d = normalizeDomain(domain);
-  return ensureOk(
-    await call(ACTIONS.contactSet, { [FIELDS.domain]: d, ...contactParams(contact) }, { method: 'POST', domainForLog: d }),
-    `Cập nhật thông tin liên hệ ${d}`,
-  );
+  if (laTenMienVn(d.split('.').slice(1).join('.')) && !sandboxEnabled()) {
+    throw new RegistrarError(
+      'Tên miền Việt Nam cập nhật thông tin chủ thể bằng bản khai, chưa làm được qua API. Vui lòng liên hệ bộ phận hỗ trợ.',
+      'UNSUPPORTED',
+    );
+  }
+  const diaChi = [contact.address, contact.ward, contact.province].map((s) => (s ?? '').trim()).filter(Boolean).join(', ');
+  const khong = '-';
+  const params: Record<string, string> = {
+    [FIELDS.domain]: d,
+    owner_name: khong,
+    owner_company: khong,
+    owner_email: contact.email || khong,
+    owner_address: diaChi || khong,
+    owner_city: (contact.province ?? '').trim() || khong,
+    owner_country: 'VN',
+    owner_phone: contact.phone || khong,
+  };
+  for (const nhom of ['admin', 'tech', 'billing']) {
+    for (const truong of ['name', 'company', 'email', 'address', 'city', 'country', 'phone']) params[`${nhom}_${truong}`] = khong;
+  }
+  return ensureOk(await call(ACTIONS.infoSet, params, { domainForLog: d }), `Cập nhật thông tin liên hệ ${d}`);
 }
 
 /**
@@ -420,9 +537,11 @@ export async function updateDomainContact(domain: string, contact: RegisterConta
  *
  * Day la quyen cua chu ten mien - khong duoc gay kho de. Nhung cung la duong
  * chiem doat ten mien neu lot vao tay nguoi khac, nen tang tren ghi nhat ky
- * va gui email bao cho chu so huu moi lan ma duoc lay.
+ * va gui email bao cho chu so huu moi lan ma duoc lay. Tai lieu P.A khong co
+ * lenh nay (chi chay o gia lap hoac khi chu dat PA_ACTION_AUTH_CODE).
  */
 export async function getAuthCode(domain: string): Promise<{ authCode: string } & RawResult> {
+  chanNgoaiTaiLieu('authCode', 'Lấy mã EPP');
   const d = normalizeDomain(domain);
   const res = ensureOk(
     await call(ACTIONS.authCode, { [FIELDS.domain]: d }, { domainForLog: d }),
@@ -444,14 +563,16 @@ export async function getAuthCode(domain: string): Promise<{ authCode: string } 
 /**
  * Khoa / mo khoa chuyen doi (clientTransferProhibited).
  * Khoa la trang thai an toan mac dinh; phai mo khoa truoc khi chuyen ten mien di.
+ * Tai lieu P.A khong co lenh nay.
  */
 export async function setDomainLock(domain: string, locked: boolean): Promise<RawResult> {
+  chanNgoaiTaiLieu('lockSet', 'Khóa chuyển đổi tên miền');
   const d = normalizeDomain(domain);
   return ensureOk(
     await call(
       ACTIONS.lockSet,
       { [FIELDS.domain]: d, [FIELDS.lock]: locked ? '1' : '0', status: locked ? 'lock' : 'unlock' },
-      { method: 'POST', domainForLog: d },
+      { domainForLog: d },
     ),
     `${locked ? 'Khóa' : 'Mở khóa'} tên miền ${d}`,
   );
@@ -495,42 +616,91 @@ export async function whois(domain: string): Promise<WhoisResult> {
   };
 }
 
-/** Thong tin ten mien trong tai khoan dai ly. */
+/**
+ * Thong tin ten mien de dong bo (job sync_domain). P.A khong co lenh doc trang
+ * thai / nameserver, nen chi lay ngay dang ky va ngay het han qua get_date_domain.
+ */
 export async function domainInfo(domain: string): Promise<DomainInfo & RawResult> {
-  const d = normalizeDomain(domain);
-  const res = await call(ACTIONS.info, { [FIELDS.domain]: d }, { domainForLog: d });
+  const res = await getDomainDates(domain);
   return {
     ...res,
-    domain: d,
-    status: pick(res.data, ['domainstatus', 'status', 'state']),
-    registeredAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.created])),
-    expiresAt: normalizeDate(pick(res.data, [...RESPONSE_KEYS.expires])),
-    nameservers: parseNameservers(pick(res.data, [...RESPONSE_KEYS.nameservers])),
+    domain: normalizeDomain(domain),
+    ...(res.registeredAt ? { registeredAt: res.registeredAt } : {}),
+    ...(res.expiresAt ? { expiresAt: res.expiresAt } : {}),
+    nameservers: [],
   };
 }
 
-/** Doi nameserver (tro ten mien sang DNS khac). */
-export async function setNameservers(domain: string, nameservers: string[]): Promise<RawResult> {
-  const d = normalizeDomain(domain);
-  const list = parseNameservers(nameservers);
-  if (list.length < 2) throw new RegistrarError('Cần tối thiểu 2 nameserver.', 'VALIDATION');
+/** Phan giai ten nameserver ra IPv4 (de rieng de test thay duoc). */
+export const phanGiaiIp = {
+  resolve4: (host: string): Promise<string[]> => dnsPromises.resolve4(host),
+};
 
-  const params: Record<string, string> = { [FIELDS.domain]: d, [FIELDS.ns]: list.join(',') };
-  list.forEach((ns, i) => {
-    params[`${FIELDS.ns}${i + 1}`] = ns;
-  });
-  return ensureOk(await call(ACTIONS.nsSet, params, { method: 'POST', domainForLog: d }), `Đổi nameserver ${d}`);
+const IPV4 = /^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/;
+
+/** "ns1.abc.vn" hoac "ns1.abc.vn 1.2.3.4" hoac { host, ip } -> { host, ip? }. */
+export function docNameserver(v: string | NameserverPA): NameserverPA | null {
+  const [hostRaw = '', ipRaw = ''] = typeof v === 'string' ? v.trim().split(/[\s=]+/) : [v.host, v.ip ?? ''];
+  const host = parseNameservers(hostRaw)[0];
+  if (!host) return null;
+  const ip = ipRaw.trim();
+  if (ip && !IPV4.test(ip)) return null;
+  return ip ? { host, ip } : { host };
 }
 
-/** Lay danh sach ban ghi DNS hien tai. */
+/**
+ * Doi nameserver.
+ * - Ten mien .vn: change_dns_domain_vietnam, toi da 3, BAT BUOC IP cho 2 cai dau.
+ *   Khach khong nhap IP thi tu phan giai (resolve4); khong phan giai duoc thi
+ *   bao khach nhap kem IP, khong gui P.A thieu IP.
+ * - Quoc te: change_dns_domain_quocte, toi da 4.
+ */
+export async function setNameservers(domain: string, nameservers: (string | NameserverPA)[]): Promise<RawResult> {
+  const d = normalizeDomain(domain);
+  const vn = laTenMienVn(d.split('.').slice(1).join('.'));
+  const list = nameservers.map(docNameserver);
+  if (list.some((n) => n === null)) throw new RegistrarError('Nameserver hoặc địa chỉ IP không hợp lệ.', 'VALIDATION');
+  const ns = (list as NameserverPA[]).filter((n, i, a) => a.findIndex((x) => x.host === n.host) === i);
+  if (ns.length < 2) throw new RegistrarError('Cần tối thiểu 2 nameserver.', 'VALIDATION');
+  const toiDa = vn ? 3 : 4;
+  if (ns.length > toiDa) throw new RegistrarError(`Tối đa ${toiDa} nameserver.`, 'VALIDATION');
+
+  if (!vn) {
+    return ensureOk(
+      await call(ACTIONS.dnsIntl, thamSoDoiDnsQuocTe(d, ns.map((n) => n.host)), { domainForLog: d }),
+      `Đổi nameserver ${d}`,
+    );
+  }
+
+  for (const n of ns) {
+    if (n.ip) continue;
+    try {
+      const ips = await phanGiaiIp.resolve4(n.host);
+      if (ips[0]) n.ip = ips[0];
+    } catch {
+      // de trong, kiem ngay duoi
+    }
+    if (!n.ip) {
+      throw new RegistrarError(
+        `Không tìm được địa chỉ IP của ${n.host}. Tên miền .vn bắt buộc kèm IP, vui lòng nhập theo dạng "${n.host} 1.2.3.4".`,
+        'VALIDATION',
+      );
+    }
+  }
+  return ensureOk(await call(ACTIONS.dnsVn, thamSoDoiDnsVn(d, ns), { domainForLog: d }), `Đổi nameserver ${d}`);
+}
+
+/** Lay danh sach ban ghi DNS hien tai. Tai lieu P.A khong co lenh nay. */
 export async function getDnsRecords(domain: string): Promise<{ records: DnsRecord[] } & RawResult> {
+  chanNgoaiTaiLieu('dnsGet', 'Đọc bản ghi DNS');
   const d = normalizeDomain(domain);
   const res = await call(ACTIONS.dnsGet, { [FIELDS.domain]: d }, { domainForLog: d });
   return { ...res, records: extractRecords(res.data, d) };
 }
 
-/** Ghi de toan bo bo ban ghi DNS cua ten mien. */
+/** Ghi de toan bo bo ban ghi DNS cua ten mien. Tai lieu P.A khong co lenh nay. */
 export async function setDnsRecords(domain: string, records: DnsRecord[]): Promise<RawResult> {
+  chanNgoaiTaiLieu('dnsSet', 'Sửa bản ghi DNS');
   const d = normalizeDomain(domain);
   const params: Record<string, string | number> = { [FIELDS.domain]: d };
   records.forEach((r, i) => {
@@ -542,14 +712,14 @@ export async function setDnsRecords(domain: string, records: DnsRecord[]): Promi
     if (r.priority !== undefined) params[`${FIELDS.recordPriority}${n}`] = r.priority;
   });
   params['total'] = records.length;
-  // Gui kem dang JSON de tuong thich neu API chap nhan tham so `records`
   params['records'] = JSON.stringify(records);
 
   return ensureOk(await call(ACTIONS.dnsSet, params, { method: 'POST', domainForLog: d }), `Cập nhật DNS ${d}`);
 }
 
-/** Danh sach ten mien trong tai khoan dai ly (dung de doi soat dinh ky). */
+/** Danh sach ten mien trong tai khoan dai ly. Tai lieu P.A khong co lenh nay. */
 export async function listDomains(): Promise<{ domains: DomainInfo[] } & RawResult> {
+  chanNgoaiTaiLieu('list', 'Liệt kê tên miền');
   const res = await call(ACTIONS.list, {});
   const rows = collectRows(res.data);
   const domains: DomainInfo[] = rows
@@ -564,11 +734,18 @@ export async function listDomains(): Promise<{ domains: DomainInfo[] } & RawResu
   return { ...res, domains };
 }
 
-/** So du tai khoan dai ly. */
+/**
+ * So du tai khoan dai ly (check_account_still). P.A tra
+ * `{"Command","Username","Money":"3,896"}` (da xac minh that): Money la dong,
+ * dau phay ngan cach hang nghin. Khong co Money la loi (IP, key...).
+ */
 export async function getBalance(): Promise<{ balance: number } & RawResult> {
   const res = await call(ACTIONS.balance, {});
-  const raw = pick(res.data, [...RESPONSE_KEYS.balance]) ?? '0';
-  return { ...res, balance: Number(String(raw).replace(/[^\d.-]/g, '')) || 0 };
+  const money = docSoTien(pick(res.data, ['money']));
+  if (money === null) {
+    return { ...res, ok: false, message: res.message || lamSachPhanHoi(res.raw).slice(0, 300), balance: 0 };
+  }
+  return { ...res, ok: true, balance: money };
 }
 
 /* ============================================================== tien ich */
@@ -596,33 +773,6 @@ export function splitDomain(domain: string, knownTlds: string[]): { sld: string;
   const parts = d.split('.');
   if (parts.length >= 2) return { sld: parts.slice(0, -1).join('.'), tld: parts.at(-1)! };
   return null;
-}
-
-function contactParams(c: RegisterContact): Record<string, string> {
-  const country = c.country || 'VN';
-  return {
-    // Ten truong ho so chu the theo API dai ly P.A.
-    // Neu tai lieu cua ban dung ten khac, chi can sua tai day.
-    name: c.fullName,
-    fullname: c.fullName,
-    company: c.orgName ?? '',
-    ownertype: c.kind === 'organization' ? '1' : '0',
-    idnumber: c.idNumber ?? '',
-    id_number: c.idNumber ?? '',
-    taxcode: c.taxCode ?? '',
-    tax_code: c.taxCode ?? '',
-    email: c.email,
-    phone: c.phone,
-    address: c.address ?? '',
-    city: c.city ?? '',
-    province: c.province ?? c.city ?? '',
-    state: c.province ?? c.city ?? '',
-    zipcode: c.postalCode ?? '',
-    postalcode: c.postalCode ?? '',
-    country,
-    birthday: c.birthDate ?? '',
-    gender: c.gender ?? '',
-  };
 }
 
 function extract(text: string, re: RegExp): string | undefined {
@@ -669,18 +819,40 @@ function extractRecords(data: Flat, domain: string): DnsRecord[] {
 
 /**
  * Sandbox: tra du lieu mau, khong goi mang. Cho phep phat trien / demo khi IP
- * chua duoc P.A whitelist. Bat bang PAVIETNAM_SANDBOX=1.
+ * chua duoc P.A whitelist. Bat bang PAVIETNAM_SANDBOX=1. Lenh co trong tai lieu
+ * tra dung dinh dang Command/ReturnCode/ReturnText cua P.A.
  */
 function sandboxResponse(action: string, params: Record<string, string | number | undefined>): string {
-  const domain = String(params[FIELDS.domain] ?? 'example.com');
+  const domain = String(params[FIELDS.domain] ?? (params['domainName'] ? `${params['domainName']}.${params['domainExt']}` : 'example.com'));
   const taken = parseInt(sha256(domain).slice(0, 2), 16) % 3 !== 0; // ~1/3 con trong
   const inOneYear = new Date(Date.now() + 365 * 864e5).toISOString().slice(0, 10);
+  const dmy = (iso: string) => iso.slice(0, 10).split('-').reverse().join('/');
+  const pa = (them: Record<string, unknown> = {}) =>
+    JSON.stringify({ Command: action, ReturnCode: 200, ReturnText: 'Thuc hien thanh cong', ...them });
 
   if (action === ACTIONS.check) {
     return JSON.stringify({ status: 'OK', domain, available: taken ? 0 : 1, message: taken ? 'Domain da duoc dang ky' : 'Domain con trong' });
   }
-  if (action === ACTIONS.register || action === ACTIONS.renew) {
-    return JSON.stringify({ status: 'OK', domain, transactionid: `SBX${Date.now()}`, expiredate: inOneYear, message: 'Thanh cong (sandbox)' });
+  if (action === ACTIONS.registerVn || action === ACTIONS.registerIntl || action === ACTIONS.renew) {
+    return pa({ trans_id: `SBX${Date.now()}`, trans_domain: domain, trans_money: '-0', trans_accountstill: '50,000,000' });
+  }
+  if (action === ACTIONS.dnsVn || action === ACTIONS.dnsIntl || action === ACTIONS.infoSet || action === ACTIONS.changePassword) {
+    return pa();
+  }
+  if (action === ACTIONS.dates) {
+    return JSON.stringify({ Command: action, Domain: domain, Date: `${dmy(new Date().toISOString())} - ${dmy(inOneYear)}` });
+  }
+  if (action === ACTIONS.balance) {
+    return JSON.stringify({ Command: action, Username: 'sandbox', Money: '50,000,000' });
+  }
+  if (action === ACTIONS.owned) {
+    return JSON.stringify({ Command: action, ReturnCode: 1, ReturnText: 'Domain thuoc quyen quan ly cua ban' });
+  }
+  if (action === ACTIONS.province) {
+    return JSON.stringify(danhSachTinh().map((t) => ({ id: t.id, name: t.ten })));
+  }
+  if (action === ACTIONS.ward) {
+    return JSON.stringify(phuongCuaTinh(String(params['province_id'] ?? '')).map((p) => ({ id: p.id, name: p.ten })));
   }
   if (action === ACTIONS.whois) {
     return JSON.stringify({
@@ -703,23 +875,19 @@ function sandboxResponse(action: string, params: Record<string, string | number 
   if (action === ACTIONS.list) {
     return JSON.stringify({ status: 'OK', items: [{ domain, status: 'active', expiredate: inOneYear, ns: 'ns1.pavietnam.vn,ns2.pavietnam.vn' }] });
   }
-  if (action === ACTIONS.contactGet) {
-    return JSON.stringify({
-      status: 'OK', domain, name: 'Nguyen Van A', email: 'chuthe@example.vn',
-      phone: '0901234567', address: '123 Le Loi', province: 'TP HCM', country: 'VN',
+  if (action === ACTIONS.infoGet) {
+    return pa({
+      ReturnText: {
+        owner_name: 'Nguyen Van A', owner_email: 'chuthe@example.vn', owner_phone: '0901234567',
+        owner_address: '123 Le Loi', owner_city: 'TP HCM', owner_country: 'VN',
+      },
     });
-  }
-  if (action === ACTIONS.contactSet) {
-    return JSON.stringify({ status: 'OK', domain, message: 'Da cap nhat thong tin lien he' });
   }
   if (action === ACTIONS.authCode) {
     return JSON.stringify({ status: 'OK', domain, authcode: `EPP-${sha256(domain).slice(0, 10).toUpperCase()}` });
   }
   if (action === ACTIONS.lockSet) {
     return JSON.stringify({ status: 'OK', domain, lock: params['lock'], message: 'Da cap nhat trang thai khoa' });
-  }
-  if (action === ACTIONS.balance) {
-    return JSON.stringify({ status: 'OK', balance: 50_000_000 });
   }
   return JSON.stringify({ status: 'OK', message: 'Thanh cong (sandbox)' });
 }

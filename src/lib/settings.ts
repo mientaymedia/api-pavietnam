@@ -116,6 +116,11 @@ export const settings = {
     username: getSetting('pa.username', config.pa.username),
     apikey: getSetting('pa.apikey', config.pa.apikey),
     sandbox: getSettingBool('pa.sandbox', config.pa.sandbox),
+    endpointTest: getSetting('pa.endpoint_test', config.pa.endpointTest),
+    useTestEndpoint: getSettingBool('pa.use_test_endpoint', config.pa.useTestEndpoint),
+    // Mac dinh TAT: email cua P.A gui thang cho khach mang ten P.A, trong khi he
+    // thong da tu gui email kich hoat, gia han mang ten MienTay Media
+    sendmail: getSettingBool('pa.sendmail', false),
   }),
 
   dns: () => ({

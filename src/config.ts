@@ -74,6 +74,10 @@ export const config = {
 
   pa: {
     endpoint: str('PAVIETNAM_ENDPOINT', 'https://daily.pavietnam.vn/interface.php'),
+    /** Endpoint chay thu cua P.A: dang ky / gia han / doi DNS tra 900, khong tru tien. */
+    endpointTest: str('PAVIETNAM_ENDPOINT_TEST', 'https://daily.pavietnam.vn/interface_test.php'),
+    /** Bat che do thu: lenh ghi di endpointTest (lenh doc van di endpoint that). */
+    useTestEndpoint: bool('PA_USE_TEST_ENDPOINT', false),
     username: str('PAVIETNAM_USERNAME'),
     apikey: str('PAVIETNAM_APIKEY'),
     timeoutMs: num('PAVIETNAM_TIMEOUT_MS', 30_000),

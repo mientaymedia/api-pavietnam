@@ -21,6 +21,8 @@ import { enqueue } from '../jobs/queue.js';
 import { upsertDomainFromProvider } from './domainRepo.js';
 import { autoRefundEnabled, refundOrderItem } from './refunds.js';
 import { boDau } from '../lib/text.js';
+import { decryptSecret, encryptSecret } from '../lib/crypto.js';
+import { sinhMatKhauTenMien } from '../pavietnam/thamSo.js';
 
 /**
  * Loi khong the khac phuc bang cach thu lai. Viet ASCII khong dau va so tren
@@ -154,9 +156,11 @@ async function doRegister(order: Order, item: OrderItem): Promise<void> {
   const ns = settings.dns().defaultNameservers;
   const result = await registerDomain({
     domain: item.domain,
+    tld: item.tld,
     years: item.years,
     contact,
-    nameservers: ns.length >= 2 ? ns : undefined,
+    nameservers: ns,
+    password: matKhauCuaDong(item),
   });
 
   const domainId = upsertDomainFromProvider({
@@ -281,6 +285,26 @@ async function doTransfer(order: Order, item: OrderItem): Promise<void> {
     domain: item.domain,
     orderCode: order.code,
   });
+}
+
+/**
+ * Mat khau quan ly ten mien cua dong don: sinh MOT lan, luu ma hoa trong meta,
+ * thu lai dung lai dung mat khau do (P.A co the da nhan lan truoc).
+ */
+export function matKhauCuaDong(item: OrderItem): string {
+  const meta = parseJson<Record<string, unknown>>(item.meta, {});
+  if (typeof meta['paPasswordEnc'] === 'string') {
+    try {
+      return decryptSecret(meta['paPasswordEnc']);
+    } catch {
+      // khoa ma hoa doi: sinh lai (lan dang ky truoc chac chan chua thanh cong)
+    }
+  }
+  const mk = sinhMatKhauTenMien();
+  meta['paPasswordEnc'] = encryptSecret(mk);
+  db.prepare('UPDATE order_items SET meta = ?, updated_at = ? WHERE id = ?').run(JSON.stringify(meta), nowIso(), item.id);
+  item.meta = JSON.stringify(meta);
+  return mk;
 }
 
 function markItemFailed(item: OrderItem, error: string): void {
