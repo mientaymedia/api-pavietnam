@@ -30,7 +30,7 @@ Phạm vi chủ chốt thêm 19/10 (làm sau B0 đến B9):
 
 - [x] B10. Thông báo Telegram: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ADMIN_CHAT_IDS`, secret webhook trong settings mã hóa; tin khi đơn đã thanh toán, đăng ký thành công, thiếu quỹ (kèm nút "Đã nạp, kích hoạt"), lỗi cần người xử lý. Kiểm: test với Telegram giả lập (`TELEGRAM_API_BASE`).
 - [x] B11. Webhook `POST /webhooks/telegram`: xác thực `X-Telegram-Bot-Api-Secret-Token`, chỉ chat id được phép; nút và `/kichhoat` chạy kiểm số dư rồi đăng ký đơn chờ; `/sodu`, `/doncho`; bấm hai lần không đăng ký hai lần. Hướng dẫn setWebhook trong docs. Kiểm: test HTTP.
-- [ ] B12. Cổng máy cho CRM (chủ sửa 19/10): dùng chung `/api/noi-bo/*` với khóa `WEB_TEN_MIEN_KEY` theo client sẵn có bên CRM (`D:/crm-mientaymedia/src/server/tich-hop/web-client.ts`, chỉ đọc); thêm `GET /api/noi-bo/trang-thai`, `POST /api/noi-bo/kich-hoat` (dùng chung khóa với nút Telegram); web đẩy sự kiện sang CRM khi đơn đã thanh toán, chờ quỹ, lỗi, đăng ký xong (đối chiếu `kiem-tra.ts` bên CRM). Đặc tả `docs/mtm/pa-dang-ky/api-crm.md`. Kiểm: test HTTP và CRM giả lập.
+- [x] B12. Cổng máy cho CRM (chủ sửa 19/10): dùng chung `/api/noi-bo/*` với khóa `WEB_TEN_MIEN_KEY` theo client sẵn có bên CRM (`D:/crm-mientaymedia/src/server/tich-hop/web-client.ts`, chỉ đọc); thêm `GET /api/noi-bo/trang-thai`, `POST /api/noi-bo/kich-hoat` (dùng chung khóa với nút Telegram); web đẩy sự kiện sang CRM khi đơn đã thanh toán, chờ quỹ, lỗi, đăng ký xong (đối chiếu `kiem-tra.ts` bên CRM). Đặc tả `docs/mtm/pa-dang-ky/api-crm.md`. Kiểm: test HTTP và CRM giả lập.
 
 ## Lệch spec
 

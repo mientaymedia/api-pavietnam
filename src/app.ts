@@ -27,6 +27,7 @@ import controlPanelRoutes from './routes/controlPanel.js';
 import accountRoutes from './routes/account.js';
 import adminRoutes from './routes/admin.js';
 import apiRoutes from './routes/api.js';
+import noiBoRoutes from './routes/noiBo.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '..');
@@ -115,6 +116,7 @@ export function createApp() {
   site.use('/control-panel', controlPanelRoutes);
   site.use('/', accountRoutes);
   site.use('/admin', adminRoutes);
+  site.use('/api/noi-bo', noiBoRoutes);
   site.use('/api/v1', apiRoutes);
 
   site.use(notFound);

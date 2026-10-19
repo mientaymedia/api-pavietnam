@@ -19,7 +19,8 @@ export type JobType =
   | 'auto_renew_domains'    // tu dong gia han ten mien da bat auto_renew
   | 'expire_stale_orders'
   | 'reconcile_sepay'       // doi soat bu khi webhook SePay that lac
-  | 'retry_awaiting_funds'; // 5 phut: kiem so du P.A, dang ky cac dong cho nap quy
+  | 'retry_awaiting_funds'  // 5 phut: kiem so du P.A, dang ky cac dong cho nap quy
+  | 'day_su_kien_crm';      // giao mot su kien don hang sang CRM (services/dayCrm.ts)
 
 export interface JobRow {
   id: number;
