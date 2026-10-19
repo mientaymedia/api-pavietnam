@@ -82,6 +82,12 @@
   <div style="background:var(--warn-bg); border-bottom:1px solid #fde68a; color:#92400e;">
     <div class="container" style="padding-top:10px; padding-bottom:10px;">
       <div class="row-between" style="gap:10px">
+        <% if (typeof thieuEmail !== 'undefined' && thieuEmail) { %>
+          <span class="small">
+            Tài khoản chưa có email. Hệ thống cần email để gửi thông tin quản trị tên miền.
+          </span>
+          <a class="btn btn-sm" href="<%= base %>/tai-khoan/email">Bổ sung email</a>
+        <% } else { %>
         <span class="small">
           Địa chỉ email <strong><%= currentUser.email %></strong> chưa được xác thực.
           Hệ thống dùng email này để gửi thông tin quản trị tên miền.
@@ -90,6 +96,7 @@
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button class="btn btn-sm" type="submit">Gửi lại email xác thực</button>
         </form>
+        <% } %>
       </div>
     </div>
   </div>

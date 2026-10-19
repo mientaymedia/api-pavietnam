@@ -79,7 +79,7 @@
 
   <div class="field <%= e.email ? 'field-error' : '' %>">
     <label><span class="field-name">Email chủ thể</span>
-    <input type="email" name="email" value="<%= v.email || (typeof currentUser !== 'undefined' && currentUser ? currentUser.email : '') %>" autocomplete="email" required></label>
+    <input type="email" name="email" value="<%= v.email || (typeof currentUser !== 'undefined' && currentUser && !(typeof thieuEmail !== 'undefined' && thieuEmail) ? currentUser.email : '') %>" autocomplete="email" required></label>
     <% if (e.email) { %><div class="error-text"><%= e.email %></div><% } %>
   </div>
 

@@ -30,11 +30,61 @@
         <div class="field"><label><span class="field-name">Họ và tên</span><input type="text" name="full_name" value="<%= user.full_name %>"></label></div>
         <div class="field"><label><span class="field-name">Số điện thoại</span><input type="text" name="phone" value="<%= user.phone %>"></label></div>
       </div>
-      <div class="field"><label><span class="field-name">Email</span><input type="email" value="<%= user.email %>" disabled></label></div>
+      <% if (typeof thieuEmail !== 'undefined' && thieuEmail) { %>
+        <div class="field"><span class="field-name">Email</span>
+          <div class="small">Chưa có email. <a href="<%= base %>/tai-khoan/email">Bổ sung email</a> để nhận thông tin tên miền và đặt hàng.</div></div>
+      <% } else { %>
+        <div class="field"><label><span class="field-name">Email</span><input type="email" value="<%= user.email %>" disabled></label></div>
+      <% } %>
       <button class="btn" type="submit">Lưu thay đổi</button>
     </form>
   </div>
 
+  <% var mx = typeof mxh !== 'undefined' ? mxh : { coMatKhau: true, danhSach: [] }; %>
+  <% if (mx.danhSach.length) { %>
+  <div class="card">
+    <div class="card-title"><h2>Đăng nhập bằng mạng xã hội</h2></div>
+    <p class="muted small">Liên kết để đăng nhập nhanh. Tài khoản có xác thực hai lớp vẫn phải nhập mã sau khi đăng nhập.</p>
+    <div class="lien-ket-mxh">
+      <% mx.danhSach.forEach(function (d) { %>
+        <div class="dong">
+          <div>
+            <strong><%= d.ten %></strong>
+            <% if (d.danhTinh) { %>
+              <span class="badge badge-muted">Đã liên kết</span>
+              <div class="small muted"><%= d.danhTinh.email || 'Không có email' %>, từ <%= d.danhTinh.created_at.slice(0, 10) %></div>
+            <% } else { %>
+              <div class="small muted">Chưa liên kết</div>
+            <% } %>
+          </div>
+          <% if (d.danhTinh) { %>
+            <form method="post" action="<%= base %>/tai-khoan/lien-ket/<%= d.ben %>/huy" data-confirm="Hủy liên kết <%= d.ten %>?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn-outline btn-sm" type="submit">Hủy liên kết</button>
+            </form>
+          <% } else if (d.dangBat) { %>
+            <a class="btn btn-outline btn-sm" href="<%= base %>/auth/<%= d.ben %>?lien_ket=1&amp;_csrf=<%= encodeURIComponent(csrfToken) %>">Liên kết <%= d.ten %></a>
+          <% } %>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+  <% } %>
+
+  <% if (!mx.coMatKhau) { %>
+  <div class="card">
+    <div class="card-title"><h2>Đặt mật khẩu</h2></div>
+    <p class="muted small">Tài khoản đang đăng nhập bằng mạng xã hội. Đặt mật khẩu để đăng nhập được bằng email khi cần, và để hủy được liên kết cuối cùng.</p>
+    <form method="post" action="<%= base %>/tai-khoan/dat-mat-khau">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="grid grid-2" style="gap:0 14px">
+        <div class="field"><label><span class="field-name">Mật khẩu</span><input type="password" name="password" required autocomplete="new-password"></label></div>
+        <div class="field"><label><span class="field-name">Nhập lại mật khẩu</span><input type="password" name="password_confirm" required autocomplete="new-password"></label></div>
+      </div>
+      <button class="btn" type="submit">Đặt mật khẩu</button>
+    </form>
+  </div>
+  <% } else { %>
   <div class="card">
     <div class="card-title"><h2>Đổi mật khẩu</h2></div>
     <form method="post" action="<%= base %>/tai-khoan/doi-mat-khau">
@@ -47,6 +97,7 @@
       <button class="btn" type="submit">Đổi mật khẩu</button>
     </form>
   </div>
+  <% } %>
 
   <div class="card">
     <div class="card-title"><h2>API token</h2></div>

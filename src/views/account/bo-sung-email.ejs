@@ -1,0 +1,25 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<div class="container container-narrow">
+  <%- include('../partials/flash') %>
+  <div class="card">
+    <h1>Bổ sung email</h1>
+    <p class="muted small">
+      Tên miền được quản lý qua email: thông báo gia hạn, đổi nameserver, mã chuyển đi và lấy lại tài khoản đều gửi về đây.
+      Sau khi lưu, bấm liên kết trong thư xác thực là có thể đặt hàng.
+    </p>
+
+    <form method="post" action="<%= base %>/tai-khoan/email">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field <%= errors.email ? 'field-error' : '' %>">
+        <label for="email"><span class="field-name">Email</span>
+        <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autofocus autocomplete="email"></label>
+        <% if (errors.email) { %><div class="error-text"><%= errors.email %></div><% } %>
+      </div>
+      <button class="btn btn-block btn-lg" type="submit">Lưu và gửi thư xác thực</button>
+    </form>
+
+    <p class="small muted center" style="margin:16px 0 0"><a href="<%= base %>/tai-khoan">Để sau, về trang Tài khoản</a></p>
+  </div>
+</div>
+<%- include('../partials/footer') %>

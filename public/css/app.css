@@ -721,3 +721,34 @@ main.main-flush { padding: 0; }
 .bm-links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; font-size: .9rem; }
 .bm-lienhe { margin-top: 6px; padding: 6px 10px; background: var(--brand-light); border-radius: var(--r-sm); color: var(--ink); }
 .bm-refs { margin: 0 0 8px; padding-left: 20px; line-height: 1.7; overflow-wrap: anywhere; }
+
+/* ----------------------------------------------------------------------------
+   Nut dang nhap bang mang xa hoi (partials/nut-mxh.ejs). Google theo huong dan
+   thuong hieu: nen trang, vien #747775 1px, chu #1F1F1F 14/20, logo G bon mau
+   nguyen ban; Roboto khong co tren may chu nen dung font he thong gan nhat.
+   GitHub: nen #24292f, chu va dau trang. Zalo: nen xanh Zalo #0068FF.
+   ---------------------------------------------------------------------------- */
+.mxh { margin-top: 18px; }
+.mxh-chia { display: flex; align-items: center; gap: 12px; color: var(--ink-muted); font-size: .86rem; margin-bottom: 14px; }
+.mxh-chia::before, .mxh-chia::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.mxh-nut { display: grid; gap: 10px; }
+.nut-mxh {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 44px; padding: 10px 12px; border-radius: 4px; border: 1px solid transparent;
+  font: 500 14px/20px Roboto, "Segoe UI", Arial, sans-serif; text-decoration: none;
+}
+.nut-mxh:hover { text-decoration: none; }
+.nut-mxh:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.nut-mxh svg { flex: 0 0 auto; }
+.nut-google { background: #fff; color: #1f1f1f; border-color: #747775; }
+.nut-google:hover { background: #f8faff; color: #1f1f1f; }
+.nut-github { background: #24292f; color: #fff; }
+.nut-github:hover { background: #32383f; color: #fff; }
+.nut-zalo { background: #0068ff; color: #fff; }
+.nut-zalo:hover { background: #0056d6; color: #fff; }
+.nut-zalo-nhan { background: #fff; color: #0068ff; border-radius: 6px; padding: 0 5px; font-weight: 700; font-size: 12px; line-height: 18px; }
+
+/* Khoi lien ket o trang Tai khoan */
+.lien-ket-mxh { display: grid; gap: 10px; }
+.lien-ket-mxh .dong { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.lien-ket-mxh .dong:last-child { border-bottom: 0; }
