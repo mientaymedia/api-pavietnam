@@ -3,6 +3,7 @@
  * Kiem tra API, trang Don cho xu ly (kich hoat, thu lai, danh dau that bai).
  * May chu P.A gia cuc bo.
  */
+import './helpers/csdl-rieng.js';
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import type { AppThu, Phien } from './helpers/http-app.js';

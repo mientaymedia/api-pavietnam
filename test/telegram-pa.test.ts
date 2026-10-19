@@ -4,6 +4,7 @@
  * loi can nguoi xu ly kem ma; nhac lai thieu quy sau 4 gio, xin loi khach sau
  * 24 gio, khong tu hoan. Token khong lot ra log.
  */
+import './helpers/csdl-rieng.js';
 import './helpers/db.js';
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';

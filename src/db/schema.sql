@@ -450,3 +450,9 @@ CREATE TABLE IF NOT EXISTS ai_usage_daily (
   cost_vnd      REAL    NOT NULL DEFAULT 0,  -- chi phi uoc tinh tu usage va don gia cau hinh
   updated_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
 );
+
+-- Update Telegram da xu ly (webhook): Telegram gui lai cung update_id khi phan hoi cham
+CREATE TABLE IF NOT EXISTS telegram_updates (
+  update_id  INTEGER PRIMARY KEY,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+);

@@ -3,6 +3,7 @@
  * lieu): dang ky .vn ca nhan, .com.vn cong ty, .com; thieu quy roi nap; 400,
  * 606, 6023, 303; gia han; che do thu 900. Khong goi P.A that.
  */
+import './helpers/csdl-rieng.js';
 import './helpers/db.js';
 import { test, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';

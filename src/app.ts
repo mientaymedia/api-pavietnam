@@ -22,6 +22,7 @@ import cartRoutes from './routes/cart.js';
 import checkoutRoutes from './routes/checkout.js';
 import orderRoutes from './routes/orders.js';
 import webhookRoutes from './routes/webhooks.js';
+import telegramWebhookRoutes from './routes/telegramWebhook.js';
 import controlPanelRoutes from './routes/controlPanel.js';
 import accountRoutes from './routes/account.js';
 import adminRoutes from './routes/admin.js';
@@ -109,6 +110,7 @@ export function createApp() {
   site.use('/gio-hang', cartRoutes);
   site.use('/thanh-toan', checkoutRoutes);
   site.use('/don-hang', orderRoutes);
+  site.use('/webhooks/telegram', telegramWebhookRoutes);
   site.use('/webhooks', webhookRoutes);
   site.use('/control-panel', controlPanelRoutes);
   site.use('/', accountRoutes);
