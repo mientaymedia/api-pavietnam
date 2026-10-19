@@ -174,6 +174,18 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'auth.require_email_verified', label: 'Bắt buộc xác thực email trước khi đặt hàng', type: 'checkbox' },
   { key: 'auth.verify_resend_per_hour', label: 'Số lần gửi lại email xác thực / giờ', type: 'number' },
 
+  // Dang nhap bang mang xa hoi. O trong thi dung bien .env cung ten; ben nao
+  // thieu id hoac bi mat thi nut khong hien du o bat dang bat.
+  { key: 'oauth.zalo_enabled', label: 'Bật đăng nhập bằng Zalo', type: 'checkbox', hint: 'Chỉ có tác dụng khi đã nhập đủ App ID và Secret Key' },
+  { key: 'oauth.zalo_app_id', label: 'Zalo App ID (đăng nhập)', hint: 'Lấy ở developers.zalo.me, mục Quản lý ứng dụng. Để trống thì dùng ZALO_APP_ID' },
+  { key: 'oauth.zalo_app_secret', label: 'Zalo Secret Key (đăng nhập)', type: 'password', hint: 'Để trống thì dùng ZALO_APP_SECRET' },
+  { key: 'oauth.google_enabled', label: 'Bật đăng nhập bằng Google', type: 'checkbox', hint: 'Chỉ có tác dụng khi đã nhập đủ Client ID và Client Secret' },
+  { key: 'oauth.google_client_id', label: 'Google Client ID', hint: 'Google Cloud Console, mục APIs & Services > Credentials. Để trống thì dùng GOOGLE_CLIENT_ID' },
+  { key: 'oauth.google_client_secret', label: 'Google Client Secret', type: 'password', hint: 'Để trống thì dùng GOOGLE_CLIENT_SECRET' },
+  { key: 'oauth.github_enabled', label: 'Bật đăng nhập bằng GitHub', type: 'checkbox', hint: 'Chỉ có tác dụng khi đã nhập đủ Client ID và Client Secret' },
+  { key: 'oauth.github_client_id', label: 'GitHub Client ID', hint: 'GitHub, Settings > Developer settings > OAuth Apps. Để trống thì dùng GITHUB_CLIENT_ID' },
+  { key: 'oauth.github_client_secret', label: 'GitHub Client Secret', type: 'password', hint: 'Để trống thì dùng GITHUB_CLIENT_SECRET' },
+
   // Bao mat
   { key: 'security.require_2fa_admin', label: 'Bắt buộc xác thực hai lớp cho tài khoản quản trị', type: 'checkbox', hint: 'Tắt khi không còn thiết bị xác thực - nhưng khi tắt, mật khẩu bị lộ là mất toàn bộ quyền quản trị' },
 
@@ -235,6 +247,7 @@ function currentSettingValues(): Record<string, string> {
     ...flatten('smtp', settings.smtp()),
     ...flatten('security', settings.security()),
     ...flatten('ai', settings.ai()),
+    ...flatten('oauth', settings.oauth()),
     'tg.bot_token': settings.telegram().botToken,
     'tg.admin_chat_ids': settings.telegram().adminChatIds.join(','),
     'tg.webhook_secret': settings.telegram().webhookSecret,
@@ -266,6 +279,8 @@ router.get('/cau-hinh', (_req, res) => {
     values: currentSettingValues(),
     secretKeys: SECRET_KEYS,
     webhookUrl: `${config.appUrl}/webhooks/sepay`,
+    // Dia chi quay ve chu phai khai bao o trang developer cua tung ben
+    oauthCallbacks: (['zalo', 'google', 'github'] as const).map((p) => ({ ben: p, url: `${config.appUrl}/auth/${p}/callback` })),
     qrPreview: buildSepayQrUrl({ amount: 10000, addInfo: 'DHTEST01' }),
     znsEvents: ZNS_EVENT_LIST.map((e) => ({ ...e, templateId: getSetting(e.settingKey, '') })),
     znsReady: isZnsReady(),

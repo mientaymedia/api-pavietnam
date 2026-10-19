@@ -97,6 +97,20 @@ CREATE TABLE IF NOT EXISTS zns_logs (
 );
 CREATE INDEX IF NOT EXISTS idx_zns_logs_created ON zns_logs(created_at);
 
+-- Danh tinh dang nhap bang mang xa hoi (Zalo, Google, GitHub). Mot danh tinh
+-- chi thuoc mot tai khoan; moi tai khoan nhieu nhat mot danh tinh moi ben (huy
+-- roi moi lien ket cai khac). Khong luu access token: chi can danh tinh mot lan.
+CREATE TABLE IF NOT EXISTS user_identities (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  provider         TEXT NOT NULL CHECK (provider IN ('zalo','google','github')),
+  provider_user_id TEXT NOT NULL,
+  user_id          INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  email            TEXT NOT NULL DEFAULT '',   -- email da xac minh ben nha cung cap, rong neu khong co
+  created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
+  UNIQUE (provider, provider_user_id),
+  UNIQUE (user_id, provider)
+);
+
 -- Token cho REST API rieng cua khach hang (de ho tu build front-end)
 CREATE TABLE IF NOT EXISTS api_tokens (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,

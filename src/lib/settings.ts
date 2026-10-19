@@ -221,6 +221,23 @@ export const settings = {
     suKienMoRong: getSettingBool('crm.su_kien_mo_rong', false),
   }),
 
+  /**
+   * Dang nhap bang mang xa hoi. Moi ben chi bat khi co du id va bi mat (xem
+   * lib/oauth.ts); o bat tat (mac dinh bat) de tam tat mot ben ma khong phai
+   * xoa khoa: o bi mat de trong la "giu nguyen" nen khong xoa duoc tu giao dien.
+   */
+  oauth: () => ({
+    zaloEnabled: getSettingBool('oauth.zalo_enabled', true),
+    zaloAppId: getSetting('oauth.zalo_app_id', config.oauth.zaloAppId).trim(),
+    zaloAppSecret: getSetting('oauth.zalo_app_secret', config.oauth.zaloAppSecret).trim(),
+    googleEnabled: getSettingBool('oauth.google_enabled', true),
+    googleClientId: getSetting('oauth.google_client_id', config.oauth.googleClientId).trim(),
+    googleClientSecret: getSetting('oauth.google_client_secret', config.oauth.googleClientSecret).trim(),
+    githubEnabled: getSettingBool('oauth.github_enabled', true),
+    githubClientId: getSetting('oauth.github_client_id', config.oauth.githubClientId).trim(),
+    githubClientSecret: getSetting('oauth.github_client_secret', config.oauth.githubClientSecret).trim(),
+  }),
+
   ai: () => ({
     /** Chu chot 18/10/2026: mac dinh TAT cho toi khi nhap khoa va bat tay. */
     enabled: getSettingBool('ai.enabled', false),
@@ -288,6 +305,9 @@ export const SECRET_KEYS = [
   'tg.bot_token',
   'tg.webhook_secret',
   'crm.khoa',
+  'oauth.zalo_app_secret',
+  'oauth.google_client_secret',
+  'oauth.github_client_secret',
 ];
 
 /**

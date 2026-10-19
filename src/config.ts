@@ -156,6 +156,24 @@ export const config = {
    */
   webTenMienKey: str('WEB_TEN_MIEN_KEY'),
 
+  /**
+   * Dang nhap bang Zalo, Google, GitHub. O Cau hinh ghi de khi nhap; ben nao
+   * thieu id hoac bi mat thi nut cua ben do khong hien.
+   */
+  oauth: {
+    zaloAppId: str('ZALO_APP_ID'),
+    zaloAppSecret: str('ZALO_APP_SECRET'),
+    googleClientId: str('GOOGLE_CLIENT_ID'),
+    googleClientSecret: str('GOOGLE_CLIENT_SECRET'),
+    githubClientId: str('GITHUB_CLIENT_ID'),
+    githubClientSecret: str('GITHUB_CLIENT_SECRET'),
+    /**
+     * Chi de test: tro moi dia chi cua ba ben ve may chu gia lap cuc bo. Bo qua
+     * tren production: dat nham la ma dang nhap va bi mat bi gui toi may la.
+     */
+    mockBase: isProd ? '' : str('OAUTH_MOCK_BASE').replace(/\/+$/, ''),
+  },
+
   /** Day su kien don hang sang CRM (cong /api/tich-hop/web-ten-mien/su-kien ben CRM). */
   crm: {
     url: str('CRM_URL').replace(/\/+$/, ''),

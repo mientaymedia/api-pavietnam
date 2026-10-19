@@ -24,6 +24,7 @@
         { key: 'momo.',    title: 'Ví MoMo', note: '' },
         { key: 'zalopay.', title: 'ZaloPay', note: '' },
         { key: 'security.', title: 'Bảo mật quản trị', note: 'Tài khoản quản trị nắm API key P.A (tiêu tiền thật), token cổng thanh toán và dữ liệu cá nhân của khách.' },
+        { key: 'oauth.',   title: 'Đăng nhập bằng mạng xã hội', note: 'Khách đăng nhập, đăng ký bằng Zalo, Google, GitHub. Bên nào thiếu khóa thì nút của bên đó không hiện. Khóa bí mật lưu mã hóa.' },
         { key: 'auth.',    title: 'Xác thực tài khoản', note: 'Email là kênh giao thông tin quản trị tên miền - email sai đồng nghĩa khách mất liên lạc với tài sản của họ.' },
         { key: 'smtp.',    title: 'Email (SMTP)', note: 'Dùng để gửi email xác thực, thông tin quản trị tên miền, nhắc gia hạn và cảnh báo nội bộ.' },
         { key: 'zns.',     title: 'Zalo ZNS', note: 'Gửi thông báo qua Zalo Official Account. Cần duyệt mẫu tin trước khi gửi được.' },
@@ -48,6 +49,18 @@
               <span class="label">Header</span>
               <span class="value">Authorization: Apikey &lt;token bên dưới&gt;</span>
             </div>
+          </div>
+        <% } %>
+
+        <% if (g.key === 'oauth.') { %>
+          <div class="alert alert-info small">
+            <strong>Địa chỉ quay về (redirect URI)</strong> phải khai báo đúng từng ký tự ở trang developer của từng bên:
+            <% oauthCallbacks.forEach(function (c) { %>
+              <div class="copy-row" style="margin-top:8px">
+                <span class="label"><%= c.ben === 'zalo' ? 'Zalo' : c.ben === 'google' ? 'Google' : 'GitHub' %></span>
+                <span class="value"><%= c.url %> <button type="button" class="btn-link tiny" data-copy="<%= c.url %>">chép</button></span>
+              </div>
+            <% }); %>
           </div>
         <% } %>
 
