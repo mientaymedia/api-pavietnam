@@ -295,6 +295,8 @@ CREATE TABLE IF NOT EXISTS bank_transactions (
   payment_id     INTEGER REFERENCES payments(id) ON DELETE SET NULL,
   status         TEXT NOT NULL DEFAULT 'received'
                  CHECK (status IN ('received','matched','unmatched','duplicate','amount_mismatch')),
+  -- Co can nhan vien xu ly: wrong_account, late_payment, double_payment, overpaid, underpaid
+  flag           TEXT NOT NULL DEFAULT '',
   raw            TEXT NOT NULL DEFAULT '',
   created_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')),
   UNIQUE (provider, external_id)

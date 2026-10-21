@@ -45,6 +45,8 @@ function addMissingColumns(): void {
     { bang: 'order_items', cot: 'pa_trans_id', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
     { bang: 'order_items', cot: 'pa_trans_money', dinhNghia: 'INTEGER NOT NULL DEFAULT 0' },
     { bang: 'domains', cot: 'pa_password_enc', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
+    // Giao dich ngan hang can nhan vien xu ly (sai tai khoan, tre han, chuyen thua/thieu/trung)
+    { bang: 'bank_transactions', cot: 'flag', dinhNghia: "TEXT NOT NULL DEFAULT ''" },
   ];
 
   for (const { bang, cot, dinhNghia } of themCot) {

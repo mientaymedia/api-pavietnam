@@ -21,7 +21,8 @@
 import { settings } from '../lib/settings.js';
 import { safeEqual } from '../lib/crypto.js';
 import { httpRequest } from '../lib/http.js';
-import type { CreateContext, CreateResult, PaymentProvider, VerifyResult } from './types.js';
+import crypto from 'node:crypto';
+import type { CreateContext, CreateResult, PaymentProvider } from './types.js';
 
 /** Ma don hang co dang DH + 6 ky tu. Dung de do trong noi dung chuyen khoan. */
 export const ORDER_CODE_RE = /DH[0-9A-Z]{6}/i;
@@ -67,43 +68,87 @@ export const sepayProvider: PaymentProvider = {
     };
   },
 
-  /**
-   * Xac thuc webhook SePay.
-   * SePay gui header `Authorization: Apikey <token>` - token nay do BAN dat
-   * trong trang quan tri SePay va phai trung voi SEPAY_WEBHOOK_TOKEN.
-   */
-  verifyIpn(body: unknown, headers: Record<string, string | undefined>): VerifyResult {
-    const s = settings.sepay();
-    const auth = headers['authorization'] ?? '';
-    const token = auth.replace(/^(Apikey|Bearer)\s+/i, '').trim();
-
-    if (!s.webhookToken) {
-      return { ok: false, refCode: '', amount: 0, providerTxn: '', message: 'Chua cau hinh SEPAY_WEBHOOK_TOKEN' };
-    }
-    if (!token || !safeEqual(token, s.webhookToken)) {
-      return { ok: false, refCode: '', amount: 0, providerTxn: '', message: 'Token webhook khong hop le' };
-    }
-
-    const tx = parseSepayTransaction(body);
-    if (!tx) {
-      return { ok: false, refCode: '', amount: 0, providerTxn: '', message: 'Khong doc duoc du lieu giao dich' };
-    }
-    if (tx.direction === 'out') {
-      return { ok: false, refCode: '', amount: 0, providerTxn: tx.id, message: 'Bo qua giao dich chuyen di', ack: { success: true } };
-    }
-
-    const match = ORDER_CODE_RE.exec(`${tx.code} ${tx.content}`.replace(/\s+/g, ''));
-    return {
-      ok: Boolean(match),
-      refCode: match?.[0]?.toUpperCase() ?? '',
-      amount: tx.amount,
-      providerTxn: tx.id,
-      message: match ? 'OK' : 'Khong tim thay ma don trong noi dung chuyen khoan',
-      // SePay coi HTTP 200 + {success:true} la da nhan; tra ve de tranh gui lai
-      ack: { success: true },
-    };
-  },
 };
+
+/** Lech gio toi da giua X-SePay-Timestamp va dong ho may chu (chong phat lai). */
+export const SEPAY_TIMESTAMP_SKEW_S = 300;
+
+export interface SepayAuthResult {
+  ok: boolean;
+  /** Ly do tu choi (ghi log, tra ve cho SePay). Khong chua bi mat. */
+  message: string;
+}
+
+/**
+ * Xac thuc webhook SePay TRUOC khi doc hay ghi bat ky du lieu nao.
+ *
+ *  - SEPAY_WEBHOOK_AUTH=apikey (mac dinh): header `Authorization: Apikey <token>`
+ *    trung SEPAY_WEBHOOK_TOKEN.
+ *  - SEPAY_WEBHOOK_AUTH=hmac: header `X-SePay-Signature: sha256=<hex>` la
+ *    HMAC-SHA256 (khoa SEPAY_WEBHOOK_SECRET) cua chuoi
+ *    `"{X-SePay-Timestamp}.{raw_body}"`; timestamp lech qua 5 phut thi tu choi.
+ *    Xem https://developer.sepay.vn/en/sepay-webhooks/xac-thuc
+ *
+ * Moi phep so sanh deu hang thoi gian (safeEqual).
+ */
+export function authenticateSepayWebhook(
+  rawBody: string | undefined,
+  headers: Record<string, string | undefined>,
+  nowMs = Date.now(),
+): SepayAuthResult {
+  const s = settings.sepay();
+
+  if (s.webhookAuth === 'hmac') {
+    if (!s.webhookSecret) return { ok: false, message: 'Chua cau hinh SEPAY_WEBHOOK_SECRET' };
+    const sig = (headers['x-sepay-signature'] ?? '').trim();
+    const ts = (headers['x-sepay-timestamp'] ?? '').trim();
+    if (!sig || !/^\d{1,12}$/.test(ts)) return { ok: false, message: 'Thieu chu ky hoac timestamp webhook' };
+    if (Math.abs(Math.floor(nowMs / 1000) - Number(ts)) > SEPAY_TIMESTAMP_SKEW_S) {
+      return { ok: false, message: 'Timestamp webhook qua han' };
+    }
+    if (rawBody === undefined) return { ok: false, message: 'Khong co body tho de kiem chu ky' };
+    const expected = `sha256=${crypto.createHmac('sha256', s.webhookSecret).update(`${ts}.${rawBody}`, 'utf8').digest('hex')}`;
+    // Bam ca hai truoc khi so de do dai bang nhau: khong lo do dai qua thoi gian
+    if (!safeEqual(sha256Hex(sig.toLowerCase()), sha256Hex(expected))) {
+      return { ok: false, message: 'Chu ky webhook khong hop le' };
+    }
+    return { ok: true, message: 'OK' };
+  }
+
+  if (!s.webhookToken) return { ok: false, message: 'Chua cau hinh SEPAY_WEBHOOK_TOKEN' };
+  const auth = headers['authorization'] ?? '';
+  const token = auth.replace(/^(Apikey|Bearer)\s+/i, '').trim();
+  if (!token || !safeEqual(sha256Hex(token), sha256Hex(s.webhookToken))) {
+    return { ok: false, message: 'Token webhook khong hop le' };
+  }
+  return { ok: true, message: 'OK' };
+}
+
+function sha256Hex(v: string): string {
+  return crypto.createHash('sha256').update(v, 'utf8').digest('hex');
+}
+
+/** Do ma don (DHxxxxxx) trong ma tham chieu + noi dung chuyen khoan. */
+export function findOrderCode(tx: Pick<SepayTx, 'code' | 'content'>): string {
+  const match = ORDER_CODE_RE.exec(`${tx.code} ${tx.content}`.replace(/\s+/g, ''));
+  return match?.[0]?.toUpperCase() ?? '';
+}
+
+/** Chi giu chu so: ngan hang/SePay co the chen dau cach, gach noi. */
+function chuSo(v: string): string {
+  return v.replace(/\D+/g, '');
+}
+
+/**
+ * Giao dich co vao DUNG tai khoan nhan tien da cau hinh khong. So voi ca so tai
+ * khoan chinh lan tai khoan ao (subAccount, VA) SePay bao ve. Chua cau hinh tai
+ * khoan thi khong khop gi ca.
+ */
+export function isConfiguredAccount(tx: Pick<SepayTx, 'accountNumber' | 'subAccount'>, configured = settings.sepay().accountNumber): boolean {
+  const muc = chuSo(configured);
+  if (!muc) return false;
+  return [tx.accountNumber, tx.subAccount].some((a) => chuSo(a) === muc);
+}
 
 export interface SepayTx {
   id: string;
@@ -112,6 +157,8 @@ export interface SepayTx {
   /** Ma tham chieu SePay tu dong tach duoc tu noi dung (neu cau hinh prefix). */
   code: string;
   accountNumber: string;
+  /** Tai khoan ao (VA) neu SePay bao, '' neu khong co. */
+  subAccount: string;
   gateway: string;
   transactionDate: string;
   direction: 'in' | 'out';
@@ -130,7 +177,8 @@ export function parseSepayTransaction(body: unknown): SepayTx | null {
     amount: Math.abs(Math.round(amount)),
     content: String(raw['content'] ?? raw['description'] ?? ''),
     code: String(raw['code'] ?? ''),
-    accountNumber: String(raw['accountNumber'] ?? raw['subAccount'] ?? ''),
+    accountNumber: String(raw['accountNumber'] ?? ''),
+    subAccount: String(raw['subAccount'] ?? ''),
     gateway: String(raw['gateway'] ?? ''),
     transactionDate: String(raw['transactionDate'] ?? ''),
     direction: String(raw['transferType'] ?? 'in').toLowerCase() === 'out' ? 'out' : 'in',
@@ -162,6 +210,7 @@ export async function fetchRecentTransactions(limit = 50): Promise<SepayTx[]> {
       content: String(t['transaction_content'] ?? ''),
       code: String(t['code'] ?? ''),
       accountNumber: String(t['account_number'] ?? ''),
+      subAccount: String(t['sub_account'] ?? ''),
       gateway: String(t['bank_brand_name'] ?? ''),
       transactionDate: String(t['transaction_date'] ?? ''),
       direction: Number(t['amount_in'] ?? 0) > 0 ? 'in' : 'out',

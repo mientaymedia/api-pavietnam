@@ -184,19 +184,33 @@ function kiemTraThanhToan(): void {
   if (!s.enabled) {
     ghi(nhom, 'SePay', 'LUU Y', 'Dang tat', 'Neu khong bat cong nao thi khach khong tu thanh toan duoc.');
   } else if (!s.accountNumber || !s.bankCode) {
-    ghi(nhom, 'SePay', 'CHAN', 'Bat nhung thieu so tai khoan hoac ma ngan hang',
-      'Dat SEPAY_ACCOUNT_NUMBER va SEPAY_BANK_CODE, hoac nhap o Quan tri > Cau hinh.');
+    ghi(nhom, 'SePay', 'CHAN', 'Bat nhung thieu so tai khoan hoac ngan hang',
+      'Dat SEPAY_BANK_NAME, SEPAY_BANK_ACCOUNT, SEPAY_ACCOUNT_HOLDER (va SEPAY_BANK_CODE cho QR) trong .env.');
   } else {
-    ghi(nhom, 'SePay', 'DAT', `${s.bankName || s.bankCode} - ${s.accountNumber} (${s.accountName || 'chua dat ten chu tk'})`);
+    ghi(nhom, 'SePay', 'DAT', `${s.bankName || s.bankCode} - ${maskSecret(s.accountNumber)} (${s.accountName || 'chua dat ten chu tk'})`);
+    if (s.accountSource === 'admin') {
+      ghi(nhom, 'Nguon tai khoan nhan', 'LUU Y', 'Lay tu Quan tri > Cau hinh, khong phai .env',
+        'Dat SEPAY_BANK_ACCOUNT trong .env de ngan hang nhan tien co mot nguon duy nhat.');
+    }
   }
 
-  if (s.enabled && !s.webhookToken) {
+  if (s.enabled && s.webhookAuth === 'hmac') {
+    if (!s.webhookSecret) {
+      ghi(nhom, 'Xac thuc webhook SePay (HMAC)', 'CHAN', 'Chua dat SEPAY_WEBHOOK_SECRET',
+        'Moi bao co se bi tu choi 401. Lay Secret Key o my.sepay.vn > Webhooks (chon HMAC-SHA256).');
+    } else {
+      ghi(nhom, 'Xac thuc webhook SePay (HMAC)', 'DAT', maskSecret(s.webhookSecret));
+    }
+  } else if (s.enabled && !s.webhookToken) {
     ghi(nhom, 'Token webhook SePay', 'CHAN', 'Chua dat',
       `Khong co token thi he thong tu choi moi bao co -> tien vao ma don khong tu mo. ` +
       `Vao my.sepay.vn > Webhooks, tao webhook toi ${config.appUrl}/webhooks/sepay voi header ` +
-      `"Authorization: Apikey <token>", roi dat cung token do vao SEPAY_WEBHOOK_TOKEN.`);
+      `"Authorization: Apikey <token>", roi dat cung token do vao SEPAY_WEBHOOK_TOKEN ` +
+      `(hoac chon HMAC-SHA256 va dat SEPAY_WEBHOOK_AUTH=hmac, SEPAY_WEBHOOK_SECRET).`);
   } else if (s.enabled) {
     ghi(nhom, 'Token webhook SePay', 'DAT', maskSecret(s.webhookToken));
+  }
+  if (s.enabled) {
     ghi(nhom, 'Dia chi webhook', 'LUU Y', `${config.appUrl}/webhooks/sepay`,
       'Dia chi nay phai duoc khai bao ben my.sepay.vn va phai truy cap duoc tu Internet.');
   }

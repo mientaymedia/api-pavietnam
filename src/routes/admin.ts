@@ -151,11 +151,12 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
 
   // SePay
   { key: 'sepay.enabled', label: 'Bật thanh toán chuyển khoản (SePay)', type: 'checkbox' },
-  { key: 'sepay.bank_code', label: 'Mã ngân hàng (QR)', hint: 'TCB, VCB, ACB, MB, BIDV...' },
-  { key: 'sepay.bank_name', label: 'Tên ngân hàng hiển thị' },
-  { key: 'sepay.account_number', label: 'Số tài khoản nhận tiền' },
-  { key: 'sepay.account_name', label: 'Tên chủ tài khoản' },
-  { key: 'sepay.webhook_token', label: 'SePay webhook token', type: 'password', hint: 'Trùng với header Apikey khai báo trên my.sepay.vn' },
+  { key: 'sepay.bank_code', label: 'Mã ngân hàng (QR)', hint: 'TCB, VCB, ACB, BIDV... Bỏ qua khi .env đã đặt SEPAY_BANK_ACCOUNT' },
+  { key: 'sepay.bank_name', label: 'Tên ngân hàng hiển thị', hint: 'Bỏ qua khi .env đã đặt SEPAY_BANK_ACCOUNT (.env thắng)' },
+  { key: 'sepay.account_number', label: 'Số tài khoản nhận tiền', hint: 'Bỏ qua khi .env đã đặt SEPAY_BANK_ACCOUNT. Webhook vào tài khoản khác bị gắn cờ, không ghi nhận đơn' },
+  { key: 'sepay.account_name', label: 'Tên chủ tài khoản', hint: 'Bỏ qua khi .env đã đặt SEPAY_BANK_ACCOUNT' },
+  { key: 'sepay.webhook_token', label: 'SePay webhook token', type: 'password', hint: 'Dùng khi SEPAY_WEBHOOK_AUTH=apikey: trùng header Apikey khai báo trên my.sepay.vn' },
+  { key: 'sepay.webhook_secret', label: 'SePay HMAC Secret Key', type: 'password', hint: 'Dùng khi SEPAY_WEBHOOK_AUTH=hmac (đặt trong .env). Để trống thì dùng SEPAY_WEBHOOK_SECRET' },
   { key: 'sepay.api_token', label: 'SePay API token', type: 'password', hint: 'Dùng để đối soát bù khi webhook thất lạc' },
 
   // Vi dien tu

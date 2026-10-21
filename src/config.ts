@@ -148,11 +148,24 @@ export const config = {
     enabled: bool('SEPAY_ENABLED', true),
     /** Ma ngan hang viet tat dung cho QR: ACB, VCB, TCB, MB, BIDV, VPB... */
     bankCode: str('SEPAY_BANK_CODE'),
+    /**
+     * Ngan hang nhan tien hien cho khach va in len QR. Dat trong .env; khi da
+     * dat thi THANG gia tri luu o Quan tri > Cau hinh (xem settings.sepay()).
+     * SEPAY_BANK_ACCOUNT / SEPAY_ACCOUNT_HOLDER la ten moi; SEPAY_ACCOUNT_NUMBER /
+     * SEPAY_ACCOUNT_NAME van doc duoc de .env cu khong hong.
+     */
     bankName: str('SEPAY_BANK_NAME'),
-    accountNumber: str('SEPAY_ACCOUNT_NUMBER'),
-    accountName: str('SEPAY_ACCOUNT_NAME'),
+    accountNumber: str('SEPAY_BANK_ACCOUNT', str('SEPAY_ACCOUNT_NUMBER')),
+    accountName: str('SEPAY_ACCOUNT_HOLDER', str('SEPAY_ACCOUNT_NAME')),
+    /**
+     * Cach xac thuc webhook: 'apikey' (mac dinh, header Authorization: Apikey <token>)
+     * hoac 'hmac' (X-SePay-Signature: sha256=<hex> tren "{X-SePay-Timestamp}.{raw_body}").
+     */
+    webhookAuth: str('SEPAY_WEBHOOK_AUTH', 'apikey').trim().toLowerCase(),
     /** Token BAN tu dat trong my.sepay.vn > Webhooks (header: Authorization: Apikey <token>) */
     webhookToken: str('SEPAY_WEBHOOK_TOKEN'),
+    /** Secret Key HMAC SePay cap khi chon xac thuc HMAC-SHA256 (chi hien mot lan). */
+    webhookSecret: str('SEPAY_WEBHOOK_SECRET'),
     /** API Token tao tai my.sepay.vn > API Token - dung de doi soat bu. */
     apiToken: str('SEPAY_API_TOKEN'),
   },

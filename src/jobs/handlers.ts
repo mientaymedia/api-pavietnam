@@ -12,7 +12,8 @@ import {
 } from '../services/notifications.js';
 import { getTld, priceFor } from '../services/pricing.js';
 import { balanceOf, debit } from '../payments/balance.js';
-import { fetchRecentTransactions, ORDER_CODE_RE } from '../payments/sepay.js';
+import { fetchRecentTransactions } from '../payments/sepay.js';
+import { ingestSepayTransaction } from '../payments/sepayIngest.js';
 import { settlePayment, startPayment } from '../payments/index.js';
 import { enqueue, type JobType } from './queue.js';
 import { kichHoatDonCho } from '../services/choQuy.js';
@@ -266,31 +267,15 @@ export const handlers: Record<JobType, Handler> = {
     let matched = 0;
 
     for (const tx of transactions) {
-      // Da xu ly giao dich nay chua?
-      const seen = db.prepare('SELECT id FROM bank_transactions WHERE provider = ? AND external_id = ?')
-        .get('sepay', tx.id);
-      if (seen) continue;
+      // Da xu ly giao dich nay chua? Dong con 'received' la webhook da ghi nhung
+      // chua xu ly xong (loi giua chung) -> xu ly lai thay vi bo qua mai mai.
+      const seen = db.prepare('SELECT status FROM bank_transactions WHERE provider = ? AND external_id = ?')
+        .get('sepay', tx.id) as { status: string } | undefined;
+      if (seen && seen.status !== 'received') continue;
 
-      const match = ORDER_CODE_RE.exec(`${tx.code} ${tx.content}`.replace(/\s+/g, ''));
-      const refCode = match?.[0]?.toUpperCase() ?? '';
-
-      let status = 'unmatched';
-      if (refCode) {
-        const outcome = await settlePayment({
-          provider: 'sepay', refCode, amount: tx.amount, providerTxn: tx.id,
-        });
-        status = outcome.status === 'paid' ? 'matched'
-          : outcome.status === 'already_paid' || outcome.status === 'duplicate' ? 'duplicate'
-          : outcome.status === 'amount_mismatch' ? 'amount_mismatch'
-          : 'unmatched';
-        if (outcome.status === 'paid') matched++;
-      }
-
-      db.prepare(
-        `INSERT OR IGNORE INTO bank_transactions
-           (provider, external_id, account_number, amount, content, matched_code, status, raw, created_at)
-         VALUES ('sepay', ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ).run(tx.id, tx.accountNumber, tx.amount, tx.content.slice(0, 500), refCode, status, JSON.stringify(tx).slice(0, 2000), nowIso());
+      // Cung duong voi webhook: kiem tai khoan nhan, gan co + bao nhan vien
+      const kq = await ingestSepayTransaction(tx, tx);
+      if (kq.outcome?.status === 'paid') matched++;
     }
 
     if (matched) log.info('sepay_reconciled', { matched, scanned: transactions.length });

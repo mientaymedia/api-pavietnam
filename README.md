@@ -139,13 +139,20 @@ Khong can cong thanh toan trung gian, tien ve thang tai khoan doanh nghiep.
 **Thiet lap:**
 
 1. Dang ky my.sepay.vn, lien ket tai khoan ngan hang nhan tien.
-2. Tao Webhook:
-   - URL: `https://<ten-mien-cua-ban>/webhooks/sepay`
-   - Header: `Authorization: Apikey <chuoi-bi-mat-ban-tu-dat>`
-   - Su kien: giao dich tien vao
-3. Dien cung chuoi bi mat do vao `SEPAY_WEBHOOK_TOKEN` (hoac o _Cau hinh Control Panel_).
+2. Dat ngan hang nhan tien trong `.env`: `SEPAY_BANK_NAME`, `SEPAY_BANK_CODE` (ma QR, vd `TCB`),
+   `SEPAY_BANK_ACCOUNT`, `SEPAY_ACCOUNT_HOLDER`. Gia tri trong `.env` thang gia tri o
+   _Cau hinh Control Panel_. Webhook bao tien vao tai khoan khac bi gan co `wrong_account`,
+   khong ghi nhan don.
+3. Tao Webhook, URL `https://<ten-mien-cua-ban>/webhooks/sepay`, su kien tien vao, chon mot cach xac thuc:
+   - **HMAC-SHA256 (khuyen dung):** `SEPAY_WEBHOOK_AUTH=hmac`, dat Secret Key SePay cap vao
+     `SEPAY_WEBHOOK_SECRET`. He thong kiem `X-SePay-Signature: sha256=<hex>` tren
+     `"{X-SePay-Timestamp}.{raw_body}"`, lech gio toi da 5 phut.
+   - **API Key:** `SEPAY_WEBHOOK_AUTH=apikey` (mac dinh), header `Authorization: Apikey <chuoi-bi-mat>`,
+     dien cung chuoi vao `SEPAY_WEBHOOK_TOKEN`.
 4. Tao them **API Token** tai my.sepay.vn va dien vao `SEPAY_API_TOKEN` - dung cho
    viec doi soat bu.
+
+Xac thuc hong -> 401 va KHONG ghi gi vao CSDL.
 
 **Cach hoat dong:** ma don hang (vi du `DHAB12CD`) chinh la noi dung chuyen khoan.
 Khi SePay bao co tien vao, he thong do ma don trong noi dung, doi chieu so tien, roi day
@@ -154,6 +161,12 @@ don vao hang doi dang ky ten mien.
 **Luoi an toan:** neu webhook that lac (dang deploy, mat mang), job `reconcile_sepay`
 chay moi 10 phut se goi API SePay lay giao dich gan nhat va doi soat lai. Moi giao dich
 nhan duoc - ke ca khong khop don - deu duoc luu tai _Quan tri > Doi soat_ de tra soat.
+
+**Bao nhan vien, khong bo qua:** tien vao nhung khong tu kich hoat duoc thi dong giao dich
+duoc gan co va bao qua Telegram quan tri + `ADMIN_ALERT_EMAIL`: sai tai khoan nhan
+(`wrong_account`), chuyen sau khi don da huy (`late_payment`), don da thanh toan truoc do
+(`double_payment`), chuyen thieu (`underpaid`). Chuyen thua thi don van duoc ghi nhan va gan
+co `overpaid` de hoan phan chenh lech.
 
 **Chong ghi nhan trung:** rang buoc `UNIQUE(provider, provider_txn)` o tang CSDL, nen du
 webhook goi lai bao nhieu lan, mot giao dich chi duoc ghi nhan mot lan.

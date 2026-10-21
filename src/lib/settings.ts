@@ -80,6 +80,31 @@ export function setSettings(entries: Record<string, string>, secretKeys: string[
 
 /* --------------------------------------------------- truy cap co kieu, co fallback */
 
+/**
+ * Ngan hang nhan tien chuyen khoan (hien cho khach, in len QR, doi chieu webhook).
+ *
+ * Dat trong .env (SEPAY_BANK_NAME, SEPAY_BANK_ACCOUNT, SEPAY_ACCOUNT_HOLDER,
+ * SEPAY_BANK_CODE) thi CA BO lay tu .env va THANG gia tri luu o Quan tri: khong
+ * de ma ngan hang hay so tai khoan cu trong CSDL am tham tron voi ngan hang moi
+ * va in sai len QR. .env khong dat so tai khoan thi moi dung bo nhap o Quan tri.
+ * Ma QR (bankCode) de trong thi dung ten ngan hang (qr.sepay.vn nhan ca hai).
+ */
+function nganHangNhan(): { bankCode: string; bankName: string; accountNumber: string; accountName: string; accountSource: 'env' | 'admin' | '' } {
+  const e = config.sepay;
+  if (e.accountNumber) {
+    return { bankCode: e.bankCode || e.bankName, bankName: e.bankName, accountNumber: e.accountNumber, accountName: e.accountName, accountSource: 'env' };
+  }
+  const bankName = getSetting('sepay.bank_name', e.bankName);
+  const accountNumber = getSetting('sepay.account_number');
+  return {
+    bankCode: getSetting('sepay.bank_code', e.bankCode || bankName),
+    bankName,
+    accountNumber,
+    accountName: getSetting('sepay.account_name', e.accountName),
+    accountSource: accountNumber ? 'admin' : '',
+  };
+}
+
 export const settings = {
   site: () => ({
     name: getSetting('site.name', config.appName),
@@ -157,11 +182,11 @@ export const settings = {
 
   sepay: () => ({
     enabled: getSettingBool('sepay.enabled', config.sepay.enabled),
-    bankCode: getSetting('sepay.bank_code', config.sepay.bankCode),
-    bankName: getSetting('sepay.bank_name', config.sepay.bankName),
-    accountNumber: getSetting('sepay.account_number', config.sepay.accountNumber),
-    accountName: getSetting('sepay.account_name', config.sepay.accountName),
+    ...nganHangNhan(),
+    /** Chi doc tu .env (SEPAY_WEBHOOK_AUTH): cong tac bao mat, khong cho doi qua giao dien. */
+    webhookAuth: (config.sepay.webhookAuth === 'hmac' ? 'hmac' : 'apikey') as 'hmac' | 'apikey',
     webhookToken: getSetting('sepay.webhook_token', config.sepay.webhookToken),
+    webhookSecret: getSetting('sepay.webhook_secret', config.sepay.webhookSecret),
     apiToken: getSetting('sepay.api_token', config.sepay.apiToken),
   }),
 
@@ -296,6 +321,7 @@ const TU_CAM_MAC_DINH = [
 export const SECRET_KEYS = [
   'pa.apikey',
   'sepay.webhook_token',
+  'sepay.webhook_secret',
   'sepay.api_token',
   'momo.secret_key',
   'momo.access_key',

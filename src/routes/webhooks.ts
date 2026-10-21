@@ -2,7 +2,7 @@
  * Diem nhan thong bao tu cong thanh toan (server-to-server).
  *
  * Nguyen tac:
- *  - Luon xac thuc chu ky / token TRUOC khi doc du lieu.
+ *  - Luon xac thuc chu ky / token TRUOC khi doc hay GHI du lieu.
  *  - Luon tra HTTP 200 kem ack khi da NHAN duoc thong bao hop le, ke ca khi
  *    khong khop don hang: neu tra loi, cong thanh toan se gui lai lien tuc.
  *  - Xu ly nang (dang ky ten mien) day sang hang doi de phan hoi that nhanh.
@@ -12,7 +12,8 @@ import { db, nowIso } from '../db/index.js';
 import { log } from '../lib/logger.js';
 import { wrap } from '../middleware/error.js';
 import { getProvider, settlePayment } from '../payments/index.js';
-import { parseSepayTransaction } from '../payments/sepay.js';
+import { authenticateSepayWebhook, parseSepayTransaction } from '../payments/sepay.js';
+import { ingestSepayTransaction } from '../payments/sepayIngest.js';
 import { kickWorker } from '../jobs/worker.js';
 import type { ProviderId } from '../payments/types.js';
 
@@ -26,62 +27,41 @@ function headersOf(req: { headers: Record<string, unknown> }): Record<string, st
   return out;
 }
 
-/** SePay - bien dong so du tai khoan ngan hang. */
+/**
+ * SePay - bien dong so du tai khoan ngan hang.
+ *
+ * Thu tu bat buoc: XAC THUC -> doc -> ghi. Khong ghi gi vao CSDL khi xac thuc
+ * hong: neu khong, ai cung chen duoc dong bank_transactions voi external_id
+ * tuy y va doi soat bu (reconcile_sepay) se bo qua giao dich that cung ma.
+ */
 router.post(
   '/sepay',
   wrap(async (req, res) => {
-    const provider = getProvider('sepay')!;
-    const result = provider.verifyIpn!(req.body, headersOf(req));
-
-    const tx = parseSepayTransaction(req.body);
-    if (tx) {
-      // Ghi nhat ky moi giao dich nhan duoc, ke ca khong khop don
-      db.prepare(
-        `INSERT OR IGNORE INTO bank_transactions
-           (provider, external_id, account_number, amount, content, matched_code, status, raw, created_at)
-         VALUES ('sepay', ?, ?, ?, ?, ?, 'received', ?, ?)`,
-      ).run(
-        tx.id, tx.accountNumber, tx.amount, tx.content.slice(0, 500), result.refCode,
-        JSON.stringify(req.body).slice(0, 2000), nowIso(),
-      );
-    }
-
-    if (!result.ok) {
-      // Token sai -> 401 de ban phat hien cau hinh loi. Con lai -> 200 kem ghi chu.
-      const badToken = result.message.includes('Token');
-      log.warn('sepay_webhook_rejected', { message: result.message, txId: tx?.id });
-      if (tx) updateBankTx(tx.id, badToken ? 'received' : 'unmatched');
-      res.status(badToken ? 401 : 200).json({ success: !badToken, message: result.message });
+    const rawBody = (req as typeof req & { rawBody?: string }).rawBody;
+    const auth = authenticateSepayWebhook(rawBody, headersOf(req));
+    if (!auth.ok) {
+      // 401 de ban phat hien cau hinh sai ngay tren my.sepay.vn
+      log.warn('sepay_webhook_rejected', { message: auth.message });
+      res.status(401).json({ success: false, message: auth.message });
       return;
     }
 
-    const outcome = await settlePayment({
-      provider: 'sepay',
-      refCode: result.refCode,
-      amount: result.amount,
-      providerTxn: result.providerTxn,
-    });
-
-    if (tx) {
-      updateBankTx(
-        tx.id,
-        outcome.status === 'paid' ? 'matched'
-          : outcome.status === 'duplicate' || outcome.status === 'already_paid' ? 'duplicate'
-          : outcome.status === 'amount_mismatch' ? 'amount_mismatch'
-          : 'unmatched',
-      );
+    const tx = parseSepayTransaction(req.body);
+    if (!tx) {
+      log.warn('sepay_webhook_unreadable');
+      res.status(200).json({ success: true, message: 'Khong doc duoc du lieu giao dich' });
+      return;
     }
 
-    if (outcome.status === 'paid') kickWorker();
-    log.info('sepay_webhook_handled', { refCode: result.refCode, outcome: outcome.status, amount: result.amount });
+    const kq = await ingestSepayTransaction(tx, req.body);
+    if (kq.outcome?.status === 'paid') kickWorker();
+    log.info('sepay_webhook_handled', {
+      txId: tx.id, refCode: kq.refCode, status: kq.status, flag: kq.flag, amount: tx.amount,
+    });
+    // SePay coi HTTP 200 + {success:true} la da nhan; tra loi khac se bi gui lai
     res.json({ success: true });
   }),
 );
-
-function updateBankTx(externalId: string, status: string): void {
-  db.prepare(`UPDATE bank_transactions SET status = ? WHERE provider = 'sepay' AND external_id = ?`)
-    .run(status, externalId);
-}
 
 /** MoMo va ZaloPay dung chung mot khung xu ly. */
 for (const id of ['momo', 'zalopay'] as ProviderId[]) {

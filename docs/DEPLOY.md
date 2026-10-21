@@ -151,7 +151,10 @@ npm run pa:probe -- --domain pavietnam.vn --only check
 Vao my.sepay.vn > Cong ty > Webhooks:
 
 - URL: `https://ten-mien-cua-ban.com/webhooks/sepay`
-- Header: `Authorization: Apikey <SEPAY_WEBHOOK_TOKEN>`
+- Xac thuc HMAC-SHA256 (khuyen dung): `SEPAY_WEBHOOK_AUTH=hmac`, Secret Key vao `SEPAY_WEBHOOK_SECRET`
+- Hoac API Key: `SEPAY_WEBHOOK_AUTH=apikey`, header `Authorization: Apikey <SEPAY_WEBHOOK_TOKEN>`
+- Ngan hang nhan tien: `SEPAY_BANK_NAME`, `SEPAY_BANK_CODE`, `SEPAY_BANK_ACCOUNT`, `SEPAY_ACCOUNT_HOLDER`
+  (phai trung tai khoan da lien ket tren SePay, neu khong moi giao dich bi gan co `wrong_account`)
 
 Kiem tra duong dan da thong:
 
