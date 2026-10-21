@@ -1,8 +1,13 @@
 # Web ban ten mien MienTay Media tren VPS GData (Coolify + Traefik + Cloudflare Tunnel).
 # Duong di: Cloudflare -> cloudflared (mang host) -> Traefik coolify-proxy :80 -> container nay.
 # - mientaymedia.com/ten-mien/*  -> app (luat dai hon nen uu tien hon luat mientay-web)
+# - mientaymedia.com/tai-khoan/* -> cung app: cong "Tai khoan MienTay", cung phien voi
+#   /ten-mien (docs/mtm/tai-khoan-chung/spec.md, trien-khai.md). Site Next.js khong co
+#   route /tai-khoan nen khong che trang nao cua site chinh.
 
 # TRAEFIK_ENABLE=false de dung thu container ma chua nhan luu luong that.
+# Duong lui cho cong: dat CONG_TAI_KHOAN_PATH= (rong) trong .env roi dung lai container;
+# /ten-mien/dang-nhap hien lai form cu, /tai-khoan/* tra 404 tu app.
 services:
   tenmien:
     build: ./src
@@ -10,6 +15,10 @@ services:
     container_name: tenmien-mientaymedia
     restart: unless-stopped
     env_file: .env
+    environment:
+      # Ghi o day (khong chi trong .env) de luon khop router Traefik ben duoi.
+      # Khong co dau hai cham: bien co mat nhung rong (duong lui) thi giu rong.
+      - CONG_TAI_KHOAN_PATH=${CONG_TAI_KHOAN_PATH-/tai-khoan}
     volumes:
       - tenmien-data:/data
     networks:
@@ -25,6 +34,13 @@ services:
       - traefik.http.routers.tenmien.priority=1000
       - traefik.http.routers.tenmien.middlewares=tenmien-chi-tunnel,tenmien-gzip
       - traefik.http.routers.tenmien.service=tenmien
+      # Cong Tai khoan MienTay: cung service, cung lop chi nhan qua tunnel, uu tien
+      # cao hon luat mac dinh cua site chinh nhu router tenmien
+      - traefik.http.routers.tenmien-taikhoan.entrypoints=http
+      - traefik.http.routers.tenmien-taikhoan.rule=Host(`mientaymedia.com`) && PathPrefix(`/tai-khoan`)
+      - traefik.http.routers.tenmien-taikhoan.priority=1000
+      - traefik.http.routers.tenmien-taikhoan.middlewares=tenmien-chi-tunnel,tenmien-gzip
+      - traefik.http.routers.tenmien-taikhoan.service=tenmien
       - traefik.http.services.tenmien.loadbalancer.server.port=3000
 
 networks:
