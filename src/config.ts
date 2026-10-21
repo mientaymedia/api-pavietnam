@@ -51,14 +51,43 @@ export function chuanHoaBasePath(raw: string, appUrl: string): string {
   return v;
 }
 
+/**
+ * Duong dan cua cong "Tai khoan MienTay" (vd /tai-khoan), cung app, cung CSDL
+ * va cung phien voi BASE_PATH (docs/mtm/tai-khoan-chung/spec.md muc 1). Rong la
+ * tat: app chay y nhu truoc, do la duong lui khi trien khai loi.
+ *
+ * Phai nam NGOAI BASE_PATH va khong chua BASE_PATH: cookie phien dat theo tung
+ * duong dan, long nhau thi trinh duyet gui hai cookie cung ten cho mot yeu cau.
+ * BASE_PATH rong thi khong bat duoc: app o goc co san route /tai-khoan cua no.
+ */
+export function chuanHoaCongPath(raw: string, basePath: string): string {
+  const v = raw.trim().replace(/\/+$/, '');
+  if (!v) return '';
+  if (!/^(\/[a-z0-9._~-]+)+$/.test(v)) {
+    throw new Error(`CONG_TAI_KHOAN_PATH không hợp lệ: "${raw}". Ví dụ đúng: /tai-khoan (chữ thường, bắt đầu bằng /).`);
+  }
+  if (!basePath) {
+    throw new Error('CONG_TAI_KHOAN_PATH chỉ bật được khi BASE_PATH khác rỗng (ví dụ BASE_PATH=/ten-mien).');
+  }
+  const long = (a: string, b: string) => a === b || a.startsWith(`${b}/`);
+  if (long(v, basePath) || long(basePath, v)) {
+    throw new Error(`CONG_TAI_KHOAN_PATH "${v}" không được trùng hay lồng với BASE_PATH "${basePath}".`);
+  }
+  return v;
+}
+
 const appUrl = str('APP_URL', `http://localhost:${num('PORT', 3000)}`).replace(/\/+$/, '');
+const basePath = chuanHoaBasePath(str('BASE_PATH', ''), appUrl);
 
 export const config = {
   env: str('NODE_ENV', 'development'),
   isProd,
   port: num('PORT', 3000),
   appUrl,
-  basePath: chuanHoaBasePath(str('BASE_PATH', ''), appUrl),
+  basePath,
+  congTaiKhoanPath: chuanHoaCongPath(str('CONG_TAI_KHOAN_PATH', ''), basePath),
+  /** Goc site chinh (scheme + host cua APP_URL): logo cua cong dan ve day. */
+  siteChinhUrl: new URL(appUrl).origin,
   appName: str('APP_NAME', 'MienTay Media'),
   sessionSecret: secret('SESSION_SECRET'),
   encryptionKey: secret('ENCRYPTION_KEY'),

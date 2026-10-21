@@ -13,11 +13,19 @@ const TTL_MS = 30 * 24 * 3600_000; // 30 ngay
 // Cookie chi gui cho duong dan cua app: chay duoi /ten-mien thi khong lo sang
 // site chinh cung ten mien.
 const COOKIE_PATH = config.basePath || '/';
+// Cong Tai khoan MienTay (/tai-khoan) dung chung phien: KHONG mo cookie ra
+// Path=/ (cookie phien se gui cho moi trang Next.js cua site chinh, intent muc
+// 9) ma dat them mot cookie cung ten, cung gia tri, Path cua cong. Hai duong
+// dan khong long nhau (config.ts kiem) nen moi yeu cau chi mang mot cookie.
+const CONG_PATH = config.congTaiKhoanPath;
+const MOI_PATH = CONG_PATH ? [COOKIE_PATH, CONG_PATH] : [COOKIE_PATH];
 
 export interface SessionData {
   userId?: number;
   flash?: { type: 'success' | 'error' | 'info'; message: string }[];
   csrf?: string;
+  /** Da dat cookie o moi Path (xem datCookie); chi dat mot lan moi phien. */
+  cookieChung?: boolean;
   [key: string]: unknown;
 }
 
@@ -42,6 +50,12 @@ function sign(value: string): string {
 
 function serialize(sid: string): string {
   return `${sid}.${sign(sid)}`;
+}
+
+function datCookie(res: Response, sid: string, paths: string[]): void {
+  for (const path of paths) {
+    res.cookie(COOKIE, serialize(sid), { httpOnly: true, sameSite: 'lax', secure: config.isProd, maxAge: TTL_MS, path });
+  }
 }
 
 function deserialize(raw: string | undefined): string | null {
@@ -72,24 +86,30 @@ export function sessionMiddleware(req: Request, res: Response, next: NextFunctio
     }
   }
 
+  // Phien cua /ten-mien la goc: phien moi o day, hoac phien cu chua lan sang
+  // cong (dang nhap tu truoc khi bat cong, gio hang cua khach vang lai), dat
+  // cookie o moi Path. Phien moi tao o cong chi dat cookie cua cong: ghi de
+  // cookie /ten-mien la mat gio hang hay phien dang nhap cu dang giu o do.
+  const oCong = Boolean(CONG_PATH) && req.baseUrl === CONG_PATH;
+  // Lay TRUOC khi danh dau cookieChung: lan lan sang dau tien phai ghi xuong CSDL
+  let snapshot = JSON.stringify(data);
   if (!sid) {
     sid = randomToken(24);
+    const coDanhDau = !oCong && MOI_PATH.length > 1;
+    if (coDanhDau) data = { cookieChung: true };
     db.prepare(
-      `INSERT INTO sessions (sid, user_id, data, ip, user_agent, expires_at, created_at) VALUES (?, NULL, '{}', ?, ?, ?, ?)`,
-    ).run(sid, req.ip ?? '', String(req.get('user-agent') ?? '').slice(0, 255), isoIn(TTL_MS), nowIso());
-    res.cookie(COOKIE, serialize(sid), {
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: config.isProd,
-      maxAge: TTL_MS,
-      path: COOKIE_PATH,
-    });
+      `INSERT INTO sessions (sid, user_id, data, ip, user_agent, expires_at, created_at) VALUES (?, NULL, ?, ?, ?, ?, ?)`,
+    ).run(sid, JSON.stringify(data), req.ip ?? '', String(req.get('user-agent') ?? '').slice(0, 255), isoIn(TTL_MS), nowIso());
+    datCookie(res, sid, oCong ? [CONG_PATH] : MOI_PATH);
+    snapshot = JSON.stringify(data); // da ghi luc INSERT
+  } else if (!oCong && MOI_PATH.length > 1 && !data.cookieChung) {
+    datCookie(res, sid, MOI_PATH);
+    data.cookieChung = true;
   }
 
   req.sessionId = sid;
   req.session = data;
 
-  const snapshot = JSON.stringify(data);
   res.on('finish', () => {
     const current = JSON.stringify(req.session);
     if (current === snapshot) return;
@@ -120,11 +140,12 @@ export function sessionMiddleware(req: Request, res: Response, next: NextFunctio
 export function loginSession(req: Request, res: Response, userId: number): void {
   db.prepare('DELETE FROM sessions WHERE sid = ?').run(req.sessionId);
   const sid = randomToken(24);
-  const data: SessionData = { ...req.session, userId, csrf: randomToken(16) };
+  const data: SessionData = { ...req.session, userId, csrf: randomToken(16), cookieChung: MOI_PATH.length > 1 };
   db.prepare(
     `INSERT INTO sessions (sid, user_id, data, ip, user_agent, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
   ).run(sid, userId, JSON.stringify(data), req.ip ?? '', String(req.get('user-agent') ?? '').slice(0, 255), isoIn(TTL_MS), nowIso());
-  res.cookie(COOKIE, serialize(sid), { httpOnly: true, sameSite: 'lax', secure: config.isProd, maxAge: TTL_MS, path: COOKIE_PATH });
+  // Ca hai Path: dang nhap o cong la da dang nhap o /ten-mien va nguoc lai
+  datCookie(res, sid, MOI_PATH);
   req.sessionId = sid;
   req.session = data;
   db.prepare('UPDATE users SET last_login_at = ? WHERE id = ?').run(nowIso(), userId);
@@ -132,7 +153,8 @@ export function loginSession(req: Request, res: Response, userId: number): void 
 
 export function destroySession(req: Request, res: Response): void {
   db.prepare('DELETE FROM sessions WHERE sid = ?').run(req.sessionId);
-  res.clearCookie(COOKIE, { path: COOKIE_PATH });
+  // Xoa ca hai Path: dang xuat mot noi la het phien o moi noi da noi
+  for (const path of MOI_PATH) res.clearCookie(COOKIE, { path });
   req.session = {};
 }
 

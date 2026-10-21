@@ -40,16 +40,36 @@ export function stripBase(p: string): string | null {
  * Lop chan cuoi cho open redirect (ca khi BASE rong): khong bao gio phat
  * Location dang `//host` hay `/\host`. Khong route nao can dang nay; neu co
  * thi do la du lieu nguoi dung lot qua kiem tra, nen ve trang chu.
+ *
+ * Tien to la tham so: router cua cong Tai khoan MienTay (CONG_TAI_KHOAN_PATH)
+ * dung cung lop boc voi tien to cua no, nen ham xu ly dung chung giua hai noi
+ * (dang nhap, 2FA) goi res.redirect('/dang-nhap/hai-lop') la dung o ca hai.
  */
-export function redirectWithBase(_req: Request, res: Response, next: NextFunction): void {
-  const goc = res.redirect.bind(res) as (a: string | number, b?: string | number) => void;
-  const dich = (p: string): string => withBase(laDiaChiHost(p) ? '/' : p);
-  res.redirect = ((a: string | number, b?: string | number) => {
-    if (typeof a === 'number') return goc(a, dich(String(b)));
-    if (typeof b === 'number') return goc(b, dich(a)); // dang cu redirect(url, status)
-    return goc(dich(a));
-  }) as Response['redirect'];
-  next();
+export function taoRedirectTienTo(tienTo: string) {
+  const them = (p: string) => (!tienTo || !p.startsWith('/') || p.startsWith('//') || p.startsWith('/\\') ? p : tienTo + p);
+  return function redirectTienTo(_req: Request, res: Response, next: NextFunction): void {
+    const goc = res.redirect.bind(res) as (a: string | number, b?: string | number) => void;
+    const dich = (p: string): string => them(laDiaChiHost(p) ? '/' : p);
+    res.redirect = ((a: string | number, b?: string | number) => {
+      if (typeof a === 'number') return goc(a, dich(String(b)));
+      if (typeof b === 'number') return goc(b, dich(a)); // dang cu redirect(url, status)
+      return goc(dich(a));
+    }) as Response['redirect'];
+    next();
+  };
+}
+
+export const redirectWithBase = taoRedirectTienTo(BASE);
+
+/**
+ * Chuyen 302 toi duong dan TREN HOST da co du tien to cua noi den (vd
+ * /ten-mien/control-panel tu cong, /tai-khoan/dang-nhap tu /ten-mien), khong
+ * qua lop boc them tien to. Van chan `//host`: du lieu nguoi dung lot qua thi
+ * ve trang chu cua app.
+ */
+export function chuyenTuyetDoi(res: Response, duong: string): void {
+  const p = !duong.startsWith('/') || laDiaChiHost(duong) ? `${BASE}/` : duong;
+  res.status(302).location(p).type('text/plain').send(`Found. Redirecting to ${p}`);
 }
 
 /**
