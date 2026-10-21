@@ -154,7 +154,7 @@ export function loginSession(req: Request, res: Response, userId: number): void 
 export function destroySession(req: Request, res: Response): void {
   db.prepare('DELETE FROM sessions WHERE sid = ?').run(req.sessionId);
   // Xoa ca hai Path: dang xuat mot noi la het phien o moi noi da noi
-  for (const path of MOI_PATH) res.clearCookie(COOKIE, { path });
+  for (const path of MOI_PATH) res.clearCookie(COOKIE, { httpOnly: true, sameSite: 'lax', secure: config.isProd, path });
   req.session = {};
 }
 

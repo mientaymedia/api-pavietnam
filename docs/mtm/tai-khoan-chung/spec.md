@@ -30,6 +30,8 @@ Quy tắc (`src/middleware/session.ts`):
 
 Giới hạn đã biết: phiên đăng nhập cũ (trước triển khai) mà khách vào thẳng cổng trước khi vào `/ten-mien` thì cổng thấy chưa đăng nhập; đăng nhập lại là thống nhất. Chấp nhận vì số khách thật rất ít (intent mục 0) và phiên cũ hết hạn sau 30 ngày.
 
+Giới hạn thứ hai: khách chưa từng vào `/ten-mien` mở cổng (phiên chỉ có cookie cổng), nhập mật khẩu đúng của tài khoản có 2FA, rồi giữa chừng mở một trang `/ten-mien` ở thẻ khác thì `/ten-mien` tạo phiên mới cho cả hai Path và bước chờ mã 2FA mất; khách đăng nhập lại. Không mất dữ liệu nào, chỉ phải gõ lại mật khẩu.
+
 ## 3. Đích sau đăng nhập (`next`)
 
 - Ở cổng, `next` là **đường dẫn trên host** (ví dụ `/ten-mien/control-panel`, `/bang-gia` của site chính). Kiểm bằng `duongDanNoiBo` (chặn `//evil`, `/\evil`, `https://`, ký tự điều khiển, `/.//evil`), thêm: trỏ vào trang đăng nhập, đăng ký, đăng xuất, quên, đặt lại mật khẩu của cổng hoặc của `/ten-mien` thì bỏ (tránh vòng lặp). Không hợp lệ hoặc không có: trang chọn sản phẩm `/tai-khoan/`.

@@ -81,8 +81,9 @@ const TRANG_SANG_CONG = new Set(['/dang-nhap', '/dang-ky', '/quen-mat-khau', '/d
 router.use((req, res, next) => {
   if (!CONG || laCong(req) || (req.method !== 'GET' && req.method !== 'HEAD') || !TRANG_SANG_CONG.has(req.path)) return next();
   const q = new URLSearchParams();
-  const nextCu = String(req.query['next'] ?? '');
-  if (nextCu) q.set('next', withBase(safeNext(nextCu)));
+  // next doc hai thi bo han (cong ve trang chon san pham), khong doi thanh dashboard
+  const nextCu = duongDanNoiBo(req.query['next'], '');
+  if (nextCu) q.set('next', withBase(nextCu));
   const token = req.query['token'];
   if (typeof token === 'string' && token) q.set('token', token);
   const qs = q.toString();
