@@ -8,6 +8,10 @@
  * tham so lay tu chinh src/routes, cong moi link noi bo tim thay tren trang.
  * Moi gia tri href/action/src/formaction va header Location bat dau bang '/'
  * phai bat dau bang "<BASE>/" hoac dung bang "<BASE>". Ma thoat 1 neu co sot.
+ *
+ * Bat ca cong Tai khoan MienTay (CONG_TAI_KHOAN_PATH=/tai-khoan, docs/mtm/
+ * tai-khoan-chung): bo them cac trang cua cong, va link noi bo duoc phep
+ * thuoc "<BASE>" hoac "<CONG>" (cung mot app, Traefik chuyen ca hai vao).
  */
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -18,12 +22,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const B = '/ten-mien';
+const C = '/tai-khoan';
 const tmpDir = mkdtempSync(path.join(os.tmpdir(), 'api-pavietnam-base-'));
 
 // Phai dat truoc khi nap bat ky module nao cua app (config doc luc nap).
 Object.assign(process.env, {
   NODE_ENV: 'development',
   BASE_PATH: B,
+  CONG_TAI_KHOAN_PATH: C,
   APP_URL: `http://127.0.0.1${B}`,
   PAVIETNAM_SANDBOX: '1',
   DATABASE_FILE: path.join(tmpDir, 'app.sqlite'),
@@ -101,6 +107,14 @@ function routeGoc() {
   return [...ra].filter((p) => !p.startsWith('/api/'));
 }
 
+/** Route GET khong tham so cua cong (routes/congTaiKhoan.ts gan o goc cua cong). */
+function routeCong() {
+  const src = readFileSync(path.join(root, 'src/routes/congTaiKhoan.ts'), 'utf8');
+  const ra = new Set(['/']);
+  for (const r of src.matchAll(/router\.get\(\s*'([^']+)'/g)) if (!r[1].includes(':')) ra.add(r[1]);
+  return [...ra];
+}
+
 /* ------------------------------------------------------------------- bo */
 
 const server = createApp().listen(0);
@@ -108,7 +122,7 @@ await new Promise((r) => server.once('listening', r));
 const goc = `http://127.0.0.1:${server.address().port}`;
 
 const loi = [];
-const coTienTo = (v) => v === B || v.startsWith(`${B}/`) || v.startsWith(`${B}?`);
+const coTienTo = (v) => [B, C].some((t) => v === t || v.startsWith(`${t}/`) || v.startsWith(`${t}?`));
 const laNoiBo = (v) => v.startsWith('/') && !v.startsWith('//');
 
 function kiem(trang, loai, v) {
@@ -117,7 +131,7 @@ function kiem(trang, loai, v) {
 
 async function bo(vai, cookie) {
   const daXem = new Set();
-  const hang = routeGoc().map((p) => B + (p === '/' ? '/' : p));
+  const hang = [...routeGoc().map((p) => B + (p === '/' ? '/' : p)), ...routeCong().map((p) => C + p)];
   let soTrang = 0;
   while (hang.length && soTrang < 400) {
     const url = hang.shift();
@@ -163,6 +177,6 @@ rmSync(tmpDir, { recursive: true, force: true });
 for (const l of [...new Set(loi)]) console.log(l);
 console.log(
   `Đã bò ${ketQua.khach_vang_lai} trang (khách vãng lai), ${ketQua.khach} trang (khách), ` +
-    `${ketQua.quan_tri} trang (quản trị) dưới ${B}. Link thiếu tiền tố: ${new Set(loi).size}.`,
+    `${ketQua.quan_tri} trang (quản trị) dưới ${B} và ${C}. Link thiếu tiền tố: ${new Set(loi).size}.`,
 );
 process.exit(loi.length ? 1 : 0);
