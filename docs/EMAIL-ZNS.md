@@ -4,10 +4,28 @@ He thong gui thong bao qua **email** (bat buoc) va **Zalo ZNS** (tuy chon).
 Ca hai deu la kenh phu tro: gui that bai khong bao gio lam hong luong dat hang
 hay dang ky ten mien - moi ket qua duoc ghi nhat ky de xu ly sau.
 
-## 1. Cau hinh SMTP
+## 1. Cau hinh gui email
 
-Dien tai _Quan tri > Cau hinh Control Panel > Email (SMTP)_, roi bam
+Dien tai _Quan tri > Cau hinh Control Panel > Email (Resend hoac SMTP)_, roi bam
 **Gui email thu** de kiem tra ngay.
+
+### Dung Resend (cach chinh, chu chot 21/10/2026)
+
+| Muc | Gia tri |
+|---|---|
+| Cach gui email (`smtp.driver` / `MAIL_DRIVER`) | `resend` |
+| Khoa API Resend (`smtp.resend_key` / `RESEND_API_KEY`) | Tao o resend.com > API Keys, quyen **Sending access**. Luu ma hoa AES-256-GCM, che khi hien, khong bao gio ghi vao log hay `email_logs` |
+| Dia chi gui di (`MAIL_FROM`) | Mac dinh `MienTay Media <no-reply@updates.mientaymedia.com>`. Phai thuoc ten mien da xac minh tren Resend: `updates.mientaymedia.com` (us-east-1) hoac `api.mientaymedia.com` (ap-northeast-1). `mientaymedia.com` goc **chua** xac minh: dung la Resend tra 403 |
+| Dia chi nhan thu tra loi (`MAIL_REPLY_TO`) | Mac dinh `hello@mientaymedia.com` |
+
+App goi `POST https://api.resend.com/emails` voi header `Authorization: Bearer <khoa>`,
+than JSON `from`, `to`, `subject`, `html`, `text`, `reply_to`. Cho toi da 15 giay.
+Loi thi `email_logs` ghi `Resend tra loi HTTP <ma>: <thong bao cua Resend>`.
+Noi dung thu do app dung (co test); 11 mau nhap tren Resend (`tenmien-*`) chua dung.
+
+Cach phu khi API loi: SMTP cua Resend, de `MAIL_DRIVER=smtp`:
+`SMTP_HOST=smtp.resend.com`, `SMTP_PORT=465` + bat SSL/TLS (hoac `587` + tat SSL/TLS, STARTTLS),
+`SMTP_USER=resend`, `SMTP_PASS=<khoa API Resend>`.
 
 ### Dung Gmail / Google Workspace
 

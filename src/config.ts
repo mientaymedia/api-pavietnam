@@ -128,8 +128,20 @@ export const config = {
     secure: bool('SMTP_SECURE', false),
     user: str('SMTP_USER'),
     pass: str('SMTP_PASS'),
-    from: str('MAIL_FROM', 'no-reply@localhost'),
+    // Ten mien gui da xac minh tren Resend la updates.mientaymedia.com (chu chot
+    // 21/10/2026); mientaymedia.com goc chua xac minh nen khong dung lam mac dinh.
+    from: str('MAIL_FROM', 'MienTay Media <no-reply@updates.mientaymedia.com>'),
+    /** Khach bam Tra loi thi thu ve hop thu nguoi that, khong ve no-reply. */
+    replyTo: str('MAIL_REPLY_TO', 'hello@mientaymedia.com'),
     adminAlert: str('ADMIN_ALERT_EMAIL'),
+    /** 'smtp' (nodemailer, mac dinh) hoac 'resend' (Resend HTTP API). */
+    driver: str('MAIL_DRIVER', 'smtp').trim().toLowerCase(),
+    resendKey: str('RESEND_API_KEY'),
+    /**
+     * Chi de test tro ve may chu Resend gia lap. Bo qua tren production: dat
+     * nham la khoa API va noi dung thu bi gui toi may la.
+     */
+    resendApiBase: (isProd ? '' : str('RESEND_API_BASE')).replace(/\/+$/, '') || 'https://api.resend.com',
   },
 
   sepay: {

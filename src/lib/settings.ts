@@ -202,7 +202,11 @@ export const settings = {
     user: getSetting('smtp.user', config.smtp.user),
     pass: getSetting('smtp.pass', config.smtp.pass),
     from: getSetting('smtp.from', config.smtp.from),
+    replyTo: getSetting('smtp.reply_to', config.smtp.replyTo),
     adminAlert: getSetting('smtp.admin_alert', config.smtp.adminAlert),
+    /** Cach gui: 'resend' qua Resend HTTP API, con lai la SMTP (lib/mailer.ts). */
+    driver: getSetting('smtp.driver', config.smtp.driver).trim().toLowerCase(),
+    resendKey: getSetting('smtp.resend_key', config.smtp.resendKey).trim(),
   }),
 
   telegram: () => ({
@@ -298,6 +302,7 @@ export const SECRET_KEYS = [
   'zalopay.key1',
   'zalopay.key2',
   'smtp.pass',
+  'smtp.resend_key',
   'zns.secret_key',
   'zns.refresh_token',
   'zns.access_token',

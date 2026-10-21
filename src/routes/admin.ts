@@ -195,13 +195,16 @@ const SETTING_FIELDS: { key: string; label: string; type?: 'text' | 'password' |
   { key: 'zns.secret_key', label: 'Zalo Secret Key', type: 'password' },
   { key: 'zns.refresh_token', label: 'Zalo Refresh Token', type: 'password', hint: 'Zalo đổi token này mỗi lần dùng - hệ thống tự lưu lại bản mới' },
 
-  // Email
-  { key: 'smtp.host', label: 'SMTP host' },
+  // Email. Cach gui: Resend HTTP API (chu chot 21/10/2026) hoac SMTP
+  { key: 'smtp.driver', label: 'Cách gửi email', hint: 'resend: gửi qua Resend HTTP API (khuyên dùng). smtp hoặc để trống: gửi qua máy chủ SMTP bên dưới. Để trống thì dùng MAIL_DRIVER' },
+  { key: 'smtp.resend_key', label: 'Khóa API Resend', type: 'password', hint: 'Tạo ở resend.com, mục API Keys, quyền Sending. Lưu mã hóa, không hiện ra trình duyệt. Để trống thì dùng RESEND_API_KEY' },
+  { key: 'smtp.host', label: 'SMTP host', hint: 'Resend qua SMTP: smtp.resend.com, cổng 465 bật SSL/TLS (hoặc 587 tắt SSL/TLS), user resend, mật khẩu là khóa API Resend' },
   { key: 'smtp.port', label: 'SMTP port', type: 'number' },
   { key: 'smtp.secure', label: 'SMTP dùng SSL/TLS', type: 'checkbox' },
   { key: 'smtp.user', label: 'SMTP user' },
   { key: 'smtp.pass', label: 'SMTP password', type: 'password' },
-  { key: 'smtp.from', label: 'Địa chỉ gửi đi' },
+  { key: 'smtp.from', label: 'Địa chỉ gửi đi', hint: 'Phải thuộc tên miền đã xác minh trên Resend, ví dụ MienTay Media <no-reply@updates.mientaymedia.com>' },
+  { key: 'smtp.reply_to', label: 'Địa chỉ nhận thư trả lời', hint: 'Khách bấm Trả lời thì thư về đây. Mặc định hello@mientaymedia.com' },
   { key: 'smtp.admin_alert', label: 'Email nhận cảnh báo nội bộ' },
 
   // Telegram quan tri (@mientaymediabot). Mac dinh doc TELEGRAM_* trong .env, o day chi ghi de

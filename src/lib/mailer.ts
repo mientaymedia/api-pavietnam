@@ -1,5 +1,14 @@
+/**
+ * Gui email qua mot trong hai cach (chon o Cau hinh smtp.driver hoac MAIL_DRIVER):
+ *  - 'resend': Resend HTTP API, POST https://api.resend.com/emails, header
+ *    Authorization: Bearer <khoa>. Chu chot gui qua Resend 21/10/2026.
+ *  - con lai: SMTP qua nodemailer (Gmail, hoac SMTP cua Resend: smtp.resend.com,
+ *    465 SSL hoac 587 STARTTLS, user "resend", mat khau la khoa API).
+ * Noi dung thu van do app dung (services/notifications.ts), khong dung mau Resend.
+ */
 import nodemailer, { type Transporter } from 'nodemailer';
 import { db, nowIso } from '../db/index.js';
+import { config } from '../config.js';
 import { settings } from './settings.js';
 import { log } from './logger.js';
 import { laEmailTam } from './validate.js';
@@ -49,6 +58,8 @@ export async function sendMail(input: MailInput): Promise<boolean> {
   }
 
   const s = settings.smtp();
+  if (s.driver === 'resend') return guiQuaResend(input, s);
+
   const tx = getTransporter();
 
   if (!tx) {
@@ -64,7 +75,7 @@ export async function sendMail(input: MailInput): Promise<boolean> {
       subject: input.subject,
       html: input.html,
       text: input.text ?? htmlToText(input.html),
-      replyTo: input.replyTo || s.adminAlert || undefined,
+      replyTo: input.replyTo || s.replyTo || s.adminAlert || undefined,
     });
     logEmail(input, 'sent');
     return true;
@@ -72,6 +83,56 @@ export async function sendMail(input: MailInput): Promise<boolean> {
     const message = err instanceof Error ? err.message : String(err);
     logEmail(input, 'failed', message);
     log.error('mail_send_failed', { to: input.to, subject: input.subject, error: message });
+    return false;
+  }
+}
+
+/** Cho toi da 15 giay: Resend cham thi khong giu luong dang ky ten mien lai. */
+const HAN_RESEND_MS = 15_000;
+
+/**
+ * Gui qua Resend HTTP API. Khoa chi nam trong header, khong bao gio vao log
+ * hay email_logs: thong bao loi cua Resend cung duoc loc khoa truoc khi ghi.
+ */
+async function guiQuaResend(input: MailInput, s: ReturnType<typeof settings.smtp>): Promise<boolean> {
+  if (!s.resendKey) {
+    logEmail(input, 'skipped', 'Chưa cấu hình khóa API Resend');
+    log.warn('mail_skipped_no_resend_key', { to: input.to, subject: input.subject });
+    return false;
+  }
+  const replyTo = input.replyTo || s.replyTo || s.adminAlert;
+  try {
+    const r = await fetch(`${config.smtp.resendApiBase}/emails`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${s.resendKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: s.from,
+        to: [input.to],
+        subject: input.subject,
+        html: input.html,
+        text: input.text ?? htmlToText(input.html),
+        ...(replyTo ? { reply_to: replyTo } : {}),
+      }),
+      signal: AbortSignal.timeout(HAN_RESEND_MS),
+    });
+    if (!r.ok) {
+      // Resend tra JSON { statusCode, name, message } khi loi
+      let chiTiet = '';
+      try {
+        const j = (await r.json()) as { message?: unknown; name?: unknown };
+        chiTiet = String(j.message ?? j.name ?? '');
+      } catch {
+        // than khong phai JSON: chi giu ma HTTP
+      }
+      throw new Error(`Resend trả lỗi HTTP ${r.status}${chiTiet ? `: ${chiTiet}` : ''}`);
+    }
+    logEmail(input, 'sent');
+    return true;
+  } catch (err) {
+    const tho = err instanceof Error ? err.message : String(err);
+    const message = tho.split(s.resendKey).join('***');
+    logEmail(input, 'failed', message);
+    log.error('mail_send_failed', { driver: 'resend', to: input.to, subject: input.subject, error: message });
     return false;
   }
 }
