@@ -1,0 +1,23 @@
+<%- include('_dau') %>
+<div class="card cong-the">
+  <h1>Quên mật khẩu</h1>
+  <% if (sent) { %>
+    <div class="alert alert-success">
+      Nếu email tồn tại trong hệ thống, chúng tôi đã gửi hướng dẫn đặt lại mật khẩu.
+      Vui lòng kiểm tra hộp thư (kể cả thư mục spam).
+    </div>
+    <a class="btn btn-outline" href="<%= cong %>/dang-nhap">Về trang đăng nhập</a>
+  <% } else { %>
+    <p class="muted small">Nhập email của tài khoản MienTay, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.</p>
+    <form method="post" action="<%= cong %>/quen-mat-khau">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label for="email"><span class="field-name">Email</span>
+        <input id="email" type="email" name="email" required autofocus autocomplete="email"></label>
+      </div>
+      <button class="btn btn-block" type="submit">Gửi liên kết</button>
+    </form>
+    <p class="small muted center cong-duoi-the"><a href="<%= cong %>/dang-nhap">Quay lại đăng nhập</a></p>
+  <% } %>
+</div>
+<%- include('_cuoi') %>

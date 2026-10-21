@@ -1,0 +1,51 @@
+<%- include('_dau') %>
+<div class="card cong-the">
+  <h1>Tạo tài khoản MienTay</h1>
+  <p class="muted small">Dùng một tài khoản để mua tên miền và quản lý các dịch vụ của MienTay Media.</p>
+
+  <form method="post" action="<%= cong %>/dang-ky">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
+
+    <div class="field <%= errors.full_name ? 'field-error' : '' %>">
+      <label for="full_name"><span class="field-name">Họ và tên</span>
+      <input id="full_name" type="text" name="full_name" value="<%= values.full_name || '' %>" required autofocus autocomplete="name"></label>
+      <% if (errors.full_name) { %><div class="error-text"><%= errors.full_name %></div><% } %>
+    </div>
+
+    <div class="field <%= errors.email ? 'field-error' : '' %>">
+      <label for="email"><span class="field-name">Email</span>
+      <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autocomplete="email"></label>
+      <% if (errors.email) { %><div class="error-text"><%= errors.email %></div><% } %>
+    </div>
+
+    <div class="field <%= errors.phone ? 'field-error' : '' %>">
+      <label for="phone"><span class="field-name">Số điện thoại</span>
+      <input id="phone" type="tel" name="phone" value="<%= values.phone || '' %>" required autocomplete="tel"></label>
+      <% if (errors.phone) { %><div class="error-text"><%= errors.phone %></div><% } %>
+    </div>
+
+    <div class="field <%= errors.password ? 'field-error' : '' %>">
+      <label for="password"><span class="field-name">Mật khẩu</span>
+      <input id="password" type="password" name="password" required autocomplete="new-password"></label>
+      <div class="hint">Tối thiểu 8 ký tự.</div>
+      <% if (errors.password) { %><div class="error-text"><%= errors.password %></div><% } %>
+    </div>
+
+    <div class="field <%= errors.password_confirm ? 'field-error' : '' %>">
+      <label for="password_confirm"><span class="field-name">Nhập lại mật khẩu</span>
+      <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password"></label>
+      <% if (errors.password_confirm) { %><div class="error-text"><%= errors.password_confirm %></div><% } %>
+    </div>
+
+    <button class="btn btn-block btn-lg" type="submit">Tạo tài khoản</button>
+  </form>
+
+  <%- include('../partials/nut-mxh', { cheDoMxh: 'dang-ky', cheDoCong: true }) %>
+
+  <p class="small muted center cong-duoi-the">
+    Đã có tài khoản?
+    <a href="<%= cong %>/dang-nhap<%= next ? '?next=' + encodeURIComponent(String(next)) : '' %>">Đăng nhập</a>
+  </p>
+</div>
+<%- include('_cuoi') %>

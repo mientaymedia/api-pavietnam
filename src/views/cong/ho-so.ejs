@@ -1,0 +1,35 @@
+<%- include('_dau', { rong: true }) %>
+<h1>Hồ sơ</h1>
+
+<div class="card">
+  <div class="card-title"><h2>Thông tin cá nhân</h2></div>
+  <%
+    // Gui ve route san co cua /ten-mien (mot ban logic), quay_ve dua khach ve day
+  %>
+  <form method="post" action="<%= base %>/tai-khoan/thong-tin">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="quay_ve" value="ho-so">
+    <div class="field">
+      <span class="field-name cong-nhan">Email</span>
+      <% if (emailTam) { %>
+        <div>Chưa có email. <a href="<%= base %>/tai-khoan/email">Bổ sung email</a></div>
+      <% } else { %>
+        <div><%= user.email %></div>
+      <% } %>
+    </div>
+    <div class="grid grid-2 cong-luoi">
+      <div class="field"><label for="full_name"><span class="field-name">Họ và tên</span>
+        <input id="full_name" type="text" name="full_name" value="<%= user.full_name %>" maxlength="120" autocomplete="name"></label></div>
+      <div class="field"><label for="phone"><span class="field-name">Số điện thoại</span>
+        <input id="phone" type="tel" name="phone" value="<%= user.phone || '' %>" maxlength="20" autocomplete="tel"></label></div>
+    </div>
+    <button class="btn" type="submit">Lưu thông tin</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="card-title"><h2>Thông tin riêng của từng sản phẩm</h2></div>
+  <p class="muted small">Hồ sơ chủ thể tên miền, ví, API token nằm ở trang Tên miền.</p>
+  <a class="btn btn-outline btn-sm" href="<%= base %>/tai-khoan">Mở tài khoản Tên miền</a>
+</div>
+<%- include('_cuoi') %>

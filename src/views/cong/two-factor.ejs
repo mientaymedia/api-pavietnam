@@ -1,0 +1,26 @@
+<%- include('_dau') %>
+<div class="card cong-the">
+  <h1>Xác thực hai lớp</h1>
+  <p class="muted small">
+    Mở ứng dụng xác thực trên điện thoại (Google Authenticator, Microsoft Authenticator, Authy...)
+    và nhập mã 6 số đang hiển thị.
+  </p>
+  <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
+
+  <form method="post" action="<%= cong %>/dang-nhap/hai-lop">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label for="code"><span class="field-name">Mã xác thực</span>
+      <input id="code" type="text" name="code" required autofocus autocomplete="one-time-code"
+             inputmode="numeric" maxlength="20" placeholder="123456" class="mono cong-ma"></label>
+    </div>
+
+    <button class="btn btn-block btn-lg" type="submit">Xác nhận</button>
+  </form>
+
+  <p class="small muted center cong-duoi-the">
+    Mất điện thoại? Nhập một <strong>mã dự phòng</strong> vào ô trên.
+    &middot; <a href="<%= cong %>/dang-nhap">Đăng nhập bằng tài khoản khác</a>
+  </p>
+</div>
+<%- include('_cuoi') %>

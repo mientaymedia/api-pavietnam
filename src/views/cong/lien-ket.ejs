@@ -1,0 +1,43 @@
+<%- include('_dau', { rong: true }) %>
+<h1>Liên kết mạng xã hội</h1>
+
+<div class="card">
+  <p class="muted small">Liên kết để đăng nhập nhanh vào mọi sản phẩm dùng Tài khoản MienTay. Tài khoản có xác thực hai lớp vẫn phải nhập mã sau khi đăng nhập.</p>
+  <% if (!mxh.danhSach.length) { %>
+    <p>Đăng nhập bằng mạng xã hội hiện chưa mở.</p>
+  <% } else { %>
+  <%
+    // Lien ket: link GET kem _csrf (CSP form-action chan form chuyen huong ra
+    // ngoai), bat dau o <base>/auth vi callback da khai nam o do; cong=1 de
+    // xong quay ve trang nay. Huy: form POST kem _csrf, quay_ve=lien-ket.
+  %>
+  <div class="lien-ket-mxh">
+    <% mxh.danhSach.forEach(function (d) { %>
+      <div class="dong">
+        <div>
+          <strong><%= d.ten %></strong>
+          <% if (d.danhTinh) { %>
+            <span class="badge badge-muted">Đã liên kết</span>
+            <div class="small muted"><%= d.danhTinh.email || 'Không có email' %>, từ <%= d.danhTinh.created_at.slice(0, 10) %></div>
+          <% } else { %>
+            <div class="small muted">Chưa liên kết</div>
+          <% } %>
+        </div>
+        <% if (d.danhTinh) { %>
+          <form method="post" action="<%= base %>/tai-khoan/lien-ket/<%= d.ben %>/huy">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="quay_ve" value="lien-ket">
+            <button class="btn btn-outline btn-sm" type="submit">Hủy liên kết</button>
+          </form>
+        <% } else if (d.dangBat) { %>
+          <a class="btn btn-outline btn-sm" href="<%= base %>/auth/<%= d.ben %>?lien_ket=1&amp;cong=1&amp;_csrf=<%= encodeURIComponent(csrfToken) %>">Liên kết <%= d.ten %></a>
+        <% } %>
+      </div>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+<% if (!mxh.coMatKhau) { %>
+  <div class="alert alert-info">Tài khoản chưa có mật khẩu. <a href="<%= cong %>/bao-mat">Đặt mật khẩu</a> trước khi hủy liên kết cuối cùng.</div>
+<% } %>
+<%- include('_cuoi') %>

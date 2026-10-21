@@ -1,0 +1,30 @@
+<%- include('_dau') %>
+<div class="card cong-the">
+  <h1>Đăng nhập</h1>
+  <p class="muted small">Một tài khoản MienTay cho Tên miền và các sản phẩm khác của MienTay Media.</p>
+  <% if (errors._) { %><div class="alert alert-error"><%= errors._ %></div><% } %>
+
+  <form method="post" action="<%= cong %>/dang-nhap">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="next" value="<%= next %>">
+
+    <div class="field">
+      <label for="email"><span class="field-name">Email</span>
+      <input id="email" type="email" name="email" value="<%= values.email || '' %>" required autofocus autocomplete="email"></label>
+    </div>
+    <div class="field">
+      <label for="password"><span class="field-name">Mật khẩu</span>
+      <input id="password" type="password" name="password" required autocomplete="current-password"></label>
+    </div>
+
+    <button class="btn btn-block btn-lg" type="submit">Đăng nhập</button>
+  </form>
+
+  <%- include('../partials/nut-mxh', { cheDoCong: true }) %>
+
+  <p class="small muted center cong-duoi-the">
+    <a href="<%= cong %>/quen-mat-khau">Quên mật khẩu?</a> &middot; Chưa có tài khoản?
+    <a href="<%= cong %>/dang-ky<%= next ? '?next=' + encodeURIComponent(String(next)) : '' %>">Đăng ký</a>
+  </p>
+</div>
+<%- include('_cuoi') %>

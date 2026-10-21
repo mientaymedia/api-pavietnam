@@ -1,0 +1,55 @@
+<%- include('_dau', { rong: true }) %>
+<h1>Bảo mật</h1>
+
+<%
+  // Form gui ve route san co cua /ten-mien kem quay_ve=bao-mat: mot ban logic
+  // doi, dat mat khau cho ca hai noi (routes/account.ts, routes/dangNhapMxh.ts).
+%>
+<% if (mxh.coMatKhau) { %>
+<div class="card">
+  <div class="card-title"><h2>Đổi mật khẩu</h2></div>
+  <form method="post" action="<%= base %>/tai-khoan/doi-mat-khau">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="quay_ve" value="bao-mat">
+    <div class="field"><label for="current_password"><span class="field-name">Mật khẩu hiện tại</span>
+      <input id="current_password" type="password" name="current_password" required autocomplete="current-password"></label></div>
+    <div class="grid grid-2 cong-luoi">
+      <div class="field"><label for="password"><span class="field-name">Mật khẩu mới</span>
+        <input id="password" type="password" name="password" required autocomplete="new-password"></label></div>
+      <div class="field"><label for="password_confirm"><span class="field-name">Nhập lại mật khẩu mới</span>
+        <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password"></label></div>
+    </div>
+    <button class="btn" type="submit">Đổi mật khẩu</button>
+  </form>
+</div>
+<% } else { %>
+<div class="card">
+  <div class="card-title"><h2>Đặt mật khẩu</h2></div>
+  <p class="muted small">Tài khoản đang đăng nhập bằng mạng xã hội. Đặt mật khẩu để đăng nhập được bằng email khi cần, và để hủy được liên kết cuối cùng.</p>
+  <form method="post" action="<%= base %>/tai-khoan/dat-mat-khau">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <input type="hidden" name="quay_ve" value="bao-mat">
+    <div class="grid grid-2 cong-luoi">
+      <div class="field"><label for="password"><span class="field-name">Mật khẩu</span>
+        <input id="password" type="password" name="password" required autocomplete="new-password"></label></div>
+      <div class="field"><label for="password_confirm"><span class="field-name">Nhập lại mật khẩu</span>
+        <input id="password_confirm" type="password" name="password_confirm" required autocomplete="new-password"></label></div>
+    </div>
+    <button class="btn" type="submit">Đặt mật khẩu</button>
+  </form>
+</div>
+<% } %>
+
+<div class="card">
+  <div class="card-title">
+    <h2>Xác thực hai lớp</h2>
+    <% if (hai.enabled) { %><span class="badge badge-ok">Đang bật</span><% } else { %><span class="badge badge-warn">Chưa bật</span><% } %>
+  </div>
+  <% if (hai.enabled) { %>
+    <p class="muted small">Mỗi lần đăng nhập (kể cả bằng Zalo, Google, GitHub) đều hỏi mã từ ứng dụng xác thực. Còn <%= hai.recoveryLeft %> mã dự phòng.</p>
+  <% } else { %>
+    <p class="muted small">Bật để mật khẩu bị lộ cũng không vào được tài khoản.<% if (batBuoc2fa) { %> Tài khoản quản trị bắt buộc bật.<% } %></p>
+  <% } %>
+  <a class="btn btn-outline btn-sm" href="<%= base %>/tai-khoan/bao-mat"><%= hai.enabled ? 'Quản lý xác thực hai lớp' : 'Bật xác thực hai lớp' %></a>
+</div>
+<%- include('_cuoi') %>

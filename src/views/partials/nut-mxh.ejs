@@ -8,7 +8,14 @@
   // Logo G bon mau va dau GitHub giu nguyen hinh, mau; khong anh ngoai, khong JS.
   var dsNut = typeof nutMxh !== 'undefined' ? nutMxh : [];
   var dongTu = typeof cheDoMxh !== 'undefined' && cheDoMxh === 'dang-ky' ? 'Đăng ký bằng' : 'Đăng nhập bằng';
-  var tiepTheo = typeof next !== 'undefined' && next ? '?next=' + encodeURIComponent(String(next)) : '';
+  //
+  // Trang cua cong Tai khoan MienTay truyen cheDoCong: van bat dau o
+  // <base>/auth/<ben> (callback da khai o ba ben nam duoi /ten-mien) kem cong=1
+  // de cac loi ra quay ve cong (routes/dangNhapMxh.ts).
+  var thamSo = [];
+  if (typeof cheDoCong !== 'undefined' && cheDoCong) thamSo.push('cong=1');
+  if (typeof next !== 'undefined' && next) thamSo.push('next=' + encodeURIComponent(String(next)));
+  var tiepTheo = thamSo.length ? '?' + thamSo.join('&') : '';
 %>
 <% if (dsNut.length) { %>
 <div class="mxh">

@@ -71,7 +71,7 @@ export function chuanHoaCongPath(raw: string, basePath: string): string {
   }
   const long = (a: string, b: string) => a === b || a.startsWith(`${b}/`);
   if (long(v, basePath) || long(basePath, v)) {
-    throw new Error(`CONG_TAI_KHOAN_PATH "${v}" không được trùng hay lồng với BASE_PATH "${basePath}".`);
+    throw new Error(`Đường dẫn cổng CONG_TAI_KHOAN_PATH "${v}" không được trùng hay lồng với BASE_PATH "${basePath}".`);
   }
   return v;
 }

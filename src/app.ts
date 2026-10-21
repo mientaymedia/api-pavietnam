@@ -57,8 +57,9 @@ export function createApp() {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    // Chi trang khach co nut chat Zalo moi mo CSP cho Zalo (xem lib/csp.ts)
-    res.setHeader('Content-Security-Policy', buildCsp({ zaloChat: Boolean(zaloChatOaId()) && !laTrangQuanTri(req.path) }));
+    // Chi trang khach co nut chat Zalo moi mo CSP cho Zalo (xem lib/csp.ts).
+    // Cong Tai khoan MienTay khong gan nut chat nen cung khong mo.
+    res.setHeader('Content-Security-Policy', buildCsp({ zaloChat: Boolean(zaloChatOaId()) && !laTrangQuanTri(req.path) && !laTrangCong(req.path) }));
     if (config.isProd) res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     next();
   });
@@ -177,4 +178,9 @@ function lopChung(r: express.Router, coTepTinh: boolean): void {
 function laTrangQuanTri(duong: string): boolean {
   const bo = BASE && (duong === BASE || duong.startsWith(BASE + '/')) ? duong.slice(BASE.length) || '/' : duong;
   return /^\/admin(\/|$)/.test(bo);
+}
+
+/** Duong dan thuoc cong Tai khoan MienTay (CONG_TAI_KHOAN_PATH), false khi cong tat. */
+function laTrangCong(duong: string): boolean {
+  return Boolean(CONG) && (duong === CONG || duong.startsWith(`${CONG}/`));
 }

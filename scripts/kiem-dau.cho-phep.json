@@ -25,5 +25,6 @@
   { "tep": "src/pavietnam/client.ts", "chua": "Da cap nhat trang thai khoa", "ly_do": "Dữ liệu giả lập phản hồi của P.A trong chế độ sandbox, không phải chữ của mình (intent mục 4, spec 3.4)" },
   { "tep": "src/routes/webhooks.ts", "chua": "Phuong thuc khong duoc ho tro", "ly_do": "Phản hồi JSON cho máy của cổng thanh toán; spec 3.4 và mục 4 khóa cứng webhooks.ts (không được có diff)" },
   { "tep": "src/views/home.ejs", "chua": "Mua ngay", "ly_do": "Đúng chính tả: \"Mua ngay\" vốn không có dấu" },
-  { "tep": "src/lib/bieuMau.ts", "chua": "Bộ Khoa học", "ly_do": "Đúng chính tả: \"Khoa học\" vốn không có dấu ở chữ Khoa" }
+  { "tep": "src/lib/bieuMau.ts", "chua": "Bộ Khoa học", "ly_do": "Đúng chính tả: \"Khoa học\" vốn không có dấu ở chữ Khoa" },
+  { "tep": "src/config.ts", "chua": "CONG_TAI_KHOAN_PATH", "ly_do": "Tên biến môi trường (cổng Tài khoản MienTay), không phải chữ hiển thị" }
 ]

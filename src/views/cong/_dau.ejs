@@ -1,0 +1,50 @@
+<%
+  // Khung chung cua cong Tai khoan MienTay (docs/mtm/tai-khoan-chung/spec.md
+  // muc 7). Khong JavaScript: menu tai khoan la link thuong, dang xuat la form.
+  // Tep tinh lay tu <base> (/ten-mien, cung container); link trong cong dung
+  // <cong>. `rong`: trang tai khoan rong hon trang dang nhap.
+  var tieuDe = typeof title !== 'undefined' ? title + ' - Tài khoản MienTay' : 'Tài khoản MienTay';
+  var khungRong = typeof rong !== 'undefined' && rong;
+  var menuTk = [
+    { url: '/', nhan: 'Sản phẩm', khop: currentPath === '/' },
+    { url: '/ho-so', nhan: 'Hồ sơ', khop: currentPath === '/ho-so' },
+    { url: '/bao-mat', nhan: 'Bảo mật', khop: currentPath === '/bao-mat' },
+    { url: '/lien-ket', nhan: 'Liên kết', khop: currentPath === '/lien-ket' }
+  ];
+%>
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= tieuDe %></title>
+<meta name="description" content="Một tài khoản MienTay cho Tên miền và các sản phẩm của MienTay Media. Đăng nhập bằng email, Zalo, Google hoặc GitHub.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="<%= base %>/css/app.css">
+<link rel="stylesheet" href="<%= base %>/css/cong.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127760;</text></svg>">
+</head>
+<body class="cong">
+<header class="cong-dau">
+  <div class="cong-dau-trong">
+    <a class="cong-thuong-hieu" href="<%= siteChinhUrl %>/">
+      <img class="brand-logo" src="<%= base %>/img/mientaymedia-logo.png" alt="MienTay Media" width="600" height="76">
+    </a>
+    <span class="cong-ten">Tài khoản MienTay</span>
+    <% if (currentUser) { %>
+      <form class="cong-thoat" method="post" action="<%= cong %>/dang-xuat">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn-outline btn-sm" type="submit">Đăng xuất</button>
+      </form>
+    <% } %>
+  </div>
+  <% if (currentUser) { %>
+    <nav class="cong-menu" aria-label="Tài khoản">
+      <% menuTk.forEach(function (m) { %>
+        <a href="<%= cong %><%= m.url %>"<% if (m.khop) { %> class="active" aria-current="page"<% } %>><%= m.nhan %></a>
+      <% }); %>
+    </nav>
+  <% } %>
+</header>
+<main class="cong-than<%= khungRong ? ' cong-than-rong' : '' %>">
+<%- include('../partials/flash') %>

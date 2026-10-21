@@ -1,0 +1,15 @@
+<%- include('_dau', { rong: true }) %>
+<h1 class="cong-chao">Xin chào, <%= currentUser.full_name || currentUser.email %></h1>
+<p class="muted">Chọn sản phẩm bạn muốn dùng.</p>
+
+<div class="cong-san-pham">
+  <% sanPham.forEach(function (sp) { %>
+    <a class="card cong-sp" href="<%= sp.url %>"<% if (sp.ngoai) { %> target="_blank" rel="noopener"<% } %>>
+      <span class="cong-sp-ten"><%= sp.ten %><% if (sp.ngoai) { %> <span class="cong-sp-ngoai" aria-hidden="true">&#8599;</span><% } %></span>
+      <span class="cong-sp-mota"><%= sp.moTa %></span>
+      <% if (sp.ghiChu) { %><span class="cong-sp-ghichu"><%= sp.ghiChu %></span><% } %>
+      <% if (sp.ngoai) { %><span class="sr-only">(mở trong thẻ mới)</span><% } %>
+    </a>
+  <% }); %>
+</div>
+<%- include('_cuoi') %>
