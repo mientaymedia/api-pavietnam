@@ -6,9 +6,9 @@
  * site chinh), khong phai duong dan trong app nhu o /ten-mien: cong la cua
  * chung cho nhieu san pham nen phai quay ve duoc ca trang ngoai app.
  */
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { config } from '../config.js';
-import { BASE } from './basePath.js';
+import { BASE, chuyenTuyetDoi } from './basePath.js';
 import { duongDanNoiBo } from './redirect.js';
 
 /** Tien to cua cong; rong la cong tat. */
@@ -46,4 +46,19 @@ export function dichCong(value: unknown): string {
 /** Duong dan tren host cua mot trang trong cong. */
 export function congUrl(p: string): string {
   return `${CONG}${p}`;
+}
+
+// Trang cua cong co form gui ve route san co cua /ten-mien (doi mat khau, ho
+// so, huy lien ket): truong an quay_ve chi nhan dung cac gia tri nay.
+const QUAY_VE: Record<string, string> = { 'ho-so': '/ho-so', 'bao-mat': '/bao-mat', 'lien-ket': '/lien-ket' };
+
+/**
+ * Xong mot thao tac tai khoan: ve trang cua cong neu form gui tu cong (quay_ve
+ * hop le), khong thi ve /ten-mien/tai-khoan nhu cu. Gia tri la thi bo qua.
+ */
+export function veTaiKhoan(req: Request, res: Response): void {
+  const ma = String((req.body as Record<string, unknown> | undefined)?.['quay_ve'] ?? '');
+  const ve = CONG && Object.hasOwn(QUAY_VE, ma) ? QUAY_VE[ma] : undefined;
+  if (ve) return chuyenTuyetDoi(res, congUrl(ve));
+  res.redirect('/tai-khoan');
 }

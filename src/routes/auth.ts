@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Request, type RequestHandler } from 'express';
 import { z } from 'zod';
 import { db, isoIn, nowIso } from '../db/index.js';
 import { hashPassword, randomToken, sha256, verifyPassword } from '../lib/crypto.js';
@@ -13,8 +13,18 @@ import { requireAuth } from '../middleware/auth.js';
 import { audit } from '../services/audit.js';
 import { isEnabled as twoFactorEnabled, verifyLogin as verify2FA } from '../services/twoFactor.js';
 import { duongDanNoiBo } from '../lib/redirect.js';
+import { chuyenTuyetDoi, withBase } from '../lib/basePath.js';
+import { CONG, DICH_MAC_DINH, congUrl, dichCong, laCong } from '../lib/congTaiKhoan.js';
 import { TEN_HIEN_THI } from '../lib/oauth.js';
 import { ganLienKetDangCho, laEmailTam } from '../services/lienKetMxh.js';
+
+/*
+ * Dang nhap, dang ky, 2FA, quen va dat lai mat khau. Cac ham xu ly duoc dung
+ * CHUNG cho /ten-mien va cong Tai khoan MienTay (routes/congTaiKhoan.ts): mot
+ * ban logic, mot bo dem gioi han tan suat, chi khac tep view va cach hieu
+ * `next` (xem laCong). Redirect noi bo nhu '/dang-nhap/hai-lop' dung o ca hai
+ * noi vi moi router co lop boc them tien to cua minh (lib/basePath.ts).
+ */
 
 const router = Router();
 
@@ -43,21 +53,59 @@ function safeNext(value: unknown): string {
   return duongDanNoiBo(value, '/dashboard');
 }
 
-router.get('/dang-ky', (req, res) => {
-  if (req.currentUser) return res.redirect('/dashboard');
-  res.render('auth/register', { title: 'Đăng ký tài khoản', values: {}, errors: {} });
+/**
+ * Dich sau dang nhap, la duong dan TREN HOST (da co tien to) de di qua
+ * chuyenTuyetDoi tu ca hai router. O cong: next la duong dan tren host
+ * (lib/congTaiKhoan.ts). O /ten-mien: next la duong dan trong app nhu cu.
+ */
+function dichSau(req: Request, value: unknown): string {
+  return laCong(req) ? dichCong(value) : withBase(safeNext(value));
+}
+
+/** Tep view theo noi dang chay: cong co giao dien rieng, cung bien truyen vao. */
+function view(req: Request, ten: 'login' | 'register' | 'two-factor' | 'forgot' | 'reset'): string {
+  return `${laCong(req) ? 'cong' : 'auth'}/${ten}`;
+}
+
+/* ----------------------------------------------- link cu sang cong */
+
+// Trang GET cua /ten-mien co ban tuong ung o cong, cung duong dan con
+const TRANG_SANG_CONG = new Set(['/dang-nhap', '/dang-ky', '/quen-mat-khau', '/dat-lai-mat-khau', '/dang-nhap/hai-lop']);
+
+/**
+ * Cong bat thi link cu (email, danh dau trinh duyet, nut tren trang /ten-mien)
+ * 302 sang cong, khong cai nao 404. next cu la duong dan trong app nen doi
+ * thanh duong dan tren host; token dat lai mat khau giu nguyen. POST cu van
+ * chay (form trong trang da luu dem) nen chi chuyen GET.
+ */
+router.use((req, res, next) => {
+  if (!CONG || laCong(req) || (req.method !== 'GET' && req.method !== 'HEAD') || !TRANG_SANG_CONG.has(req.path)) return next();
+  const q = new URLSearchParams();
+  const nextCu = String(req.query['next'] ?? '');
+  if (nextCu) q.set('next', withBase(safeNext(nextCu)));
+  const token = req.query['token'];
+  if (typeof token === 'string' && token) q.set('token', token);
+  const qs = q.toString();
+  chuyenTuyetDoi(res, congUrl(req.path) + (qs ? `?${qs}` : ''));
 });
 
-router.post(
-  '/dang-ky',
+/* --------------------------------------------------------- dang ky */
+
+export const trangDangKy: RequestHandler = (req, res) => {
+  if (req.currentUser) return chuyenTuyetDoi(res, laCong(req) ? DICH_MAC_DINH : withBase('/dashboard'));
+  res.render(view(req, 'register'), { title: 'Đăng ký tài khoản', values: {}, errors: {}, next: req.query['next'] ?? '' });
+};
+
+export const xuLyDangKy: RequestHandler[] = [
   rateLimit({ windowMs: 15 * 60_000, max: 10, message: 'Quá nhiều lần đăng ký từ IP này. Vui lòng thử lại sau.' }),
   wrap(async (req, res) => {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
-      res.status(422).render('auth/register', {
+      res.status(422).render(view(req, 'register'), {
         title: 'Đăng ký tài khoản',
         values: req.body,
         errors: fieldErrors(parsed.error),
+        next: req.body?.next ?? '',
       });
       return;
     }
@@ -65,10 +113,11 @@ router.post(
     const { full_name, email, phone, password } = parsed.data;
     const exists = db.prepare('SELECT 1 FROM users WHERE email = ? COLLATE NOCASE').get(email);
     if (exists) {
-      res.status(422).render('auth/register', {
+      res.status(422).render(view(req, 'register'), {
         title: 'Đăng ký tài khoản',
         values: req.body,
         errors: { email: 'Email này đã được đăng ký' },
+        next: req.body?.next ?? '',
       });
       return;
     }
@@ -92,17 +141,20 @@ router.post(
     void sendEmailVerification({ id: userId, email, full_name }, issueToken({ id: userId, email }));
 
     flash(req, 'success', `Tạo tài khoản thành công. Chúng tôi đã gửi email xác thực tới ${email}.`);
-    res.redirect(safeNext(req.body?.next));
+    chuyenTuyetDoi(res, dichSau(req, req.body?.next));
   }),
-);
+];
 
-router.get('/dang-nhap', (req, res) => {
-  if (req.currentUser) return res.redirect('/dashboard');
-  res.render('auth/login', { title: 'Đăng nhập', values: {}, errors: {}, next: req.query['next'] ?? '' });
-});
+/* ------------------------------------------------------- dang nhap */
 
-router.post(
-  '/dang-nhap',
+export const trangDangNhap: RequestHandler = (req, res) => {
+  // Da dang nhap ma bam "Dang nhap" o cong: hien trang chon san pham, khong
+  // quay ve next (khach bam tu site chinh se tuong nut khong lam gi)
+  if (req.currentUser) return chuyenTuyetDoi(res, laCong(req) ? DICH_MAC_DINH : withBase('/dashboard'));
+  res.render(view(req, 'login'), { title: 'Đăng nhập', values: {}, errors: {}, next: req.query['next'] ?? '' });
+};
+
+export const xuLyDangNhap: RequestHandler[] = [
   rateLimit({
     windowMs: 15 * 60_000,
     max: 15,
@@ -121,7 +173,7 @@ router.post(
 
     // Thong bao chung chung: khong tiet lo email nao ton tai
     if (!user || !verifyPassword(password, user.password_hash)) {
-      res.status(401).render('auth/login', {
+      res.status(401).render(view(req, 'login'), {
         title: 'Đăng nhập',
         values: { email },
         errors: { _: 'Email hoặc mật khẩu không đúng' },
@@ -131,7 +183,7 @@ router.post(
     }
 
     if (user.status === 'suspended') {
-      res.status(403).render('auth/login', {
+      res.status(403).render(view(req, 'login'), {
         title: 'Đăng nhập',
         values: { email },
         errors: { _: 'Tài khoản đã bị tạm khóa. Vui lòng liên hệ hỗ trợ.' },
@@ -143,7 +195,7 @@ router.post(
     // Mat khau dung nhung tai khoan co lop thu hai: CHUA cho vao. Ghi tam vao
     // phien khach (phien nay chua co userId nen chua co quyen gi) roi doi ma.
     if (twoFactorEnabled(user.id)) {
-      req.session.pending2fa = { userId: user.id, at: Date.now(), next: safeNext(req.body?.next) };
+      req.session.pending2fa = { userId: user.id, at: Date.now(), next: dichSau(req, req.body?.next), cong: laCong(req) };
       audit({ userId: user.id, action: 'user.login_2fa_required', entity: 'user', entityId: user.id, ip: req.ip });
       return res.redirect('/dang-nhap/hai-lop');
     }
@@ -154,22 +206,28 @@ router.post(
     audit({ userId: user.id, action: 'user.login', entity: 'user', entityId: user.id, ip: req.ip });
     baoDaLienKet(req, user.id);
 
-    res.redirect(safeNext(req.body?.next));
+    chuyenTuyetDoi(res, dichSau(req, req.body?.next));
   }),
-);
+];
 
 /* ------------------------------------------------- buoc hai: ma xac thuc */
 
 /** Cho toi da 10 phut de nhap ma, sau do phai dang nhap lai tu dau. */
 const HAN_CHO_2FA_MS = 10 * 60_000;
 
-interface ChoXacThuc {
+/**
+ * Cho nhap ma 2FA. `next` la duong dan tren host (dichSau). `cong`: luong bat
+ * dau tu cong thi kiem lai theo luat cua cong; luong o /ten-mien co the ket
+ * thuc o trang 2FA cua cong (link cu chuyen sang) nen phai ghi kem.
+ */
+export interface ChoXacThuc {
   userId: number;
   at: number;
   next: string;
+  cong?: boolean;
 }
 
-function layChoXacThuc(req: import('express').Request): ChoXacThuc | null {
+function layChoXacThuc(req: Request): ChoXacThuc | null {
   const cho = req.session.pending2fa as ChoXacThuc | undefined;
   if (!cho || typeof cho.userId !== 'number') return null;
   if (Date.now() - cho.at > HAN_CHO_2FA_MS) {
@@ -179,17 +237,16 @@ function layChoXacThuc(req: import('express').Request): ChoXacThuc | null {
   return cho;
 }
 
-router.get('/dang-nhap/hai-lop', (req, res) => {
-  if (req.currentUser) return res.redirect('/dashboard');
+export const trangHaiLop: RequestHandler = (req, res) => {
+  if (req.currentUser) return chuyenTuyetDoi(res, laCong(req) ? DICH_MAC_DINH : withBase('/dashboard'));
   if (!layChoXacThuc(req)) {
     flash(req, 'error', 'Phiên xác thực đã hết hạn. Vui lòng đăng nhập lại.');
     return res.redirect('/dang-nhap');
   }
-  res.render('auth/two-factor', { title: 'Xác thực hai lớp', errors: {} });
-});
+  res.render(view(req, 'two-factor'), { title: 'Xác thực hai lớp', errors: {} });
+};
 
-router.post(
-  '/dang-nhap/hai-lop',
+export const xuLyHaiLop: RequestHandler[] = [
   rateLimit({
     windowMs: 15 * 60_000,
     max: 10,
@@ -206,7 +263,7 @@ router.post(
     const kq = verify2FA(cho.userId, String(req.body?.code ?? ''));
     if (!kq.ok) {
       audit({ userId: cho.userId, action: 'user.2fa_failed', entity: 'user', entityId: cho.userId, ip: req.ip });
-      res.status(401).render('auth/two-factor', {
+      res.status(401).render(view(req, 'two-factor'), {
         title: 'Xác thực hai lớp',
         errors: { _: 'Mã không đúng hoặc đã hết hạn. Hãy lấy mã mới nhất trong ứng dụng.' },
       });
@@ -224,32 +281,36 @@ router.post(
       flash(req, 'info', `Bạn vừa dùng một mã dự phòng, còn lại ${kq.conLai ?? 0} mã. Nên tạo bộ mã mới trong mục Bảo mật.`);
     }
     // Kiem lai: phien tao truoc ban sua loi /.//evil.com co the con gia tri cu.
-    res.redirect(safeNext(cho.next));
+    chuyenTuyetDoi(res, cho.cong ? dichCong(cho.next) : duongDanNoiBo(cho.next, withBase('/dashboard')));
   }),
-);
+];
 
 /**
  * Khach bam Google/GitHub ma email trung tai khoan co mat khau (khong tu gop,
  * xem services/lienKetMxh.ts): dang nhap mat khau xong thi gan danh tinh dang cho.
  */
-function baoDaLienKet(req: import('express').Request, userId: number): void {
+function baoDaLienKet(req: Request, userId: number): void {
   const ben = ganLienKetDangCho(req.session, userId, req.ip);
   if (ben) flash(req, 'success', `Đã liên kết ${TEN_HIEN_THI[ben]}. Lần sau bạn có thể đăng nhập bằng ${TEN_HIEN_THI[ben]}.`);
 }
 
-router.post('/dang-xuat', (req, res) => {
+/* --------------------------------------------------------- dang xuat */
+
+/** Xoa phien chung: het dang nhap o ca /ten-mien lan cong. Cong ve '/', tuc trang dang nhap. */
+export const xuLyDangXuat: RequestHandler = (req, res) => {
   const userId = req.currentUser?.id;
   destroySession(req, res);
   if (userId) audit({ userId, action: 'user.logout', entity: 'user', entityId: userId, ip: req.ip });
   res.redirect('/');
-});
+};
 
-router.get('/quen-mat-khau', (_req, res) => {
-  res.render('auth/forgot', { title: 'Quên mật khẩu', sent: false });
-});
+/* ---------------------------------------------- quen, dat lai mat khau */
 
-router.post(
-  '/quen-mat-khau',
+export const trangQuenMatKhau: RequestHandler = (req, res) => {
+  res.render(view(req, 'forgot'), { title: 'Quên mật khẩu', sent: false });
+};
+
+export const xuLyQuenMatKhau: RequestHandler[] = [
   rateLimit({ windowMs: 15 * 60_000, max: 5 }),
   wrap(async (req, res) => {
     const email = String(req.body?.email ?? '').trim().toLowerCase();
@@ -265,16 +326,15 @@ router.post(
     }
 
     // Luon bao da gui, du email co ton tai hay khong
-    res.render('auth/forgot', { title: 'Quên mật khẩu', sent: true });
+    res.render(view(req, 'forgot'), { title: 'Quên mật khẩu', sent: true });
   }),
-);
+];
 
-router.get('/dat-lai-mat-khau', (req, res) => {
-  res.render('auth/reset', { title: 'Đặt lại mật khẩu', token: String(req.query['token'] ?? ''), errors: {} });
-});
+export const trangDatLai: RequestHandler = (req, res) => {
+  res.render(view(req, 'reset'), { title: 'Đặt lại mật khẩu', token: String(req.query['token'] ?? ''), errors: {} });
+};
 
-router.post(
-  '/dat-lai-mat-khau',
+export const xuLyDatLai: RequestHandler[] = [
   rateLimit({ windowMs: 15 * 60_000, max: 10 }),
   wrap(async (req, res) => {
     const token = String(req.body?.token ?? '');
@@ -282,7 +342,7 @@ router.post(
     const confirm = String(req.body?.password_confirm ?? '');
 
     const render = (message: string) =>
-      res.status(422).render('auth/reset', { title: 'Đặt lại mật khẩu', token, errors: { _: message } });
+      res.status(422).render(view(req, 'reset'), { title: 'Đặt lại mật khẩu', token, errors: { _: message } });
 
     const check = passwordSchema.safeParse(password);
     if (!check.success) return render(check.error.issues[0]?.message ?? 'Mật khẩu không hợp lệ');
@@ -306,7 +366,21 @@ router.post(
     flash(req, 'success', 'Đổi mật khẩu thành công. Vui lòng đăng nhập lại.');
     res.redirect('/dang-nhap');
   }),
-);
+];
+
+/* ------------------------------------------- gan route cho /ten-mien */
+
+router.get('/dang-ky', trangDangKy);
+router.post('/dang-ky', ...xuLyDangKy);
+router.get('/dang-nhap', trangDangNhap);
+router.post('/dang-nhap', ...xuLyDangNhap);
+router.get('/dang-nhap/hai-lop', trangHaiLop);
+router.post('/dang-nhap/hai-lop', ...xuLyHaiLop);
+router.post('/dang-xuat', xuLyDangXuat);
+router.get('/quen-mat-khau', trangQuenMatKhau);
+router.post('/quen-mat-khau', ...xuLyQuenMatKhau);
+router.get('/dat-lai-mat-khau', trangDatLai);
+router.post('/dat-lai-mat-khau', ...xuLyDatLai);
 
 /* ------------------------------------------------------ xac thuc email */
 
@@ -368,3 +442,4 @@ router.post(
 );
 
 export default router;
+

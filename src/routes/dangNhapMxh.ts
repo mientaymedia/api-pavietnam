@@ -6,12 +6,19 @@
  * Nut la link GET chu khong phai form: CSP `form-action 'self'` chan ca chuyen
  * huong sau khi gui form sang mien khac, nen form POST roi 302 sang Google se
  * bi trinh duyet chan.
+ *
+ * Cong Tai khoan MienTay (lib/congTaiKhoan.ts) cung bat dau o day voi cong=1:
+ * redirect URI da khai o Zalo, Google, GitHub la /ten-mien/auth/<ben>/callback
+ * nen giu nguyen, va state, PKCE nam trong phien goc cua /ten-mien (cookie o
+ * day chac chan co). Co cong thi cac loi ra (loi, 2FA, xong) ve trang cua cong.
  */
 import { Router, type Request, type Response } from 'express';
 import { db, nowIso } from '../db/index.js';
 import { hashPassword, randomToken, safeEqual } from '../lib/crypto.js';
 import { emailSchema, passwordSchema } from '../lib/validate.js';
 import { duongDanNoiBo } from '../lib/redirect.js';
+import { chuyenTuyetDoi, withBase } from '../lib/basePath.js';
+import { CONG, congUrl, dichCong, veTaiKhoan } from '../lib/congTaiKhoan.js';
 import { log } from '../lib/logger.js';
 import {
   LoiMxh, TEN_HIEN_THI, diaChiXinQuyen, khoaCua, laNhaCungCap, layHoSo, taoPkce,
@@ -45,6 +52,8 @@ interface PhienOauth {
   next: string;
   /** Id tai khoan dang lien ket them; 0 la dang nhap. */
   lienKet: number;
+  /** Bat dau tu cong: next la duong dan tren host, loi ra ve trang cua cong. */
+  cong?: boolean;
 }
 
 const gioiHanBatDau = rateLimit({
@@ -67,14 +76,17 @@ router.get('/auth/:ben', gioiHanBatDau, (req, res, next) => {
   if (!laNhaCungCap(ben)) return next();
   const ten = TEN_HIEN_THI[ben];
   const lienKet = req.query['lien_ket'] === '1';
+  const cong = Boolean(CONG) && req.query['cong'] === '1';
 
   const khoa = khoaCua(ben);
   if (!khoa) {
     flash(req, 'error', `Đăng nhập bằng ${ten} hiện chưa mở. Vui lòng dùng email và mật khẩu.`);
+    if (cong) return chuyenTuyetDoi(res, congUrl(lienKet && req.currentUser ? '/lien-ket' : '/dang-nhap'));
     return res.redirect(lienKet && req.currentUser ? '/tai-khoan' : '/dang-nhap');
   }
 
   if (lienKet) {
+    if (!req.currentUser && cong) return chuyenTuyetDoi(res, congUrl(`/dang-nhap?next=${encodeURIComponent(congUrl('/lien-ket'))}`));
     if (!req.currentUser) return res.redirect('/dang-nhap?next=%2Ftai-khoan');
     // Link GET khong qua lop CSRF chung: kiem token phien o day de trang la
     // khong ep duoc tai khoan dang dang nhap lien ket voi mot danh tinh nao do
@@ -86,7 +98,7 @@ router.get('/auth/:ben', gioiHanBatDau, (req, res, next) => {
       return;
     }
   } else if (req.currentUser) {
-    return res.redirect('/dashboard');
+    return cong ? chuyenTuyetDoi(res, dichCong(req.query['next'])) : res.redirect('/dashboard');
   }
 
   const { verifier, challenge } = taoPkce();
@@ -96,8 +108,9 @@ router.get('/auth/:ben', gioiHanBatDau, (req, res, next) => {
     verifier,
     nonce: ben === 'google' ? randomToken(16) : '',
     at: Date.now(),
-    next: duongDanNoiBo(req.query['next'], '/dashboard'),
+    next: cong ? dichCong(req.query['next']) : duongDanNoiBo(req.query['next'], '/dashboard'),
     lienKet: lienKet ? req.currentUser!.id : 0,
+    cong,
   };
   req.session['oauth'] = phien;
   res.redirect(diaChiXinQuyen(ben, khoa, { state: phien.state, challenge, nonce: phien.nonce || undefined }));
@@ -117,8 +130,10 @@ router.get(
     const cho = req.session['oauth'] as PhienOauth | undefined;
     delete req.session['oauth'];
 
+    const cong = Boolean(cho?.cong && CONG);
     const veLai = (loai: 'error' | 'info', thongBao: string) => {
       flash(req, loai, thongBao);
+      if (cong) return chuyenTuyetDoi(res, congUrl(req.currentUser ? '/lien-ket' : '/dang-nhap'));
       res.redirect(req.currentUser ? '/tai-khoan' : '/dang-nhap');
     };
 
@@ -165,10 +180,10 @@ router.get(
       } else {
         flash(req, 'error', `Tài khoản ${ten} này đã liên kết với một tài khoản khác trên ${String(res.locals['site']?.name ?? 'website')}.`);
       }
-      return res.redirect('/tai-khoan');
+      return cong ? chuyenTuyetDoi(res, congUrl('/lien-ket')) : res.redirect('/tai-khoan');
     }
 
-    if (req.currentUser) return res.redirect('/dashboard');
+    if (req.currentUser) return cong ? chuyenTuyetDoi(res, dichCong(cho.next)) : res.redirect('/dashboard');
 
     const kq = xuLyDangNhapMxh(hs, req.ip);
     if (kq.loai === 'tam_khoa') {
@@ -181,25 +196,29 @@ router.get(
         'info',
         `Email ${kq.email} đã có tài khoản tại đây. Để bảo vệ tài khoản, hãy đăng nhập bằng mật khẩu một lần, hệ thống sẽ tự liên kết ${ten}. Chưa có mật khẩu thì dùng "Quên mật khẩu".`,
       );
+      if (cong) return chuyenTuyetDoi(res, congUrl(`/dang-nhap?next=${encodeURIComponent(dichCong(cho.next))}`));
       return res.redirect(`/dang-nhap?next=${encodeURIComponent(cho.next)}`);
     }
 
     if (kq.loai === 'tao_moi' && !kq.thieuEmail) {
       void sendWelcome({ id: kq.userId, email: kq.email, full_name: kq.ten });
     }
-    batDauPhien(req, res, kq.userId, ben, cho.next, kq.loai === 'tao_moi' && kq.thieuEmail);
+    // Dich tren host: o cong da la duong dan tren host, o /ten-mien thi them tien to
+    const dich = cong ? dichCong(cho.next) : withBase(duongDanNoiBo(cho.next, '/dashboard'));
+    batDauPhien(req, res, kq.userId, ben, dich, cong, kq.loai === 'tao_moi' && kq.thieuEmail);
   }),
 );
 
 /**
  * Cap phien sau khi da biet tai khoan. Co 2FA thi chua cap: ghi pending2fa
- * nhu dang nhap mat khau, route /dang-nhap/hai-lop lo phan con lai.
+ * nhu dang nhap mat khau, route /dang-nhap/hai-lop lo phan con lai (cua cong
+ * neu luong bat dau tu cong). `dich` la duong dan tren host.
  */
-function batDauPhien(req: Request, res: Response, userId: number, ben: NhaCungCap, next: string, thieuEmail: boolean): void {
+function batDauPhien(req: Request, res: Response, userId: number, ben: NhaCungCap, dich: string, cong: boolean, thieuEmail: boolean): void {
   if (twoFactorEnabled(userId)) {
-    req.session.pending2fa = { userId, at: Date.now(), next };
+    req.session.pending2fa = { userId, at: Date.now(), next: dich, cong };
     audit({ userId, action: 'user.login_2fa_required', entity: 'user', entityId: userId, ip: req.ip, meta: { ben } });
-    return res.redirect('/dang-nhap/hai-lop');
+    return cong ? chuyenTuyetDoi(res, congUrl('/dang-nhap/hai-lop')) : res.redirect('/dang-nhap/hai-lop');
   }
 
   const guestCart = req.sessionId;
@@ -211,7 +230,7 @@ function batDauPhien(req: Request, res: Response, userId: number, ben: NhaCungCa
     flash(req, 'info', `Đã tạo tài khoản bằng ${TEN_HIEN_THI[ben]}. ${TEN_HIEN_THI[ben]} không cung cấp email, vui lòng bổ sung email để nhận thông tin quản trị tên miền.`);
     return res.redirect('/tai-khoan/email');
   }
-  res.redirect(next);
+  chuyenTuyetDoi(res, dich);
 }
 
 /* ------------------------------------------------------- tai khoan: lien ket */
@@ -219,7 +238,7 @@ function batDauPhien(req: Request, res: Response, userId: number, ben: NhaCungCa
 router.post('/tai-khoan/lien-ket/:ben/huy', requireAuth, (req, res) => {
   const ben = req.params['ben'];
   const user = req.currentUser!;
-  if (!laNhaCungCap(ben)) return res.redirect('/tai-khoan');
+  if (!laNhaCungCap(ben)) return veTaiKhoan(req, res);
   const ten = TEN_HIEN_THI[ben];
 
   const kq = huyDanhTinh(user.id, ben);
@@ -231,7 +250,7 @@ router.post('/tai-khoan/lien-ket/:ben/huy', requireAuth, (req, res) => {
   } else {
     flash(req, 'info', `Tài khoản chưa liên kết ${ten}.`);
   }
-  res.redirect('/tai-khoan');
+  veTaiKhoan(req, res);
 });
 
 /** Tai khoan tao bang mang xa hoi chua co mat khau: dat lan dau, khong hoi mat khau cu. */
@@ -243,17 +262,17 @@ router.post(
     const user = req.currentUser!;
     if (coMatKhau(user.id)) {
       flash(req, 'error', 'Tài khoản đã có mật khẩu. Dùng mục Đổi mật khẩu.');
-      return res.redirect('/tai-khoan');
+      return veTaiKhoan(req, res);
     }
     const password = String(req.body?.password ?? '');
     const check = passwordSchema.safeParse(password);
     if (!check.success) {
       flash(req, 'error', check.error.issues[0]?.message ?? 'Mật khẩu không hợp lệ');
-      return res.redirect('/tai-khoan');
+      return veTaiKhoan(req, res);
     }
     if (password !== String(req.body?.password_confirm ?? '')) {
       flash(req, 'error', 'Mật khẩu nhập lại không khớp.');
-      return res.redirect('/tai-khoan');
+      return veTaiKhoan(req, res);
     }
     // Chi dat khi van rong: hai yeu cau cung luc khong ghi de nhau
     const r = db.prepare("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ? AND password_hash = ''")
@@ -262,7 +281,7 @@ router.post(
       audit({ userId: user.id, action: 'user.set_password', entity: 'user', entityId: user.id, ip: req.ip });
       flash(req, 'success', 'Đã đặt mật khẩu. Bạn có thể đăng nhập bằng email và mật khẩu.');
     }
-    res.redirect('/tai-khoan');
+    veTaiKhoan(req, res);
   },
 );
 

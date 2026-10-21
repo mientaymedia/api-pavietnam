@@ -11,7 +11,8 @@ import { buildCsp } from './lib/csp.js';
 import { getCart } from './services/cart.js';
 import { formatVnd } from './lib/money.js';
 import { isVerified } from './services/verification.js';
-import { BASE, outsideBase, redirectWithBase, withBase } from './lib/basePath.js';
+import { BASE, outsideBase, redirectWithBase, taoRedirectTienTo, withBase } from './lib/basePath.js';
+import { CONG } from './lib/congTaiKhoan.js';
 import { clientIpMiddleware } from './lib/clientIp.js';
 import { danhSachTinh, phuongCuaTinh } from './lib/diaGioi.js';
 import { danhSachDangBat } from './lib/oauth.js';
@@ -31,6 +32,7 @@ import accountRoutes from './routes/account.js';
 import adminRoutes from './routes/admin.js';
 import apiRoutes from './routes/api.js';
 import noiBoRoutes from './routes/noiBo.js';
+import congTaiKhoanRoutes from './routes/congTaiKhoan.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(here, '..');
@@ -70,50 +72,7 @@ export function createApp() {
   // va qua lop chan open redirect (ca khi BASE rong).
   site.use(redirectWithBase);
 
-  // Webhook can body tho de xac thuc chu ky -> giu lai ban raw
-  site.use(
-    express.json({
-      limit: '256kb',
-      verify: (req, _res, buf) => {
-        (req as express.Request & { rawBody?: string }).rawBody = buf.toString('utf8');
-      },
-    }),
-  );
-  site.use(express.urlencoded({ extended: false, limit: '256kb' }));
-  site.use(cookieParser());
-  site.use(express.static(path.join(projectRoot, 'public'), { maxAge: config.isProd ? '7d' : 0 }));
-
-  site.use(sessionMiddleware);
-
-  // Bien dung chung cho moi view.
-  // Phai dat TRUOC csrfMiddleware: khi CSRF bi tu choi, trang loi cung can
-  // cac bien nay de render duoc (neu khong se thanh loi 500 kho hieu).
-  site.use((req, res, next) => {
-    res.locals['site'] = settings.site();
-    res.locals['currentUser'] = req.currentUser ?? null;
-    res.locals['flashes'] = takeFlash(req);
-    res.locals['cartCount'] = req.method === 'GET' ? getCart(req.cartKey).count : 0;
-    res.locals['formatVnd'] = formatVnd;
-    res.locals['currentPath'] = req.path;
-    res.locals['appUrl'] = config.appUrl;
-    // Link trong view: href="<%= base %>/gio-hang", hoac url(duong_dan) trong khoi ma
-    res.locals['base'] = BASE;
-    res.locals['url'] = withBase;
-    res.locals['csrfToken'] = '';
-    // Danh sach tinh, phuong xa theo ten P.A cho form ho so chu the
-    res.locals['diaGioi'] = { danhSachTinh, phuongCuaTinh };
-    // Hien dai nhac xac thuc email tren moi trang khi khach chua xac thuc
-    // OA cho nut chat Zalo o footer; rong o trang quan tri hoac khi tat
-    res.locals['zaloChatOa'] = laTrangQuanTri(req.path) ? '' : zaloChatOaId();
-    res.locals['needsEmailVerify'] = Boolean(req.currentUser) && !isVerified(req.currentUser!.id);
-    // Tai khoan tao bang Zalo chua co email: dai nhac doi sang "Bo sung email"
-    res.locals['thieuEmail'] = Boolean(req.currentUser) && laEmailTam(req.currentUser!.email);
-    // Nut dang nhap mang xa hoi: chi ben da nhap du khoa va dang bat
-    res.locals['nutMxh'] = req.currentUser ? [] : danhSachDangBat();
-    next();
-  });
-
-  site.use(csrfMiddleware);
+  lopChung(site, true);
 
   site.use('/', homeRoutes);
   site.use('/', timCungAiRoutes);
@@ -135,11 +94,80 @@ export function createApp() {
 
   if (BASE) {
     app.use(BASE, site);
+    // Cong "Tai khoan MienTay" (docs/mtm/tai-khoan-chung/spec.md): router rieng
+    // gan o CONG_TAI_KHOAN_PATH, cung lop chung va cung phien voi /ten-mien.
+    // Lop boc redirect them tien to cua cong nen ham xu ly dung chung voi
+    // routes/auth.ts goi res.redirect('/dang-nhap/hai-lop') la dung cho.
+    if (CONG) {
+      const cong = express.Router();
+      cong.use(taoRedirectTienTo(CONG));
+      lopChung(cong, false);
+      cong.use('/', congTaiKhoanRoutes);
+      cong.use(notFound);
+      cong.use(errorHandler);
+      app.use(CONG, cong);
+    }
     app.use(outsideBase);
   } else {
     app.use(site);
   }
   return app;
+}
+
+/**
+ * Lop dung chung cua moi router trang: body, cookie, phien, bien cho view, CSRF.
+ * Dung cho router /ten-mien va router cong Tai khoan MienTay.
+ */
+function lopChung(r: express.Router, coTepTinh: boolean): void {
+  // Webhook can body tho de xac thuc chu ky -> giu lai ban raw
+  r.use(
+    express.json({
+      limit: '256kb',
+      verify: (req, _res, buf) => {
+        (req as express.Request & { rawBody?: string }).rawBody = buf.toString('utf8');
+      },
+    }),
+  );
+  r.use(express.urlencoded({ extended: false, limit: '256kb' }));
+  r.use(cookieParser());
+  // Tep tinh dat TRUOC phien: tai CSS, anh khong tao phien moi. Cong khong co
+  // tep tinh rieng, dung tep cua /ten-mien (cung container).
+  if (coTepTinh) r.use(express.static(path.join(projectRoot, 'public'), { maxAge: config.isProd ? '7d' : 0 }));
+
+  r.use(sessionMiddleware);
+
+  // Bien dung chung cho moi view.
+  // Phai dat TRUOC csrfMiddleware: khi CSRF bi tu choi, trang loi cung can
+  // cac bien nay de render duoc (neu khong se thanh loi 500 kho hieu).
+  r.use((req, res, next) => {
+    res.locals['site'] = settings.site();
+    res.locals['currentUser'] = req.currentUser ?? null;
+    res.locals['flashes'] = takeFlash(req);
+    res.locals['cartCount'] = req.method === 'GET' ? getCart(req.cartKey).count : 0;
+    res.locals['formatVnd'] = formatVnd;
+    res.locals['currentPath'] = req.path;
+    res.locals['appUrl'] = config.appUrl;
+    // Link trong view: href="<%= base %>/gio-hang", hoac url(duong_dan) trong khoi ma
+    res.locals['base'] = BASE;
+    res.locals['url'] = withBase;
+    // Cong Tai khoan MienTay: link trong cong dung <%= cong %>/..., tep tinh van <%= base %>/...
+    res.locals['cong'] = CONG;
+    res.locals['siteChinhUrl'] = config.siteChinhUrl;
+    res.locals['csrfToken'] = '';
+    // Danh sach tinh, phuong xa theo ten P.A cho form ho so chu the
+    res.locals['diaGioi'] = { danhSachTinh, phuongCuaTinh };
+    // Hien dai nhac xac thuc email tren moi trang khi khach chua xac thuc
+    // OA cho nut chat Zalo o footer; rong o trang quan tri hoac khi tat
+    res.locals['zaloChatOa'] = laTrangQuanTri(req.path) ? '' : zaloChatOaId();
+    res.locals['needsEmailVerify'] = Boolean(req.currentUser) && !isVerified(req.currentUser!.id);
+    // Tai khoan tao bang Zalo chua co email: dai nhac doi sang "Bo sung email"
+    res.locals['thieuEmail'] = Boolean(req.currentUser) && laEmailTam(req.currentUser!.email);
+    // Nut dang nhap mang xa hoi: chi ben da nhap du khoa va dang bat
+    res.locals['nutMxh'] = req.currentUser ? [] : danhSachDangBat();
+    next();
+  });
+
+  r.use(csrfMiddleware);
 }
 
 /**

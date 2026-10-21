@@ -14,6 +14,7 @@ import { daysUntilExpiry, listUserDomains } from '../services/domainRepo.js';
 import { listOrders } from '../services/orders.js';
 import { audit } from '../services/audit.js';
 import { duLieuMxh } from '../services/lienKetMxh.js';
+import { veTaiKhoan } from '../lib/congTaiKhoan.js';
 import { loiHoSoPA, type ContactRow } from '../services/domainContact.js';
 import { qrSvg } from '../lib/qrcode.js';
 import { formatSecret } from '../lib/totp.js';
@@ -160,12 +161,14 @@ router.get('/tai-khoan', requireAuth, (req, res) => {
   });
 });
 
+// Hai route duoi nhan ca form tu trang Ho so, Bao mat cua cong (truong an
+// quay_ve): mot ban logic doi thong tin, doi mat khau cho ca hai noi.
 router.post('/tai-khoan/thong-tin', requireAuth, (req, res) => {
   const userId = req.currentUser!.id;
   db.prepare('UPDATE users SET full_name = ?, phone = ?, updated_at = ? WHERE id = ?')
     .run(String(req.body?.full_name ?? '').slice(0, 120), String(req.body?.phone ?? '').slice(0, 20), nowIso(), userId);
   flash(req, 'success', 'Đã cập nhật thông tin.');
-  res.redirect('/tai-khoan');
+  veTaiKhoan(req, res);
 });
 
 router.post(
@@ -180,22 +183,22 @@ router.post(
     const row = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as { password_hash: string };
     if (!verifyPassword(current, row.password_hash)) {
       flash(req, 'error', 'Mật khẩu hiện tại không đúng.');
-      return res.redirect('/tai-khoan');
+      return veTaiKhoan(req, res);
     }
     const check = passwordSchema.safeParse(next);
     if (!check.success) {
       flash(req, 'error', check.error.issues[0]?.message ?? 'Mật khẩu không hợp lệ');
-      return res.redirect('/tai-khoan');
+      return veTaiKhoan(req, res);
     }
     if (next !== confirm) {
       flash(req, 'error', 'Mật khẩu nhập lại không khớp.');
-      return res.redirect('/tai-khoan');
+      return veTaiKhoan(req, res);
     }
 
     db.prepare('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?').run(hashPassword(next), nowIso(), userId);
     audit({ userId, action: 'user.change_password', entity: 'user', entityId: userId, ip: req.ip });
     flash(req, 'success', 'Đã đổi mật khẩu.');
-    res.redirect('/tai-khoan');
+    veTaiKhoan(req, res);
   }),
 );
 

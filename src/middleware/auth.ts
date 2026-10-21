@@ -2,13 +2,17 @@ import type { NextFunction, Request, Response } from 'express';
 import { db, nowIso } from '../db/index.js';
 import { sha256 } from '../lib/crypto.js';
 import { flash } from './session.js';
-import { stripBase } from '../lib/basePath.js';
+import { chuyenTuyetDoi, stripBase } from '../lib/basePath.js';
+import { CONG, congUrl } from '../lib/congTaiKhoan.js';
 import { isEnabled as twoFactorEnabled, requires2FA } from '../services/twoFactor.js';
 
 /** Bat buoc dang nhap; chua dang nhap thi chuyen sang trang dang nhap kem duong dan quay lai. */
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
   if (req.currentUser) return next();
   flash(req, 'error', 'Vui lòng đăng nhập để tiếp tục.');
+  // Cong bat: sang thang trang dang nhap cua cong (bot mot lan chuyen qua link
+  // cu). originalUrl da la duong dan tren host, dung nghia next cua cong.
+  if (CONG) return chuyenTuyetDoi(res, congUrl(`/dang-nhap?next=${encodeURIComponent(req.originalUrl)}`));
   // originalUrl con tien to BASE_PATH; next phai la duong dan BEN TRONG app vi
   // redirect se them tien to dung mot lan nua.
   res.redirect(`/dang-nhap?next=${encodeURIComponent(stripBase(req.originalUrl) ?? '/dashboard')}`);
